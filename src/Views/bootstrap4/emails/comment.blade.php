@@ -15,10 +15,12 @@
 
 @section('content')
 	{!! trans('ticketit::email/comment.data', [
+	    'owner'      =>  $ticket->user->name,
 	    'name'      =>  $comment->user->name,
 	    'subject'   =>  $ticket->subject,
+	    'id'		=>	$ticket->id,
 	    'status'    =>  $ticket->status->name,
 	    'category'  =>  $ticket->category->name,
-	    'comment'   =>  $comment->getShortContent()
+	    'comment'   =>  $comment->email_content
 	]) !!}
 @stop

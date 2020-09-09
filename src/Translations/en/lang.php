@@ -49,6 +49,7 @@ return [
 
   'agent'                            => 'Agent',
   'category'                         => 'Category',
+  'subcategory'                      => 'Sub Category',
   'colon'                            => ': ',
   'comments'                         => 'Comments',
   'created'                          => 'Created',
@@ -130,6 +131,7 @@ return [
   'notify-to-you'                    => ' to you',
   'notify-created-ticket'            => ' created ticket ',
   'notify-updated'                   => ' updated ',
+  'comment-notify-updated'           => ' replied and updated ',
 
  // TicketsController
   'the-ticket-has-been-created'      => 'The ticket has been created!',

@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use Cache;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Kordy\Ticketit\Helpers\LaravelVersion;
 use Kordy\Ticketit\Models;
 use Kordy\Ticketit\Models\Agent;
 use Kordy\Ticketit\Models\Category;
-use Kordy\Ticketit\Models\Setting;
+use Kordy\Ticketit\Models\TSetting;
 use Kordy\Ticketit\Models\Ticket;
+use Sentinel;
+use DB;
 
 class TicketsController extends Controller
 {
@@ -20,6 +23,7 @@ class TicketsController extends Controller
 
     public function __construct(Ticket $tickets, Agent $agent)
     {
+        Cache::flush();
         $this->middleware('Kordy\Ticketit\Middleware\ResAccessMiddleware', ['only' => ['show']]);
         $this->middleware('Kordy\Ticketit\Middleware\IsAgentMiddleware', ['only' => ['edit', 'update']]);
         $this->middleware('Kordy\Ticketit\Middleware\IsAdminMiddleware', ['only' => ['destroy']]);
@@ -36,13 +40,14 @@ class TicketsController extends Controller
             $datatables = app(\Yajra\Datatables\Datatables::class);
         }
 
-        $user = $this->agent->find(auth()->user()->id);
+        $user = $this->agent->find(Sentinel::getUser()->id);
 
         if ($user->isAdmin()) {
             if ($complete) {
-                $collection = Ticket::complete();
+                $collection = Ticket::complete()->adminUserTickets($user->id, true);
             } else {
-                $collection = Ticket::active();
+                $collection = Ticket::active()->adminUserTickets($user->id, true);
+
             }
         } elseif ($user->isAgent()) {
             if ($complete) {
@@ -57,7 +62,7 @@ class TicketsController extends Controller
                 $collection = Ticket::userTickets($user->id)->active();
             }
         }
-
+        // dd($collection->get());
         $collection
             ->join('users', 'users.id', '=', 'ticketit.user_id')
             ->join('ticketit_statuses', 'ticketit_statuses.id', '=', 'ticketit.status_id')
@@ -73,7 +78,8 @@ class TicketsController extends Controller
                 'ticketit.id AS agent',
                 'ticketit.updated_at AS updated_at',
                 'ticketit_priorities.name AS priority',
-                'users.name AS owner',
+                // 'users.name AS owner',
+                DB::raw('CONCAT(users.first_name ," ", users.last_name) as owner'),
                 'ticketit.agent_id',
                 'ticketit_categories.name AS category',
             ]);
@@ -97,7 +103,7 @@ class TicketsController extends Controller
     {
         $collection->editColumn('subject', function ($ticket) {
             return (string) link_to_route(
-                Setting::grab('main_route').'.show',
+                TSetting::grab('main_route').'.show',
                 $ticket->subject,
                 $ticket->id
             );
@@ -170,17 +176,26 @@ class TicketsController extends Controller
         });
 
         $categories = Cache::remember('ticketit::categories', 60, function () {
-            return Models\Category::all();
+            return Models\Category::whereNull('parent')->get();
         });
+
+        $subcategories = [];
+        foreach ($categories as $category) {
+            if($category->children->count()){
+                $subcategories[$category->id] = $category->children;
+            }else{
+                $subcategories[$category->id] = null;
+            }
+        }
 
         $statuses = Cache::remember('ticketit::statuses', 60, function () {
             return Models\Status::all();
         });
 
         if (LaravelVersion::min('5.3.0')) {
-            return [$priorities->pluck('name', 'id'), $categories->pluck('name', 'id'), $statuses->pluck('name', 'id')];
+            return [$priorities->pluck('name', 'id'), $categories->pluck('label', 'id'), $statuses->pluck('name', 'id'), $subcategories];
         } else {
-            return [$priorities->lists('name', 'id'), $categories->lists('name', 'id'), $statuses->lists('name', 'id')];
+            return [$priorities->lists('name', 'id'), $categories->lists('label', 'id'), $statuses->lists('name', 'id'), $subcategories];
         }
     }
 
@@ -191,9 +206,8 @@ class TicketsController extends Controller
      */
     public function create()
     {
-        list($priorities, $categories) = $this->PCS();
-
-        return view('ticketit::tickets.create', compact('priorities', 'categories'));
+        list($priorities, $categories, $statuses, $subcategories) = $this->PCS();
+        return view('ticketit::tickets.create', compact('priorities', 'categories', 'subcategories'));
     }
 
     /**
@@ -216,14 +230,28 @@ class TicketsController extends Controller
 
         $ticket->subject = $request->subject;
 
-        $ticket->setPurifiedContent($request->get('content'));
+        $content = $this->imagesToLink($request->get('content'));
+
+        $ticket->setPurifiedContent($content);
+
+        $category = Models\Category::find($request->category_id);
+
+        if($category->children->count())
+        {
+            $ticket->category_id = $request->subcategory_id;
+        }else{
+            $ticket->category_id = $request->category_id;
+        }
 
         $ticket->priority_id = $request->priority_id;
-        $ticket->category_id = $request->category_id;
 
-        $ticket->status_id = Setting::grab('default_status_id');
-        $ticket->user_id = auth()->user()->id;
-        $ticket->autoSelectAgent();
+        $ticket->status_id = TSetting::grab('default_status_id');
+        $ticket->user_id = Sentinel::getUser()->id;
+        if($request->has('ticket_for')){
+            $ticket->autoSelectAgent('superadmin');
+        }else{
+            $ticket->autoSelectAgent();
+        }
 
         $ticket->save();
 
@@ -243,22 +271,38 @@ class TicketsController extends Controller
     {
         $ticket = $this->tickets->findOrFail($id);
 
-        list($priority_lists, $category_lists, $status_lists) = $this->PCS();
+        list($priority_lists, $category_lists, $status_lists, $subcategories) = $this->PCS();
 
         $close_perm = $this->permToClose($id);
         $reopen_perm = $this->permToReopen($id);
 
-        $cat_agents = Models\Category::find($ticket->category_id)->agents()->agentsLists();
+        if(Sentinel::inRole('client')){
+            $first_admin = Sentinel::getUser()->admin_user;
+        }elseif (Sentinel::inRole('admin')) {
+            $first_admin = Sentinel::getUser();
+        }elseif(Sentinel::inRole('agent')){
+            $first_admin = Sentinel::getUser()->admin_user;
+        }elseif(Sentinel::inRole('super-admin')){
+            $first_admin = Sentinel::findRoleBySlug('super-admin')->users()->first();
+        }
+
+        $cat_agents = Models\Category::find($ticket->category_id)->agents()->where('parent_user_id',$first_admin->id)->agentsLists();
+
+        // $cat_agents = Models\Category::find($ticket->category_id)->agents()->agentsLists();
+        // dd($cat_agents);
         if (is_array($cat_agents)) {
             $agent_lists = ['auto' => 'Auto Select'] + $cat_agents;
         } else {
             $agent_lists = ['auto' => 'Auto Select'];
         }
 
-        $comments = $ticket->comments()->paginate(Setting::grab('paginate_items'));
+        $selected_category = ($ticket->category->parent_category) ? $ticket->category->parent_category->id : $ticket->category->id;
+        $selected_subcategory = ($ticket->category->parent_category) ? $ticket->category->id : null;
+
+        $comments = $ticket->comments()->paginate(TSetting::grab('paginate_items'));
 
         return view('ticketit::tickets.show',
-            compact('ticket', 'status_lists', 'priority_lists', 'category_lists', 'agent_lists', 'comments',
+            compact('ticket', 'status_lists', 'priority_lists', 'category_lists', 'subcategories', 'selected_category', 'selected_subcategory', 'agent_lists', 'comments',
                 'close_perm', 'reopen_perm'));
     }
 
@@ -285,10 +329,20 @@ class TicketsController extends Controller
 
         $ticket->subject = $request->subject;
 
-        $ticket->setPurifiedContent($request->get('content'));
+        $content = $this->imagesToLink($request->get('content'));
+
+        $ticket->setPurifiedContent($content);
 
         $ticket->status_id = $request->status_id;
-        $ticket->category_id = $request->category_id;
+
+        $category = Models\Category::find($request->category_id);
+        if($category->children->count())
+        {
+            $ticket->category_id = $request->subcategory_id;
+        }else{
+            $ticket->category_id = $request->category_id;
+        }
+
         $ticket->priority_id = $request->priority_id;
 
         if ($request->input('agent_id') == 'auto') {
@@ -301,7 +355,7 @@ class TicketsController extends Controller
 
         session()->flash('status', trans('ticketit::lang.the-ticket-has-been-modified'));
 
-        return redirect()->route(Setting::grab('main_route').'.show', $id);
+        return redirect()->route(TSetting::grab('main_route').'.show', $id);
     }
 
     /**
@@ -319,7 +373,7 @@ class TicketsController extends Controller
 
         session()->flash('status', trans('ticketit::lang.the-ticket-has-been-deleted', ['name' => $subject]));
 
-        return redirect()->route(Setting::grab('main_route').'.index');
+        return redirect()->route(TSetting::grab('main_route').'.index');
     }
 
     /**
@@ -335,8 +389,8 @@ class TicketsController extends Controller
             $ticket = $this->tickets->findOrFail($id);
             $ticket->completed_at = Carbon::now();
 
-            if (Setting::grab('default_close_status_id')) {
-                $ticket->status_id = Setting::grab('default_close_status_id');
+            if (TSetting::grab('default_close_status_id')) {
+                $ticket->status_id = TSetting::grab('default_close_status_id');
             }
 
             $subject = $ticket->subject;
@@ -344,10 +398,10 @@ class TicketsController extends Controller
 
             session()->flash('status', trans('ticketit::lang.the-ticket-has-been-completed', ['name' => $subject]));
 
-            return redirect()->route(Setting::grab('main_route').'.index');
+            return redirect()->route(TSetting::grab('main_route').'.index');
         }
 
-        return redirect()->route(Setting::grab('main_route').'.index')
+        return redirect()->route(TSetting::grab('main_route').'.index')
             ->with('warning', trans('ticketit::lang.you-are-not-permitted-to-do-this'));
     }
 
@@ -364,8 +418,8 @@ class TicketsController extends Controller
             $ticket = $this->tickets->findOrFail($id);
             $ticket->completed_at = null;
 
-            if (Setting::grab('default_reopen_status_id')) {
-                $ticket->status_id = Setting::grab('default_reopen_status_id');
+            if (TSetting::grab('default_reopen_status_id')) {
+                $ticket->status_id = TSetting::grab('default_reopen_status_id');
             }
 
             $subject = $ticket->subject;
@@ -373,16 +427,22 @@ class TicketsController extends Controller
 
             session()->flash('status', trans('ticketit::lang.the-ticket-has-been-reopened', ['name' => $subject]));
 
-            return redirect()->route(Setting::grab('main_route').'.index');
+            return redirect()->route(TSetting::grab('main_route').'.index');
         }
 
-        return redirect()->route(Setting::grab('main_route').'.index')
+        return redirect()->route(TSetting::grab('main_route').'.index')
             ->with('warning', trans('ticketit::lang.you-are-not-permitted-to-do-this'));
     }
 
     public function agentSelectList($category_id, $ticket_id)
     {
-        $cat_agents = Models\Category::find($category_id)->agents()->agentsLists();
+        if(Sentinel::inRole('client')){
+            $first_admin = Sentinel::getUser()->admin_user;
+        }elseif (Sentinel::inRole('admin') || Sentinel::inRole('super-admin')) {
+            $first_admin = Sentinel::getUser();
+        }
+        // dd($first_admin);
+        $cat_agents = Models\Category::find($category_id)->agents()->where('parent_user_id',$first_admin->id)->agentsLists();
         if (is_array($cat_agents)) {
             $agents = ['auto' => 'Auto Select'] + $cat_agents;
         } else {
@@ -407,7 +467,7 @@ class TicketsController extends Controller
      */
     public function permToClose($id)
     {
-        $close_ticket_perm = Setting::grab('close_ticket_perm');
+        $close_ticket_perm = TSetting::grab('close_ticket_perm');
 
         if ($this->agent->isAdmin() && $close_ticket_perm['admin'] == 'yes') {
             return 'yes';
@@ -429,7 +489,7 @@ class TicketsController extends Controller
      */
     public function permToReopen($id)
     {
-        $reopen_ticket_perm = Setting::grab('reopen_ticket_perm');
+        $reopen_ticket_perm = TSetting::grab('reopen_ticket_perm');
         if ($this->agent->isAdmin() && $reopen_ticket_perm['admin'] == 'yes') {
             return 'yes';
         } elseif ($this->agent->isAgent() && $reopen_ticket_perm['agent'] == 'yes') {
@@ -522,4 +582,46 @@ class TicketsController extends Controller
 
         return $performance_average;
     }
+
+    /**
+     * Filter Base64 Images Download Images and make there links
+     * @return String | content
+     */
+    protected function imagesToLink($input_content)
+    {
+        $description = $input_content;
+        $dom = new \DomDocument();
+        $dom->loadHtml($description, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_NOERROR | LIBXML_NOWARNING);    
+        $images = $dom->getElementsByTagName('img');
+        foreach($images as $k => $img)
+        {
+           $data = $img->getAttribute('src');
+           if(Str::contains($data, ';base64')){
+               list($type, $data) = explode(';', $data);
+               list(, $data)      = explode(',', $data);
+               $data = base64_decode($data);
+               $image_name= "/tickets_images/" . time().$k.'.png';
+               $path = public_path() . $image_name;
+               file_put_contents($path, $data);
+               $img->removeAttribute('src');
+               $img->setAttribute('src', url($image_name));
+           }
+        }
+        $description = $dom->saveHTML();
+        $pattern = '/<img.+src=(.)(.*)\1[^>]*>/iU';
+        $callback_fn = 'imgToa';
+        $content = preg_replace_callback($pattern, array(&$this,"imgToa"), $description);
+        return $content;
+    }
+
+    /**
+     * Replace Images Tags into Anchor tags
+     * @return String
+     */
+    protected function imgToa($matches)
+    {
+        return "<a target='_blank' href='".$matches[2]."'> <font color ='black' >View Image</font></a>";
+    }
+    
+    
 }

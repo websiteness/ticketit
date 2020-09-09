@@ -2,10 +2,9 @@
 
 return [
 
-    'assigned'    => 'Ticket Assigned',
+    'assigned'    => 'New Ticket',
     'comment'     => 'New Comment',
     'status'      => 'Status Changed',
     'transfer'    => 'Ticket Transferred',
     'view-ticket' => 'Click here to view your ticket.',
-
 ];

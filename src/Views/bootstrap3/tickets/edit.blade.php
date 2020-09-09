@@ -12,14 +12,17 @@
             </div>
             <div class="modal-body">
                 <div class="col-sm-12">
-                    {{--@if($u->isAdmin())--}}
+                    @if(!$u->isAdmin() && !$u->isAgent())
                     <div class="form-group">
                         {!! CollectiveForm::text('subject', $ticket->subject, ['class' => 'form-control', 'required']) !!}
                     </div>
                     <div class="form-group">
                         <textarea class="form-control summernote-editor" rows="5" required name="content" cols="50">{!! htmlspecialchars($ticket->html) !!}</textarea>
                     </div>
-                    {{--@endif--}}
+                    @else
+                         {!! CollectiveForm::hidden('subject', $ticket->subject) !!}
+                         {!! CollectiveForm::hidden('content', htmlspecialchars($ticket->html)) !!}
+                    @endif
 
                     <div class="form-group col-lg-6">
                         {!! CollectiveForm::label('priority_id', trans('ticketit::lang.priority') . trans('ticketit::lang.colon'), ['class' => 'col-lg-4 control-label']) !!}
@@ -48,9 +51,11 @@
                             'class' => 'col-lg-6 control-label'
                         ]) !!}
                         <div class="col-lg-6">
-                            {!! CollectiveForm::select('category_id', $category_lists, $ticket->category_id, ['class' => 'form-control']) !!}
+                            {!! CollectiveForm::select('category_id', $category_lists, $selected_category, ['class' => 'form-control cat', 'onchange' => 'selectCategory(this.value)']) !!}
                             </div>
                         </div>
+                    </div>
+                    <div class="form-group col-lg-12 subcat">
                     </div>
                     <div class="form-group col-lg-12">
                         {!! CollectiveForm::label('status_id', trans('ticketit::lang.status') . trans('ticketit::lang.colon'), [

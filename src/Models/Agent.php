@@ -4,6 +4,7 @@ namespace Kordy\Ticketit\Models;
 
 use App\User;
 use Auth;
+use Sentinel;
 
 class Agent extends User
 {
@@ -78,9 +79,9 @@ class Agent extends User
     public function scopeAgentsLists($query)
     {
         if (version_compare(app()->version(), '5.2.0', '>=')) {
-            return $query->where('ticketit_agent', '1')->pluck('name', 'id')->toArray();
+            return $query->where('ticketit_agent', '1')->get()->pluck('full_name', 'id')->toArray();
         } else { // if Laravel 5.1
-            return $query->where('ticketit_agent', '1')->lists('name', 'id')->toArray();
+            return $query->where('ticketit_agent', '1')->get()->pluck('full_name', 'id')->toArray();
         }
     }
 
@@ -99,10 +100,11 @@ class Agent extends User
 
             return false;
         }
-        if (auth()->check()) {
-            if (auth()->user()->ticketit_agent) {
+        if (Sentinel::check()) {
+            if (Sentinel::getUser()->ticketit_agent) {
                 return true;
             }
+            return false;
         }
     }
 
@@ -113,7 +115,7 @@ class Agent extends User
      */
     public static function isAdmin()
     {
-        return auth()->check() && auth()->user()->ticketit_admin;
+        return Sentinel::check() && Sentinel::getUser()->ticketit_admin;
     }
 
     /**
@@ -125,8 +127,8 @@ class Agent extends User
      */
     public static function isAssignedAgent($id)
     {
-        if (auth()->check() && Auth::user()->ticketit_agent) {
-            if (Auth::user()->id == Ticket::find($id)->agent->id) {
+        if (Sentinel::check() && Sentinel::getUser()->ticketit_agent) {
+            if (Sentinel::getUser()->id == Ticket::find($id)->agent->id) {
                 return true;
             }
         }
@@ -141,8 +143,8 @@ class Agent extends User
      */
     public static function isTicketOwner($id)
     {
-        if (auth()->check()) {
-            if (auth()->user()->id == Ticket::find($id)->user->id) {
+        if (Sentinel::check()) {
+            if (Sentinel::getUser()->id == Ticket::find($id)->user->id) {
                 return true;
             }
         }
@@ -204,7 +206,7 @@ class Agent extends User
 
     public function getTickets($complete = false) // (To be deprecated)
     {
-        $user = self::find(auth()->user()->id);
+        $user = self::find(Sentinel::getUser()->id);
 
         if ($user->isAdmin()) {
             $tickets = $user->allTickets($complete);
