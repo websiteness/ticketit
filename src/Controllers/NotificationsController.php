@@ -171,14 +171,23 @@ class NotificationsController extends Controller
             $to = $ticket->agent;
             $notify_data['title'] = 'New Ticket created';
         }
+        else if($type == 'status'){
+            $to = $ticket->user;
+            $notify_data['title'] = 'Ticket Notification';
+            if ($ticket->user->email !== $notification_owner->email) {
+                $to = $ticket->user;
+            }else{
+                $to = $ticket->agent;
+            }
+        }
         else if ($type !== 'agent') {
             $to = $ticket->user;
             $notify_data['title'] = 'Ticket Notification';
-            if ($ticket->user->email != $notification_owner->email) {
+            if ($ticket->user->email !== $notification_owner->email) {
                 $to = $ticket->user;
             }
 
-            if ($ticket->agent->email != $notification_owner->email) {
+            if ($ticket->agent->email !== $notification_owner->email) {
                 $to = $ticket->agent;
             }
         }
