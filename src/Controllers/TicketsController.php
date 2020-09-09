@@ -13,6 +13,7 @@ use Kordy\Ticketit\Models\Agent;
 use Kordy\Ticketit\Models\Category;
 use Kordy\Ticketit\Models\TSetting;
 use Kordy\Ticketit\Models\Ticket;
+use Kordy\Ticketit\Models\Status;
 use Sentinel;
 use DB;
 
@@ -32,7 +33,7 @@ class TicketsController extends Controller
         $this->agent = $agent;
     }
 
-    public function data($complete = false)
+    public function data(Request $request, $complete = false)
     {
         if (LaravelVersion::min('5.4')) {
             $datatables = app(\Yajra\DataTables\DataTables::class);
@@ -83,6 +84,16 @@ class TicketsController extends Controller
                 'ticketit.agent_id',
                 'ticketit_categories.name AS category',
             ]);
+
+        // check if filter are applied
+        if($request->user) {
+            $collection->where('user_id', $request->user);
+        }
+        
+        if($request->status) {
+            $collection->where('status_id', $request->status);
+        }
+        
 
         $collection = $datatables->of($collection);
 
@@ -146,9 +157,12 @@ class TicketsController extends Controller
      */
     public function index()
     {
+        $users = Agent::all();
+        $statuses = Status::all();
+
         $complete = false;
 
-        return view('ticketit::index', compact('complete'));
+        return view('ticketit::index', compact('complete', 'users', 'statuses'));
     }
 
     /**
@@ -158,9 +172,12 @@ class TicketsController extends Controller
      */
     public function indexComplete()
     {
+        $users = Agent::all();
+        $statuses = Status::all();
+
         $complete = true;
 
-        return view('ticketit::index', compact('complete'));
+        return view('ticketit::index', compact('complete', 'users', 'statuses'));
     }
 
     /**

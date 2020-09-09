@@ -1,0 +1,33 @@
+<div class="panel panel-default filters-panel">
+    <div class="panel-body">
+        <ul class="nav nav-pills">
+            <li role="presentation">
+                <div class="form-group">
+                    <label>Owner</label>
+                    <div>
+                    <select class="form-control select2" id="filter_owner">
+                        <option value="">Select Owner</option>
+                        @foreach($users as $user)
+                        <option value="{{ $user->id }}">{{ $user->first_name . ' ' . $user->last_name }}</option>
+                        @endforeach
+                    </select>
+                    </div>
+                </div>
+            </li>
+            <li role="presentation">
+                <div class="form-group">
+                    <label>Status</label>
+                    <select class="form-control" id="filter_status">
+                        <option value="">Select Status</option>
+                        @foreach($statuses as $status)
+                        <option value="{{ $status->id }}">{{ $status->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </li>
+            <li role="presentation">
+                <button type="button" class="btn btn-success" onclick="filterTickets()" style="margin-top:23px;">Search</button>
+            </li>
+        </ul>
+    </div>
+</div>
