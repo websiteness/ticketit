@@ -6,6 +6,12 @@
         </h2>
     </div>
 
+    @if(Sentinel::inRole('super-admin'))
+    <div class="panel-body">
+        @include('ticketit::shared.filters')
+    </div>
+    @endif
+
     <div class="panel-body">
         <div id="message"></div>
 
