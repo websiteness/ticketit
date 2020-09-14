@@ -33,12 +33,24 @@ class AgentsController extends Controller
 
     public function create()
     {
-        $users = Agent::paginate(TSetting::grab('paginate_items'));
+        // $users = Agent::paginate(TSetting::grab('paginate_items'));
+        $users = Agent::all();
+        $agents = Agent::Agents()->get();
+        // dd($agents);
 
-        return view('ticketit::admin.agent.create', compact('users'));
+        return view('ticketit::admin.agent.create', compact('users', 'agents'));
     }
 
     public function store(Request $request)
+    {
+        $agent = Agent::find($request->agent);
+        $agent->ticketit_agent = 1;
+        $agent->save();
+
+        return redirect()->back();
+    }
+
+    /* public function store(Request $request)
     {
         $rules = [
             'first_name' => 'required',
@@ -86,7 +98,7 @@ class AgentsController extends Controller
         // Session::flash('status', trans('ticketit::lang.agents-are-added-to-agents', ['names' => $agents_names]));
 
         // return redirect()->action('\Kordy\Ticketit\Controllers\AgentsController@index');
-    }
+    }*/
 
     public function update($id, Request $request)
     {

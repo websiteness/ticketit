@@ -82,14 +82,20 @@
 			});
 		}
 
-		function filterTickets()
-		{
+		function filterTickets() {
 			let user = document.getElementById('filter_owner').value;
 			let status = document.getElementById('filter_status').value;
 
 			let query_string = `?user=${user}&status=${status}`;
 
 			initDatatable(query_string);
+		}
+
+		function clearFilters() {
+			$('#filter_owner').val('').trigger('change');
+			document.getElementById('filter_status').value = '';
+			
+			initDatatable();
 		}
 	</script>
 @append
