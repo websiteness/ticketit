@@ -85,13 +85,15 @@ class TicketsController extends Controller
                 'ticketit_categories.name AS category',
             ]);
 
-        // check if filter are applied
+        // check if filters are applied
         if($request->user) {
-            $collection->where('user_id', $request->user);
+            $collection->where('ticketit.user_id', $request->user);
         }
-        
         if($request->status) {
-            $collection->where('status_id', $request->status);
+            $collection->where('ticketit.status_id', $request->status);
+        }
+        if($request->filter_hide_closed_tickets) {
+            $collection->where('ticketit.status_id', '!=', 4);
         }
         
 
@@ -99,7 +101,7 @@ class TicketsController extends Controller
 
         $this->renderTicketTable($collection);
 
-        $collection->editColumn('updated_at', '{!! \Carbon\Carbon::createFromFormat("Y-m-d H:i:s", $updated_at)->diffForHumans() !!}');
+        $collection->editColumn('updated_at', '{!! \Carbon\Carbon::parse($updated_at)->format("m/d/Y") . " (" . \Carbon\Carbon::createFromFormat("Y-m-d H:i:s", $updated_at)->diffForHumans() . ")" !!}');
 
         // method rawColumns was introduced in laravel-datatables 7, which is only compatible with >L5.4
         // in previous laravel-datatables versions escaping columns wasn't defaut
@@ -115,7 +117,7 @@ class TicketsController extends Controller
         $collection->editColumn('subject', function ($ticket) {
             return (string) link_to_route(
                 TSetting::grab('main_route').'.show',
-                $ticket->subject,
+                str_limit($ticket->subject, 30, '...'),
                 $ticket->id
             );
         });
@@ -303,9 +305,9 @@ class TicketsController extends Controller
             $first_admin = Sentinel::findRoleBySlug('super-admin')->users()->first();
         }
 
-        $cat_agents = Models\Category::find($ticket->category_id)->agents()->where('parent_user_id',$first_admin->id)->agentsLists();
+        // $cat_agents = Models\Category::find($ticket->category_id)->agents()->where('parent_user_id',$first_admin->id)->agentsLists();
 
-        // $cat_agents = Models\Category::find($ticket->category_id)->agents()->agentsLists();
+        $cat_agents = Agent::agentsLists();
         // dd($cat_agents);
         if (is_array($cat_agents)) {
             $agent_lists = ['auto' => 'Auto Select'] + $cat_agents;

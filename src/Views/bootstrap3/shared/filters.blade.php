@@ -31,6 +31,13 @@
             <li role="presentation">
                 <button type="button" class="btn btn-danger" onclick="clearFilters()" style="margin-top:23px;">Clear</button>
             </li>
+            <li role="presentation">
+                <div class="form-group">
+                    <label for="filter_hide_closed_tickets">
+                    <input type="checkbox" id="filter_hide_closed_tickets" onclick="filterTickets()" style="margin-top:30px;" checked/> Hide closed tickets
+                    </label>
+                </div>
+            </li>
         </ul>
     </div>
 </div>

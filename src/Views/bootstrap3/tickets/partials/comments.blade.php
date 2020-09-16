@@ -8,7 +8,7 @@
                 </h3>
             </div>
             <div class="panel-body">
-                <div class="content">
+                <div class="content comment-content">
                     <p> {!! $comment->html !!} </p>
                 </div>
             </div>

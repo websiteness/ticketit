@@ -35,6 +35,15 @@
 				url = url + filter;
 			}
 
+            // check if closed tickets are hidden
+            if($('#filter_hide_closed_tickets:checked').length) {
+                if(filter) {
+                    url = url + '&filter_hide_closed_tickets=1'
+                } else {
+                    url = url + '?filter_hide_closed_tickets=1'
+                }
+            }
+
 			$('.table').DataTable({
 				processing: false,
 				serverSide: true,

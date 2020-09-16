@@ -31,7 +31,8 @@ class NotificationsController extends Controller
         
         if($notification_owner->email !== Sentinel::getUser()->email){
             $this->sendNotification($template, $data, $ticket, $notification_owner,
-                trans('ticketit::lang.notify-new-comment-from').$notification_owner->name.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
+                // trans('ticketit::lang.notify-new-comment-from').$notification_owner->name.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
+                trans('ticketit::lang.notify-new-comment-from').self::OWNER.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
         }
 
     }

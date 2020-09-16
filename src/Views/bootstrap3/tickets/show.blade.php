@@ -1,5 +1,15 @@
 @extends($master)
 @section('page', trans('ticketit::lang.show-ticket-title') . trans('ticketit::lang.colon') . $ticket->subject)
+
+@section('header_styles')
+	<style>
+    .comment-content a {
+        color: #28b999;
+        text-decoration: underline;
+    }
+    </style>
+@stop
+
 @section('content')
         @include('ticketit::shared.header')
         @include('ticketit::tickets.partials.ticket_body')

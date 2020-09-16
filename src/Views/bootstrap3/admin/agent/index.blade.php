@@ -50,23 +50,23 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <td>{{ trans('ticketit::admin.table-id') }}</td>
+                        {{-- <td>{{ trans('ticketit::admin.table-id') }}</td> --}}
                         <td>{{ trans('ticketit::admin.table-name') }}</td>
-                        <td>{{ trans('ticketit::admin.table-categories') }}</td>
-                        <td>{{ trans('ticketit::admin.table-join-category') }}</td>
+                        {{-- <td>{{ trans('ticketit::admin.table-categories') }}</td>
+                        <td>{{ trans('ticketit::admin.table-join-category') }}</td> --}}
                         <td>{{ trans('ticketit::admin.table-remove-agent') }}</td>
                     </tr>
                 </thead>
                 <tbody>
                 @foreach($agents as $agent)
                     <tr>
-                        <td>
+                        {{-- <td>
                             {{ $agent->id }}
-                        </td>
+                        </td> --}}
                         <td>
                             {{ $agent->name }}
                         </td>
-                        <td>
+                        {{-- <td>
                             @foreach($agent->categories as $category)
                                 <span style="color: {{ $category->color }}">
                                     {{  $category->name }}
@@ -90,7 +90,7 @@
                             @endforeach
                             {!! CollectiveForm::submit(trans('ticketit::admin.btn-join'), ['class' => 'btn btn-info btn-sm']) !!}
                             {!! CollectiveForm::close() !!}
-                        </td>
+                        </td> --}}
                         <td>
                             {!! CollectiveForm::open([
                             'method' => 'DELETE',
