@@ -3,69 +3,83 @@
 
 @section('content')
 @include('ticketit::shared.header')
-    <div class="well bs-component">
-        {{-- {!! dd($subcategories) !!} --}}
 
-        {!! CollectiveForm::open([
+<div class="ticket-system">
+    <div class="ticket-system__tabs" role="tabpanel" data-example-id="togglable-tabs">
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                    <h2><img src="{{asset('images/ticket-system/new-ticket.png')}}" alt="" /> Create New Ticket</h2>
+                    </div><!-- .x_title -->
+                    <div class="x_content">
+                    {!! CollectiveForm::open([
                         'route'=>$setting->grab('main_route').'.store',
                         'method' => 'POST',
-                        'class' => 'form-horizontal'
-                        ]) !!}
-            <legend>{!! trans('ticketit::lang.create-new-ticket') !!}</legend>
-
-            <div class="form-inline row">
-                <div class="col-lg-12">
-                <div class="form-group col-lg-4">
-                    {!! CollectiveForm::label('priority', trans('ticketit::lang.priority') . trans('ticketit::lang.colon'), ['class' => 'col-lg-6 control-label']) !!}
-                    <div class="col-lg-6">
-                        {!! CollectiveForm::select('priority_id', $priorities, null, ['class' => 'form-control', 'required' => 'required']) !!}
-                    </div>
-                </div>
-                <div class="form-group col-lg-4">
-                    {!! CollectiveForm::label('category', trans('ticketit::lang.category') . trans('ticketit::lang.colon'), ['class' => 'col-lg-6 control-label']) !!}
-                    <div class="col-lg-6">
-                        {!! CollectiveForm::select('category_id', $categories, null, ['class' => 'form-control cat', 'placeholder' => 'Please Select','required' => 'required', 'onchange' => 'selectCategory(this.value)']) !!}
-                    </div>
-                </div>
-                <div class="form-group col-lg-4 subcat">
-                </div>
-                {!! CollectiveForm::hidden('agent_id', 'auto') !!}
-                @if (Request::is($setting->grab('main_route_path')."/crm-ticket"))
-                    {!! CollectiveForm::hidden('ticket_for', 'superadmin') !!}
-                @endif
-                </div>
-            </div>
-            <br>
-            <div class="form-group">
-                {!! CollectiveForm::label('subject', trans('ticketit::lang.subject') . trans('ticketit::lang.colon'), ['class' => 'col-lg-2 control-label']) !!}
-                <div class="col-lg-10">
-                    {!! CollectiveForm::text('subject', null, ['class' => 'form-control', 'required' => 'required']) !!}
-                    <span class="help-block">{!! trans('ticketit::lang.create-ticket-brief-issue') !!}</span>
-                </div>
-            </div>
-            <div class="form-group">
-                {!! CollectiveForm::label('content', trans('ticketit::lang.description') . trans('ticketit::lang.colon'), ['class' => 'col-lg-2 control-label']) !!}
-                <div class="col-lg-10">
-                    {!! CollectiveForm::textarea('content', null, ['class' => 'form-control summernote-editor', 'rows' => '5', 'required' => 'required']) !!}
-                    <span class="help-block">{!! trans('ticketit::lang.create-ticket-describe-issue') !!}</span>
-                </div>
-            </div>
-            
-            <br>
-            <div class="form-group">
-                <div class="col-lg-10 col-lg-offset-2">
-                    {!! link_to_route($setting->grab('main_route').'.index', trans('ticketit::lang.btn-back'), null, ['class' => 'btn btn-default']) !!}
-                    {!! CollectiveForm::submit(trans('ticketit::lang.btn-submit'), ['class' => 'btn btn-primary']) !!}
-                </div>
-            </div>
-        {!! CollectiveForm::close() !!}
-    </div>
+                        'class' => 'form-horizontal',
+                        'id' => 'create_form'
+                    ]) !!}
+                        <div class="new-ticket__form">
+                            <div class="new-ticket__form-group new-ticket__form-group--half">
+                                <label><img src="{{asset('images/ticket-system/ticket-priority.png')}}" alt="" /> Ticket Priority:</label>
+                                {!! CollectiveForm::select('priority_id', $priorities, null, ['class' => 'new-ticket__form-select', 'placeholder' => 'Please Select', 'required' => 'required']) !!}
+                            </div><!-- .new-ticket__form-group -->
+                        </div>
+                        <div class="new-ticket__form">
+                            <div class="new-ticket__form-group new-ticket__form-group--half">
+                                <label><img src="{{asset('images/ticket-system/category-subcategory.png')}}" alt="" /> Category:</label>
+                                {!! CollectiveForm::select('category_id', $categories, null, ['class' => 'new-ticket__form-select cat', 'placeholder' => 'Please Select','required' => 'required', 'onchange' => 'selectCategory(this.value)']) !!}
+                            </div><!-- .new-ticket__form-group -->
+                            <div class="new-ticket__form-group new-ticket__form-group--half subcat">
+                            </div>
+                            {!! CollectiveForm::hidden('agent_id', 'auto') !!}
+                            @if (Request::is($setting->grab('main_route_path')."/crm-ticket"))
+                                {!! CollectiveForm::hidden('ticket_for', 'superadmin') !!}
+                            @endif
+                            <div class="new-ticket__form-group">
+                                <label><img src="{{asset('images/ticket-system/ticket-subject.png')}}" alt="" /> Subject:</label>
+                                {!! CollectiveForm::text('subject', null, ['class' => 'new-ticket__form-input', 'placeholder' => 'Subject of the question or issue...', 'required' => 'required']) !!}
+                                <!-- <span class="maximum-characters maximum-characters--right">Maximum 250 Characters (250 Remaining)</span> -->
+                            </div><!-- .new-ticket__form-group -->
+                            <div class="new-ticket__form-group">
+                                <label><img src="{{asset('images/ticket-system/ticket-description.png')}}" alt="" /> Description:</label>
+                                <!-- <textarea name="" class="new-ticket__form-textarea" placeholder="Write full description of your issue or question here."></textarea> -->
+                                {!! CollectiveForm::textarea('content', null, ['class' => 'new-ticket__form-textarea summernote-editor', 'rows' => '5', 'required' => 'required']) !!}
+                                <!-- <span class="maximum-characters maximum-characters--right">Maximum 250 Characters (250 Remaining)</span> -->
+                            </div><!-- .new-ticket__form-group -->
+                            {{-- <div class="new-ticket__form-group">
+                                <label><img src="{{asset('images/ticket-system/ticket-attachment.png')}}" alt="" /> Attachment:</label>
+                                <input type="file" name="" class="new-ticket__form-input" placeholder="Upload files...">
+                                <span class="maximum-characters">Up To 5 Attachments. Each Less Than 3MB</span>
+                            </div><!-- .new-ticket__form-group --> --}}
+                            <div class="new-ticket__form-group new-ticket__form-group-btn">
+                                <!-- <button class="custom-btn cancel-btn">Cancel</button>
+                                <button class="custom-btn reset-btn">Reset</button>
+                                <button class="custom-btn submit-btn">Submit</button> -->
+                                {!! link_to_route($setting->grab('main_route').'.index', 'Back', null, ['class' => 'custom-btn cancel-btn']) !!}
+                                <!-- <button class="custom-btn reset-btn">Reset</button> -->
+                                <button type="button" class="custom-btn reset-btn" onclick="resetForm()">Reset</button>
+                                <button class="custom-btn submit-btn">Create Ticket</button>
+                            </div><!-- .class="new-ticket__form-group -->
+                        </div><!-- .new-ticket__form -->
+                    {!! CollectiveForm::close() !!}
+                    </div><!-- x_content -->
+                </div><!-- .x_panel -->
+            </div><!-- .col-md-12 col-sm-12 col-xs-12 -->
+        </div><!-- .ticket-system__tabs -->
+    </div><!-- .ticket-system__tabs -->
+</div><!-- .ticket-system -->
 @endsection
 
 @section('footer')
     @include('ticketit::tickets.partials.summernote')
 
     <script>
+        let default_subcategory = `<label><img src="{{asset('images/ticket-system/category-subcategory.png')}}" alt="" /> Sub Category:</label>
+                        <select class="new-ticket__form-select" name="subcategory_id" required disabled>
+                            <option selected="selected" value="">Please Select</option>
+                        </select>`;
+
         $('document').ready(function(){
             var subcategories = {!! json_encode($subcategories) !!};
             let val = $('.cat option:selected').val();
@@ -73,7 +87,7 @@
                                     
                 $('.subcat').html(generateDropdown(val,subcategories));
             }else{
-                $('.subcat').html('');
+                $('.subcat').html(default_subcategory);
             }
         });
 
@@ -82,7 +96,7 @@
             if(typeof(subcategories[ev]) !== 'undefined' && subcategories[ev] !== '' && subcategories[ev] !== null){
                 $('.subcat').html(generateDropdown(ev,subcategories));
             }else{
-                $('.subcat').html('');
+                $('.subcat').html(default_subcategory);
             }
         }
         // generate Dropdown Element HTML
@@ -92,15 +106,18 @@
             subcategories[id].forEach(function(item, index){
                 options += '<option value="'+item.id+'">'+item.name+'</option>'
             });
-            let el =   '<label for="subcategory" class="col-lg-6 control-label">Sub Category: </label>'
-                el +=       '<div class="col-lg-6">';
-                el +=           '<select class="form-control" required="required" name="subcategory_id">';
-                el +=               '<option selected="selected" value="">Please Select</option>';
-                el +=              options;
 
-                el +=           '</select>';
-                el +=       '</div>';
+            let el = `<label><img src="{{asset('images/ticket-system/category-subcategory.png')}}" alt="" /> Sub Category:</label>
+                        <select class="new-ticket__form-select" name="subcategory_id" required>
+                            <option selected="selected" value="">Please Select</option>
+                            ${options}
+                        </select>`;
             return el;
+        }
+
+        function resetForm() {
+            document.getElementById("create_form").reset();
+            $("textarea.summernote-editor").summernote('code', '');
         }
     </script>
 @append

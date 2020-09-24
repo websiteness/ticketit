@@ -9,7 +9,12 @@
 	<style>
 		.filters-panel .form-control {
 			height: 32px !important;
-		}
+        }
+        .ticket-subject a {
+            color: #28b999 !important;
+            text-decoration: underline;
+            font-weight: bold;
+        }
 	</style>
 @stop
 

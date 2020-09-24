@@ -71,6 +71,7 @@ class TicketsController extends Controller
             ->join('ticketit_categories', 'ticketit_categories.id', '=', 'ticketit.category_id')
             ->select([
                 'ticketit.id',
+                'ticketit.status_id',
                 'ticketit.subject AS subject',
                 'ticketit_statuses.name AS status',
                 'ticketit_statuses.color AS color_status',
@@ -115,16 +116,21 @@ class TicketsController extends Controller
     public function renderTicketTable($collection)
     {
         $collection->editColumn('subject', function ($ticket) {
-            return (string) link_to_route(
+            return '<span class="ticket-subject">' . (string) link_to_route(
                 TSetting::grab('main_route').'.show',
                 str_limit($ticket->subject, 30, '...'),
                 $ticket->id
-            );
+            )
+            . '</span>';
         });
 
         $collection->editColumn('status', function ($ticket) {
             $color = $ticket->color_status;
             $status = e($ticket->status);
+            
+            if($ticket->status_id == 2) {
+                $status = 'Waiting on feedback from ' . e($ticket->owner);
+            }
 
             return "<div style='color: $color'>$status</div>";
         });
@@ -336,30 +342,35 @@ class TicketsController extends Controller
     public function update(Request $request, $id)
     {
         $this->validate($request, [
-            'subject'     => 'required|min:3',
-            'content'     => 'required|min:6',
+            // 'subject'     => 'required|min:3',
+            // 'content'     => 'required|min:6',
             'priority_id' => 'required|exists:ticketit_priorities,id',
-            'category_id' => 'required|exists:ticketit_categories,id',
+            // 'category_id' => 'required|exists:ticketit_categories,id',
             'status_id'   => 'required|exists:ticketit_statuses,id',
             'agent_id'    => 'required',
         ]);
 
         $ticket = $this->tickets->findOrFail($id);
 
-        $ticket->subject = $request->subject;
+        if($request->subject) {
+            $ticket->subject = $request->subject;
+        }
 
-        $content = $this->imagesToLink($request->get('content'));
-
-        $ticket->setPurifiedContent($content);
+        if($request->content) {
+            $content = $this->imagesToLink($request->get('content'));
+            $ticket->setPurifiedContent($content);
+        }
 
         $ticket->status_id = $request->status_id;
 
-        $category = Models\Category::find($request->category_id);
-        if($category->children->count())
-        {
-            $ticket->category_id = $request->subcategory_id;
-        }else{
-            $ticket->category_id = $request->category_id;
+        if($request->category) {
+            $category = Models\Category::find($request->category_id);
+            if($category->children->count())
+            {
+                $ticket->category_id = $request->subcategory_id;
+            }else{
+                $ticket->category_id = $request->category_id;
+            }
         }
 
         $ticket->priority_id = $request->priority_id;

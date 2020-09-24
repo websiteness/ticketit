@@ -1,8 +1,7 @@
 {
+    "height": 150,
 	"toolbar": [
-		["style", ["style"]],
-		["font", ["bold", "underline", "italic", "clear"]],
-		["color", ["color"]],
+		["font", ["bold", "underline", "italic"]],
 		["para", ["ul", "ol", "paragraph"]],
 		["table", ["table"]],
 		["insert", ["link", "picture", "video"]],

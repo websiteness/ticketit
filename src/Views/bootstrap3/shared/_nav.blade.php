@@ -1,42 +1,38 @@
-<div class="ticket-system__tabs" role="tabpanel" data-example-id="togglable-tabs">
-    <div class="ticket-system__tabs-action">
-      <div class="ticket-system__tab-icon">
-        <img src="{{asset('images/ticket-system/icon-leadgenerated.png')}}" alt="">
-      </div><!-- .ticket-system__tab-icon -->
-      <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
-        <li role="presentation" @if(Route::currentRouteName() == 'tickets.create' || Route::currentRouteName() == 'tickets.crmticket.create') class="active" @endif>
-          <a href="{{ route($setting->grab('main_route').'.create') }}">Create New Ticket</a>
-        </li>
-        <li role="presentation" @if(Route::currentRouteName() == 'tickets.index') class="active" @endif>
-          <a href="{{ action('\Kordy\Ticketit\Controllers\TicketsController@index') }}">Active Tickets</a>
-          <span class="ticket-count">
-                <?php 
-                    if ($u->isAdmin()) {
-                        echo Kordy\Ticketit\Models\Ticket::active()->count();
-                        // echo 1;
-                    } elseif ($u->isAgent()) {
-                        echo Kordy\Ticketit\Models\Ticket::active()->agentUserTickets($u->id)->count();
-                    } else {
-                        echo Kordy\Ticketit\Models\Ticket::userTickets($u->id)->active()->count();
-                    }
-                ?>
-          </span>
-        </li>
-        <li role="presentation" @if(Route::currentRouteName() == 'tickets-complete') class="active" @endif>
-          <a href="{{ action('\Kordy\Ticketit\Controllers\TicketsController@indexComplete') }}">Completed Tickets</a>
-          <span class="ticket-count">
-                <?php 
-                    if ($u->isAdmin()) {
-                        echo Kordy\Ticketit\Models\Ticket::complete()->count();
-                    } elseif ($u->isAgent()) {
-                        echo Kordy\Ticketit\Models\Ticket::complete()->agentUserTickets($u->id)->count();
-                    } else {
-                        echo Kordy\Ticketit\Models\Ticket::userTickets($u->id)->complete()->count();
-                    }
-                ?>
-          </span>
-        </li>
-        @if($u->isAdmin())
+<div class="panel panel-default">
+    <div class="panel-body">
+        <ul class="nav nav-pills">
+            <li role="presentation" class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\TicketsController@index')) ? "active" : "" !!}">
+                <a href="{{ action('\Kordy\Ticketit\Controllers\TicketsController@index') }}">{{ trans('ticketit::lang.nav-active-tickets') }}
+                    <span class="badge">
+                         <?php 
+                            if ($u->isAdmin()) {
+                                echo Kordy\Ticketit\Models\Ticket::active()->adminUserTickets($u->id)->count();
+                            } elseif ($u->isAgent()) {
+                                echo Kordy\Ticketit\Models\Ticket::active()->agentUserTickets($u->id)->count();
+                            } else {
+                                echo Kordy\Ticketit\Models\Ticket::userTickets($u->id)->active()->count();
+                            }
+                        ?>
+                    </span>
+                </a>
+            </li>
+            <li role="presentation" class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\TicketsController@indexComplete')) ? "active" : "" !!}">
+                <a href="{{ action('\Kordy\Ticketit\Controllers\TicketsController@indexComplete') }}">{{ trans('ticketit::lang.nav-completed-tickets') }}
+                    <span class="badge">
+                        <?php 
+                            if ($u->isAdmin()) {
+                                echo Kordy\Ticketit\Models\Ticket::complete()->adminUserTickets($u->id)->count();
+                            } elseif ($u->isAgent()) {
+                                echo Kordy\Ticketit\Models\Ticket::complete()->agentUserTickets($u->id)->count();
+                            } else {
+                                echo Kordy\Ticketit\Models\Ticket::userTickets($u->id)->complete()->count();
+                            }
+                        ?>
+                    </span>
+                </a>
+            </li>
+
+            @if($u->isAdmin())
                 <li role="presentation" class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\DashboardController@index')) || Request::is($setting->grab('admin_route').'/indicator*') ? "active" : "" !!}">
                     <a href="{{ action('\Kordy\Ticketit\Controllers\DashboardController@index') }}">{{ trans('ticketit::admin.nav-dashboard') }}</a>
                 </li>
@@ -75,6 +71,7 @@
                     </ul>
                 </li>
             @endif
-      </ul>
-    </div><!-- .ticket-system__tabs-action -->
+
+        </ul>
+    </div>
 </div>

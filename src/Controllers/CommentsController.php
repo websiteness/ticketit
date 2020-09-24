@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Kordy\Ticketit\Models;
 use Kordy\Ticketit\Controllers\NotificationsController;
+use Kordy\Ticketit\Models\Ticket;
+use Sentinel;
 
 class CommentsController extends Controller
 {
@@ -83,6 +85,13 @@ class CommentsController extends Controller
         }else{
             $ticket = Models\Ticket::find($comment->ticket_id);
             $ticket->updated_at = $comment->created_at;
+            $ticket->save();
+        }
+
+        // Change status 'Waiting on support' if a user replies
+        if(!Sentinel::getuser()->ticketit_admin && !Sentinel::getuser()->ticketit_admin) {
+            $ticket = Ticket::find($request->ticket_id);
+            $ticket->status_id = 1;
             $ticket->save();
         }
 

@@ -14,7 +14,7 @@
         @include('ticketit::shared.header')
         @include('ticketit::tickets.partials.ticket_body')
         <br>
-        <h2>{{ trans('ticketit::lang.comments') }}</h2>
+        <!-- <h2>{{ trans('ticketit::lang.comments') }}</h2> -->
         @include('ticketit::tickets.partials.comments')
         {{-- pagination --}}
         {!! $comments->render() !!}
@@ -51,6 +51,15 @@
             <!-- Form confirm (yes/ok) handler, submits form -->
             $('#confirmDelete').find('.modal-footer #confirm').on('click', function(){
                 $(this).data('form').submit();
+            });
+
+            $('#comment_reply').click(function() {
+                $('#comment_form').css('display', 'block');
+                $('#comment_reply').css('display', 'none');
+            });
+            $('#cancel_reply').click(function() {
+                $('#comment_form').css('display', 'none');
+                $('#comment_reply').css('display', 'block');
             });
         });
     </script>
