@@ -47,7 +47,7 @@
                                 @else
                                         <!-- {!! CollectiveForm::submit( trans('ticketit::lang.btn-submit'), ['class' => 'custom-btn submit-btn']) !!} -->
                                         @if($u->isAdmin())
-                                        <button class="custom-btn submit-btn pull-left">Reply to user</button>
+                                        <button class="custom-btn submit-btn pull-right">Reply to user</button>
                                         @else
                                         <button type="button" class="custom-btn cancel-btn pull-left" id="cancel_reply">Cancel</button>
                                         <button class="custom-btn submit-btn pull-left">Send Reply</button>

@@ -26,6 +26,12 @@
                 </div>
             </li>
             <li role="presentation">
+                <div class="form-group">
+                    <label>Message</label>
+                    <input type="text" class="form-control" id="filter_message" placeholder="Search messages" style="width:350px;"/>
+                </div>
+            </li>
+            <li role="presentation">
                 <button type="button" class="btn btn-success" onclick="filterTickets()" style="margin-top:23px;margin-right:0;">Search</button>
             </li>
             <li role="presentation">

@@ -4,7 +4,7 @@
           <div class="col-md-12 col-sm-12 col-xs-12">
             <div class="x_panel">
               <div class="x_title">
-                <h2><img src="{{asset('images/ticket-system/reputation-management-issue.png')}}" alt="" /> Reputation Management Issue.</h2>
+                <h2><img src="{{asset('images/ticket-system/reputation-management-issue.png')}}" alt="" /> {{ $ticket->subject }}</h2>
               </div><!-- .x_title -->
               <div class="x_content ticket-body">
                 {!! CollectiveForm::model($ticket, [
@@ -77,7 +77,10 @@
                                 </span>
                                 <a class="editable-ticket" href="#"></a>
                             @else
-                                {{ $ticket->priority->name }}
+                                <span class="active-tickets__text">
+                                {!! CollectiveForm::select('priority_id', $priority_lists, $ticket->priority_id, ['class' => 'form-control']) !!}
+                                </span>
+                                <a class="editable-ticket" href="#"></a>
                             @endif
                         </div>
                       </td>
@@ -114,9 +117,7 @@
                     @endif
                   </tbody>
                 </table>
-                @if($u->isAgent() || $u->isAdmin())
                     {!! CollectiveForm::submit('Update', ['class' => 'btn btn-success ticket-update-btn']) !!}
-                @endif
                 {!! CollectiveForm::close() !!}
               </div><!-- x_content -->
             </div><!-- .x_panel -->

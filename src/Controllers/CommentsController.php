@@ -78,8 +78,8 @@ class CommentsController extends Controller
             $ticket->updated_at = $comment->created_at;
             $ticket->save();
 
-            $notification = new NotificationsController();
-            $notification->newCommentAndStatus($comment, $ticket, $original_ticket);
+            // $notification = new NotificationsController();
+            // $notification->newCommentAndStatus($comment, $ticket, $original_ticket);
 
             session(['com_stat_both' => false]);
         }else{

@@ -3,7 +3,7 @@
 
 @section('header_styles')
 	<style>
-    .comment-content a {
+    .ticket-comments a {
         color: #28b999;
         text-decoration: underline;
     }

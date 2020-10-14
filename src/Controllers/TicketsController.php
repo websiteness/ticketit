@@ -26,7 +26,7 @@ class TicketsController extends Controller
     {
         Cache::flush();
         $this->middleware('Kordy\Ticketit\Middleware\ResAccessMiddleware', ['only' => ['show']]);
-        $this->middleware('Kordy\Ticketit\Middleware\IsAgentMiddleware', ['only' => ['edit', 'update']]);
+        $this->middleware('Kordy\Ticketit\Middleware\IsAgentMiddleware', ['only' => ['edit']]);
         $this->middleware('Kordy\Ticketit\Middleware\IsAdminMiddleware', ['only' => ['destroy']]);
 
         $this->tickets = $tickets;
@@ -92,6 +92,9 @@ class TicketsController extends Controller
         }
         if($request->status) {
             $collection->where('ticketit.status_id', $request->status);
+        }
+        if($request->message) {
+            $collection->where('ticketit.html', 'like', '%'.$request->message.'%');
         }
         if($request->filter_hide_closed_tickets) {
             $collection->where('ticketit.status_id', '!=', 4);
@@ -231,8 +234,11 @@ class TicketsController extends Controller
      */
     public function create()
     {
+        $users = Agent::all();
+        $user = Sentinel::getUser();
+
         list($priorities, $categories, $statuses, $subcategories) = $this->PCS();
-        return view('ticketit::tickets.create', compact('priorities', 'categories', 'subcategories'));
+        return view('ticketit::tickets.create', compact('priorities', 'categories', 'subcategories', 'users', 'user'));
     }
 
     /**
@@ -271,7 +277,13 @@ class TicketsController extends Controller
         $ticket->priority_id = $request->priority_id;
 
         $ticket->status_id = TSetting::grab('default_status_id');
-        $ticket->user_id = Sentinel::getUser()->id;
+
+        if($request->user_id) {
+            $ticket->user_id = $request->user_id;
+        } else {
+            $ticket->user_id = Sentinel::getUser()->id;
+        }
+
         if($request->has('ticket_for')){
             $ticket->autoSelectAgent('superadmin');
         }else{
@@ -341,14 +353,22 @@ class TicketsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->validate($request, [
-            // 'subject'     => 'required|min:3',
-            // 'content'     => 'required|min:6',
-            'priority_id' => 'required|exists:ticketit_priorities,id',
-            // 'category_id' => 'required|exists:ticketit_categories,id',
-            'status_id'   => 'required|exists:ticketit_statuses,id',
-            'agent_id'    => 'required',
-        ]);
+        $user = Sentinel::getUser();
+
+        if($user->ticketit_admin || $user->ticketit_agent) {
+            $this->validate($request, [
+                // 'subject'     => 'required|min:3',
+                // 'content'     => 'required|min:6',
+                'priority_id' => 'required|exists:ticketit_priorities,id',
+                // 'category_id' => 'required|exists:ticketit_categories,id',
+                'status_id'   => 'required|exists:ticketit_statuses,id',
+                'agent_id'    => 'required',
+            ]);
+        } else {
+            $this->validate($request, [
+                'priority_id' => 'required|exists:ticketit_priorities,id',
+            ]);
+        }
 
         $ticket = $this->tickets->findOrFail($id);
 
@@ -361,7 +381,9 @@ class TicketsController extends Controller
             $ticket->setPurifiedContent($content);
         }
 
-        $ticket->status_id = $request->status_id;
+        if($request->status_id) {
+            $ticket->status_id = $request->status_id;
+        }
 
         if($request->category) {
             $category = Models\Category::find($request->category_id);
@@ -375,7 +397,7 @@ class TicketsController extends Controller
 
         $ticket->priority_id = $request->priority_id;
 
-        if ($request->input('agent_id') == 'auto') {
+        if (!isset($request->agent_id) || $request->input('agent_id') == 'auto') {
             $ticket->autoSelectAgent();
         } else {
             $ticket->agent_id = $request->input('agent_id');
