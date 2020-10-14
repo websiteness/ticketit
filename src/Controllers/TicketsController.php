@@ -94,7 +94,9 @@ class TicketsController extends Controller
             $collection->where('ticketit.status_id', $request->status);
         }
         if($request->message) {
-            $collection->where('ticketit.html', 'like', '%'.$request->message.'%');
+            $message = str_replace('}}', ' ', str_replace('{{', ' ', $request->message));
+
+            $collection->where('ticketit.html', 'like', '%'.$message.'%');
         }
         if($request->filter_hide_closed_tickets) {
             $collection->where('ticketit.status_id', '!=', 4);
