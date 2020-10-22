@@ -1,3 +1,21 @@
+@push('header_styles')
+<style>
+.active-tickets__text a {
+  text-decoration: underline;
+  font-size: 12px;
+}
+.active-tickets__text {
+  position: relative;
+}
+.active-tickets__text label {
+  cursor: pointer;
+  position: absolute;
+  right: 0;
+  padding: 5px;
+}
+</style>
+@endpush
+
 <div class="ticket-system">
     <div class="ticket-system__tabs" role="tabpanel" data-example-id="togglable-tabs">
         <div class="row">
@@ -16,7 +34,14 @@
                   <tbody>
                     <tr>
                         <td width="10%"><h5 class="active-tickets__heading">Owner:</h5></td>
-                        <td width="40%"><span class="active-tickets__text">{{ $ticket->user_id == $u->id ? $u->name : $ticket->user->name }}</span></td>
+                        <td width="40%"><span class="active-tickets__text">
+                          {{ $ticket->user_id == $u->id ? $u->name : $ticket->user->name }} 
+                          @if($u->isAgent() || $u->isAdmin())
+                          <a href="{{ route('accounts.show', $ticket->user_id) }}">{{ $ticket->user->email }}</a>
+                          <label class="label label-default" onclick="copyEmail('{{ $ticket->user->email }}')"><i class="fa fa-copy"></i></label>
+                          @endif
+                          </span>
+                        </td>
                         @if($u->isAgent() || $u->isAdmin())
                         <td width="12%"><h5 class="active-tickets__heading">Responsible:</h5></td>
                         <td width="40%">
@@ -125,3 +150,19 @@
         </div><!-- .col-md-12 col-sm-12 col-xs-12 -->
     </div>
 </div>
+
+@push('footer_scripts')
+<script>
+  function copyEmail(email)
+  {
+    console.log('email', email);
+    let input = document.createElement('input');
+    input.value = email;
+    
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand('copy');
+    document.body.removeChild(input);
+  }
+</script>
+@endpush
