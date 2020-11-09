@@ -232,7 +232,10 @@ class Ticket extends Model
         $lowest_tickets = 1000000;
         // If no agent selected, select the admin
         if($for == 'superadmin'){
-            $first_admin = Sentinel::findRoleBySlug('super-admin')->users()->first();
+            // $first_admin = Sentinel::findRoleBySlug('super-admin')->users()->first();
+
+            // auto assign to leadgenerated super admin account which has user_id of 1
+            $first_admin = Sentinel::findById(1);
         }else{
             if(Sentinel::inRole('client')){
                 $first_admin = Sentinel::getUser()->admin_user;

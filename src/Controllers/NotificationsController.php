@@ -23,28 +23,31 @@ class NotificationsController extends Controller
         $template = 'ticketit::emails.comment';
         $data = ['comment' => serialize($comment), 'ticket' => serialize($ticket)];
 
+        $this->sendNotification($template, $data, $ticket, $notification_owner, trans('ticketit::lang.notify-new-comment-from').self::OWNER.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
+
         // //Send Notification to Agent
-        if($ticket->agent->email !== Sentinel::getUser()->email){
+        /* if($ticket->agent->email !== Sentinel::getUser()->email){
             $this->sendNotification($template, $data, $ticket, $ticket->agent,
                 trans('ticketit::lang.notify-new-comment-from').$ticket->agent->name.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
-        }
+        } */
         
-        if($notification_owner->email !== Sentinel::getUser()->email){
+        /* if($notification_owner->email !== Sentinel::getUser()->email){
             $this->sendNotification($template, $data, $ticket, $notification_owner,
-                trans('ticketit::lang.notify-new-comment-from').$notification_owner->name.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
-        }
-
+                // trans('ticketit::lang.notify-new-comment-from').$notification_owner->name.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
+                trans('ticketit::lang.notify-new-comment-from').self::OWNER.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
+        } */
     }
 
     public function ticketStatusUpdated(Ticket $ticket, Ticket $original_ticket)
     {
-        $notification_owner = Sentinel::getUser();
+        $notification_owner = $ticket->user;
         $template = 'ticketit::emails.status';
         $data = [
             'ticket'             => serialize($ticket),
             'notification_owner' => serialize($notification_owner),
             'original_ticket'    => serialize($original_ticket),
         ];
+
         if (strtotime($ticket->completed_at)) {
             $this->sendNotification($template, $data, $ticket, $notification_owner,
                 $notification_owner->name.trans('ticketit::lang.notify-updated').$ticket->subject.trans('ticketit::lang.notify-status-to-complete'), 'status');
@@ -57,7 +60,7 @@ class NotificationsController extends Controller
 
     public function ticketAgentUpdated(Ticket $ticket, Ticket $original_ticket)
     {
-        $notification_owner = Sentinel::getUser();
+        $notification_owner = $ticket->agent;
         $template = 'ticketit::emails.transfer';
         $data = [
             'ticket'             => serialize($ticket),
@@ -79,13 +82,26 @@ class NotificationsController extends Controller
             'images'             => serialize($this->extractLinks($ticket->html))
         ];
 
-        $this->sendNotification($template, $data, $ticket, $notification_owner,
+        $this->sendNotification($template, $data, $ticket, $ticket->agent,
             $notification_owner->name.trans('ticketit::lang.notify-created-ticket').$ticket->subject, 'new-ticket');
 
         $template = 'ticketit::emails.assigned-zapier';
-        $this->sendNotification($template, $data, $ticket, $notification_owner,
+        $this->sendNotification($template, $data, $ticket, $ticket->agent,
             $notification_owner->name.trans('ticketit::lang.notify-created-ticket').$ticket->subject, 'new-ticket-zapier');
 
+    }
+
+    public function newTicketNotifyUser(Ticket $ticket)
+    {
+        $notification_owner = Sentinel::getUser();
+        $template = 'ticketit::emails.assigned';
+        $data = [
+            'ticket'             => serialize($ticket),
+            'notification_owner' => serialize($notification_owner),
+            'images'             => serialize($this->extractLinks($ticket->html))
+        ];
+
+        $this->sendNotification($template, $data, $ticket, $notification_owner, $notification_owner->name.trans('ticketit::lang.notify-created-ticket').$ticket->subject, 'new-ticket');
     }
 
     /**
@@ -159,7 +175,7 @@ class NotificationsController extends Controller
         /**
          * @var User
          */
-        $to = null;
+        $to = $notification_owner;
         $setting = new TSetting();
         $notify_data = [
             'channels'  =>  ['database'],
@@ -168,7 +184,8 @@ class NotificationsController extends Controller
             'action'    =>  route($setting->grab('main_route').'.show', $ticket->id),
             'image'     =>  '#'
         ];
-        if($type == 'comment'){
+
+        /* if($type == 'comment'){
             $to = $notification_owner;
             $notify_data['title'] = 'New Comment on Ticket';
         }
@@ -189,12 +206,12 @@ class NotificationsController extends Controller
         }
         else {
             $to = $ticket->agent;
-        }
+        } */
 
-        if(env('TICKET_SYSTEM', 'prod') == 'dev'){
+        /* if(env('TICKET_SYSTEM', 'prod') == 'dev'){
             $to = ['email' => env('DEVELOPER_EMAIL',''), 'name' => 'Ticket Testing'];
             $to = (object) $to;
-        }
+        } */
 
         if($type == 'new-ticket-zapier'){
             // $to = [$to];

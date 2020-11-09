@@ -1,3 +1,9 @@
+@if($u->isAgent() || $u->isAdmin())
+<div class="panel-body">
+    @include('ticketit::tickets.partials.stats')
+</div>
+@endif
+
 <div class="panel panel-default">
 
     <div class="panel-heading">

@@ -23,12 +23,14 @@ class AgentsController extends Controller
             $first_admin = Sentinel::getUser();
         }
 
-        $agents = Agent::agents()->where('parent_user_id',$first_admin->id)->with(['agentOpenTickets' => function ($query) {
+        /* $agents = Agent::agents()->where('parent_user_id',$first_admin->id)->with(['agentOpenTickets' => function ($query) {
             $query->addSelect(['id', 'agent_id']);
-        }])->get();
-        // $agents = Agent::agents()->get();
+        }])->get(); */
 
-        return view('ticketit::admin.agent.index', compact('agents'));
+        $users = Agent::all();
+        $agents = Agent::agents()->get();
+
+        return view('ticketit::admin.agent.index', compact('agents', 'users'));
     }
 
     public function create()

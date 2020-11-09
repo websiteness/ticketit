@@ -9,6 +9,9 @@
         color: inherit;
         font-size: 1.125em;
     }
+    .nav-tabs .dropdown-menu li {
+        padding: 8px;
+    }
 </style>
 <script type="text/javascript">
     function loadCSS(filename) {

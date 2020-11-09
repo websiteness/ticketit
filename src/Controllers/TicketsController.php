@@ -26,7 +26,7 @@ class TicketsController extends Controller
     {
         Cache::flush();
         $this->middleware('Kordy\Ticketit\Middleware\ResAccessMiddleware', ['only' => ['show']]);
-        $this->middleware('Kordy\Ticketit\Middleware\IsAgentMiddleware', ['only' => ['edit', 'update']]);
+        $this->middleware('Kordy\Ticketit\Middleware\IsAgentMiddleware', ['only' => ['edit']]);
         $this->middleware('Kordy\Ticketit\Middleware\IsAdminMiddleware', ['only' => ['destroy']]);
 
         $this->tickets = $tickets;
@@ -71,6 +71,7 @@ class TicketsController extends Controller
             ->join('ticketit_categories', 'ticketit_categories.id', '=', 'ticketit.category_id')
             ->select([
                 'ticketit.id',
+                'ticketit.status_id',
                 'ticketit.subject AS subject',
                 'ticketit_statuses.name AS status',
                 'ticketit_statuses.color AS color_status',
@@ -85,13 +86,20 @@ class TicketsController extends Controller
                 'ticketit_categories.name AS category',
             ]);
 
-        // check if filter are applied
+        // check if filters are applied
         if($request->user) {
-            $collection->where('user_id', $request->user);
+            $collection->where('ticketit.user_id', $request->user);
         }
-        
         if($request->status) {
-            $collection->where('status_id', $request->status);
+            $collection->where('ticketit.status_id', $request->status);
+        }
+        if($request->message) {
+            $message = str_replace('}}', ' ', str_replace('{{', ' ', $request->message));
+
+            $collection->where('ticketit.html', 'like', '%'.$message.'%');
+        }
+        if($request->filter_hide_closed_tickets) {
+            $collection->where('ticketit.status_id', '!=', 4);
         }
         
 
@@ -99,7 +107,7 @@ class TicketsController extends Controller
 
         $this->renderTicketTable($collection);
 
-        $collection->editColumn('updated_at', '{!! \Carbon\Carbon::createFromFormat("Y-m-d H:i:s", $updated_at)->diffForHumans() !!}');
+        $collection->editColumn('updated_at', '{!! \Carbon\Carbon::parse($updated_at)->format("m/d/Y") . " (" . \Carbon\Carbon::createFromFormat("Y-m-d H:i:s", $updated_at)->diffForHumans("", true, false, 2) . " ago)" !!}');
 
         // method rawColumns was introduced in laravel-datatables 7, which is only compatible with >L5.4
         // in previous laravel-datatables versions escaping columns wasn't defaut
@@ -113,16 +121,21 @@ class TicketsController extends Controller
     public function renderTicketTable($collection)
     {
         $collection->editColumn('subject', function ($ticket) {
-            return (string) link_to_route(
+            return '<span class="ticket-subject">' . (string) link_to_route(
                 TSetting::grab('main_route').'.show',
-                $ticket->subject,
+                str_limit($ticket->subject, 30, '...'),
                 $ticket->id
-            );
+            )
+            . '</span>';
         });
 
         $collection->editColumn('status', function ($ticket) {
             $color = $ticket->color_status;
             $status = e($ticket->status);
+            
+            if($ticket->status_id == 2) {
+                $status = 'Waiting on feedback from ' . e($ticket->owner);
+            }
 
             return "<div style='color: $color'>$status</div>";
         });
@@ -145,6 +158,10 @@ class TicketsController extends Controller
             $ticket = $this->tickets->find($ticket->id);
 
             return e($ticket->agent->name);
+        });
+
+        $collection->addColumn('resolved', function ($ticket) {
+            return link_to_route(TSetting::grab('main_route').'.complete', 'Resolved', $ticket->id, ['class' => 'btn btn-success btn-sm']);
         });
 
         return $collection;
@@ -223,8 +240,11 @@ class TicketsController extends Controller
      */
     public function create()
     {
+        $users = Agent::all();
+        $user = Sentinel::getUser();
+
         list($priorities, $categories, $statuses, $subcategories) = $this->PCS();
-        return view('ticketit::tickets.create', compact('priorities', 'categories', 'subcategories'));
+        return view('ticketit::tickets.create', compact('priorities', 'categories', 'subcategories', 'users', 'user'));
     }
 
     /**
@@ -263,7 +283,13 @@ class TicketsController extends Controller
         $ticket->priority_id = $request->priority_id;
 
         $ticket->status_id = TSetting::grab('default_status_id');
-        $ticket->user_id = Sentinel::getUser()->id;
+
+        if($request->user_id) {
+            $ticket->user_id = $request->user_id;
+        } else {
+            $ticket->user_id = Sentinel::getUser()->id;
+        }
+
         if($request->has('ticket_for')){
             $ticket->autoSelectAgent('superadmin');
         }else{
@@ -303,9 +329,9 @@ class TicketsController extends Controller
             $first_admin = Sentinel::findRoleBySlug('super-admin')->users()->first();
         }
 
-        $cat_agents = Models\Category::find($ticket->category_id)->agents()->where('parent_user_id',$first_admin->id)->agentsLists();
+        // $cat_agents = Models\Category::find($ticket->category_id)->agents()->where('parent_user_id',$first_admin->id)->agentsLists();
 
-        // $cat_agents = Models\Category::find($ticket->category_id)->agents()->agentsLists();
+        $cat_agents = Agent::agentsLists();
         // dd($cat_agents);
         if (is_array($cat_agents)) {
             $agent_lists = ['auto' => 'Auto Select'] + $cat_agents;
@@ -333,36 +359,51 @@ class TicketsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->validate($request, [
-            'subject'     => 'required|min:3',
-            'content'     => 'required|min:6',
-            'priority_id' => 'required|exists:ticketit_priorities,id',
-            'category_id' => 'required|exists:ticketit_categories,id',
-            'status_id'   => 'required|exists:ticketit_statuses,id',
-            'agent_id'    => 'required',
-        ]);
+        $user = Sentinel::getUser();
+
+        if($user->ticketit_admin || $user->ticketit_agent) {
+            $this->validate($request, [
+                // 'subject'     => 'required|min:3',
+                // 'content'     => 'required|min:6',
+                'priority_id' => 'required|exists:ticketit_priorities,id',
+                // 'category_id' => 'required|exists:ticketit_categories,id',
+                'status_id'   => 'required|exists:ticketit_statuses,id',
+                'agent_id'    => 'required',
+            ]);
+        } else {
+            $this->validate($request, [
+                'priority_id' => 'required|exists:ticketit_priorities,id',
+            ]);
+        }
 
         $ticket = $this->tickets->findOrFail($id);
 
-        $ticket->subject = $request->subject;
+        if($request->subject) {
+            $ticket->subject = $request->subject;
+        }
 
-        $content = $this->imagesToLink($request->get('content'));
+        if($request->content) {
+            $content = $this->imagesToLink($request->get('content'));
+            $ticket->setPurifiedContent($content);
+        }
 
-        $ticket->setPurifiedContent($content);
+        if($request->status_id) {
+            $ticket->status_id = $request->status_id;
+        }
 
-        $ticket->status_id = $request->status_id;
-
-        $category = Models\Category::find($request->category_id);
-        if($category->children->count())
-        {
-            $ticket->category_id = $request->subcategory_id;
-        }else{
-            $ticket->category_id = $request->category_id;
+        if($request->category) {
+            $category = Models\Category::find($request->category_id);
+            if($category->children->count())
+            {
+                $ticket->category_id = $request->subcategory_id;
+            }else{
+                $ticket->category_id = $request->category_id;
+            }
         }
 
         $ticket->priority_id = $request->priority_id;
 
-        if ($request->input('agent_id') == 'auto') {
+        if (!isset($request->agent_id) || $request->input('agent_id') == 'auto') {
             $ticket->autoSelectAgent();
         } else {
             $ticket->agent_id = $request->input('agent_id');

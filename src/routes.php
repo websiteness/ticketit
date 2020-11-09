@@ -152,4 +152,23 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
         //Tickets demo data route (ex. http://url/tickets-admin/demo-seeds/)
         // Route::get("$admin_route/demo-seeds", 'Kordy\Ticketit\Controllers\InstallController@demoDataSeeder');
     });
+
+    # Settings
+    Route::group(['middleware' => ['Kordy\Ticketit\Middleware\IsAdminMiddleware', 'Kordy\Ticketit\Middleware\IsAgentMiddleware']], function () use ($admin_route) {
+        Route::prefix($admin_route.'/settings')->name($admin_route.'.settings.')->group(function() {
+            Route::get('/', 'Kordy\Ticketit\Controllers\SettingsController@index')->name('index');
+
+            Route::prefix('overdue')->name('overdue.')->group(function() {
+                Route::post('save', 'Kordy\Ticketit\Controllers\SettingsController@saveOverdueHours')->name('save');
+            });
+        });
+    });
+
+    # Stats
+    Route::prefix($admin_route.'/stats')->name($admin_route.'.stats.')->group(function() {
+        Route::get('/', 'Kordy\Ticketit\Controllers\StatsController@index')->name('index');
+        Route::get('status-count', 'Kordy\Ticketit\Controllers\StatsController@getStatusCount')->name('status_count');
+        Route::get('categories-count', 'Kordy\Ticketit\Controllers\StatsController@getCategoriesCount')->name('categories_count');
+        // Route::get('status', 'Kordy\Ticketit\Controllers\StatsController@getStatus')->name('status');
+    });
 });

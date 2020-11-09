@@ -55,7 +55,7 @@ class TSetting extends Model
 
             $setting = $settings->where('slug', $slug)->first();
 
-            if ($setting->lang) {
+            if (isset($setting->lang)) {
                 return trans($setting->lang);
             }
 
@@ -141,5 +141,10 @@ class TSetting extends Model
         }
 
         return false;
+    }
+
+    public function scopeGetBySlug($query, $slug)
+    {
+        return $query->where('slug', $slug)->first();
     }
 }

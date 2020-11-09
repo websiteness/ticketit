@@ -56,9 +56,9 @@ class TicketitServiceProvider extends ServiceProvider
             // Send notification when new comment is added
             Comment::creating(function ($comment) {
                 // dd(session('com_stat_both', false));
-                if(session('com_stat_both', false)){
+                /* if(session('com_stat_both', false)){
                     return true;
-                }
+                } */
                 if (TSetting::grab('comment_notification')) {
                     $notification = new NotificationsController();
                     $notification->newComment($comment);
@@ -67,32 +67,43 @@ class TicketitServiceProvider extends ServiceProvider
 
             // Send notification when ticket status is modified
             Ticket::updating(function ($modified_ticket) {
-                if(session('com_stat_both', false)){
+                /* if(session('com_stat_both', false)){
                     return true;
-                }
+                } */
+
+                $original_ticket = Ticket::find($modified_ticket->id);
+
                 if (TSetting::grab('status_notification')) {
-                    $original_ticket = Ticket::find($modified_ticket->id);
                     if ($original_ticket->status_id != $modified_ticket->status_id || $original_ticket->completed_at != $modified_ticket->completed_at) {
                         $notification = new NotificationsController();
                         $notification->ticketStatusUpdated($modified_ticket, $original_ticket);
                     }
-                }
-                if (TSetting::grab('assigned_notification')) {
-                    $original_ticket = Ticket::find($modified_ticket->id);
+
                     if ($original_ticket->agent->id != $modified_ticket->agent->id) {
                         $notification = new NotificationsController();
                         $notification->ticketAgentUpdated($modified_ticket, $original_ticket);
                     }
                 }
+                
+                /* if (TSetting::grab('assigned_notification')) {
+                    $original_ticket = Ticket::find($modified_ticket->id);
+                    if ($original_ticket->agent->id != $modified_ticket->agent->id) {
+                        $notification = new NotificationsController();
+                        $notification->ticketAgentUpdated($modified_ticket, $original_ticket);
+                    }
+                } */
 
                 return true;
             });
 
-            // Send notification when ticket status is modified
+            // Send notification when ticket is created
             Ticket::created(function ($ticket) {
                 if (TSetting::grab('assigned_notification')) {
                     $notification = new NotificationsController();
                     $notification->newTicketNotifyAgent($ticket);
+
+                    $notification = new NotificationsController();
+                    $notification->newTicketNotifyUser($ticket);
                 }
 
                 return true;

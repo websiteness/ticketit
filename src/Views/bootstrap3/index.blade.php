@@ -9,7 +9,12 @@
 	<style>
 		.filters-panel .form-control {
 			height: 32px !important;
-		}
+        }
+        .ticket-subject a {
+            color: #28b999 !important;
+            text-decoration: underline;
+            font-weight: bold;
+        }
 	</style>
 @stop
 
@@ -35,11 +40,23 @@
 				url = url + filter;
 			}
 
+            // check if closed tickets are hidden
+            if($('#filter_hide_closed_tickets:checked').length) {
+                if(filter) {
+                    url = url + '&filter_hide_closed_tickets=1'
+                } else {
+                    url = url + '?filter_hide_closed_tickets=1'
+                }
+            }
+
 			$('.table').DataTable({
 				processing: false,
 				serverSide: true,
 				responsive: true,
-				destroy: true,
+                destroy: true,
+                buttons: [
+                    'colvis'
+                ],
 				pageLength: {{ $setting->grab('paginate_items') }},
 				lengthMenu: {{ json_encode($setting->grab('length_menu')) }},
 				ajax: url,
@@ -76,8 +93,9 @@
 					@if( $u->isAgent() || $u->isAdmin() )
 						{ data: 'priority', name: 'ticketit_priorities.name' },
 						{ data: 'owner', name: 'users.name' },
-						{ data: 'category', name: 'ticketit_categories.name' }
+						{ data: 'category', name: 'ticketit_categories.name' },
 					@endif
+					{ data: 'resolved', name: 'resolved' },
 				]
 			});
 		}
@@ -85,8 +103,9 @@
 		function filterTickets() {
 			let user = document.getElementById('filter_owner').value;
 			let status = document.getElementById('filter_status').value;
+			let message = document.getElementById('filter_message').value;
 
-			let query_string = `?user=${user}&status=${status}`;
+			let query_string = `?user=${user}&status=${status}&message=${message}`;
 
 			initDatatable(query_string);
 		}
@@ -94,6 +113,7 @@
 		function clearFilters() {
 			$('#filter_owner').val('').trigger('change');
 			document.getElementById('filter_status').value = '';
+			document.getElementById('filter_message').value = '';
 			
 			initDatatable();
 		}
