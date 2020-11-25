@@ -5,7 +5,12 @@
 @stop
 
 @section('header_styles')
-	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .table .btn {
+            width: auto;
+        }
+    </style>
 @stop
 
 @section('content')
@@ -29,7 +34,7 @@
                             <select class="form-control select2" id="agent" name="agent" required>
                                 <option value="">Select User</option>
                                 @foreach($users as $user)
-                                <option value="{{ $user->id }}">{{ $user->first_name . ' ' . $user->last_name }}</option>
+                                <option value="{{ $user->id }}">{{ $user->first_name . ' ' . $user->last_name . ' - ' . $user->email }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -54,7 +59,7 @@
                         <td>{{ trans('ticketit::admin.table-name') }}</td>
                         {{-- <td>{{ trans('ticketit::admin.table-categories') }}</td>
                         <td>{{ trans('ticketit::admin.table-join-category') }}</td> --}}
-                        <td>{{ trans('ticketit::admin.table-remove-agent') }}</td>
+                        <td>Actions</td>
                     </tr>
                 </thead>
                 <tbody>
@@ -64,7 +69,7 @@
                             {{ $agent->id }}
                         </td> --}}
                         <td>
-                            {{ $agent->name }}
+                            {{ $agent->name . ' - ' . $agent->email }}
                         </td>
                         {{-- <td>
                             @foreach($agent->categories as $category)
@@ -98,10 +103,12 @@
                                         $setting->grab('admin_route').'.agent.destroy',
                                         $agent->id
                                         ],
-                            'id' => "delete-$agent->id"
+                            'id' => "delete-$agent->id",
+                            'class' => 'pull-left'
                             ]) !!}
                             {!! CollectiveForm::submit(trans('ticketit::admin.btn-remove'), ['class' => 'btn btn-danger']) !!}
                             {!! CollectiveForm::close() !!}
+                            <a href="{{ route($setting->grab('admin_route').'.agent.notifications.settings', $agent->id) }}" class="btn btn-primary">Notifications</a>
                         </td>
                     </tr>
                 @endforeach

@@ -11,6 +11,7 @@
             <td>{{ trans('ticketit::lang.table-owner') }}</td>
             <td>{{ trans('ticketit::lang.table-category') }}</td>
           @endif
+            <td>Actions</td>
         </tr>
     </thead>
 </table>

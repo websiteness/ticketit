@@ -266,4 +266,9 @@ class Agent extends User
     {
         return $this->hasMany('Kordy\Ticketit\Models\Ticket', 'user_id')->whereNull('completed_at');
     }
+
+    public function notificationSettings()
+    {
+        return $this->hasMany('Kordy\Ticketit\Models\NotificationSetting', 'user_id');
+    }
 }

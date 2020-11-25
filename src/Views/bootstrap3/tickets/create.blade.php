@@ -3,7 +3,12 @@
 
 
 @section('header_styles')
-	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .popover {
+            max-width: 630px;
+        }
+    </style>
 @stop
 
 @section('content')
@@ -44,7 +49,21 @@
                                 <label><img src="{{asset('images/ticket-system/category-subcategory.png')}}" alt="" /> Category:</label>
                                 {!! CollectiveForm::select('category_id', $categories, null, ['class' => 'new-ticket__form-select cat', 'placeholder' => 'Please Select','required' => 'required', 'onchange' => 'selectCategory(this.value)']) !!}
                             </div><!-- .new-ticket__form-group -->
-                            <div class="new-ticket__form-group subcat">
+                            <div class="new-ticket__form-group subcat"></div>
+                            <div class="new-ticket__form-group" id="heatmap_url_wrapper" style="display:none;">
+                            <!-- <div class="new-ticket__form-group" id="heatmap_url_wrapper"> -->
+                                <label>
+                                    Shared Heat Map URL:&nbsp;
+                                    <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="right" title="If you are having issues with the results from a heat map it is very helpful for our support team if you can provide the URL from the share link within the Heat Map."></i>
+                                </label>
+                                
+                            </div>
+                            <div class="new-ticket__form-group" id="add_heatmap_url" style="display:none;margin-top:-10px;">
+                            <!-- <div class="new-ticket__form-group" id="add_heatmap_url"> -->
+                                <button type="button" class="btn btn-light btn-sm" onclick="addHeatMapField()">Add URL</button>
+                                <button type="button" class="btn btn-light btn-sm" data-toggle="popover" data-trigger="focus" data-content="<img src='{{ asset('gifs/heat_map_url.gif') }}' width='600px'/>">
+                                    <i class="fa fa-play"></i>
+                                </button>
                             </div>
                             {!! CollectiveForm::hidden('agent_id', 'auto') !!}
                             @if (Request::is($setting->grab('main_route_path')."/crm-ticket"))
@@ -90,6 +109,12 @@
     @include('ticketit::tickets.partials.summernote')
 
     <script>
+        $(function () {
+            $('[data-toggle="popover"]').popover({
+                html: true
+            });
+        })
+
         let default_subcategory = `<label><img src="{{asset('images/ticket-system/category-subcategory.png')}}" alt="" /> Sub Category:</label>
                         <select class="new-ticket__form-select" name="subcategory_id" required disabled>
                             <option selected="selected" value="">Please Select</option>
@@ -107,6 +132,8 @@
             }else{
                 $('.subcat').html(default_subcategory);
             }
+
+
         });
 
         function selectCategory(ev){
@@ -126,7 +153,7 @@
             });
 
             let el = `<label><img src="{{asset('images/ticket-system/category-subcategory.png')}}" alt="" /> Sub Category:</label>
-                        <select class="new-ticket__form-select" name="subcategory_id" required>
+                        <select class="new-ticket__form-select" name="subcategory_id" id="subcategory_id" onchange="showHeatMapField(this)" required>
                             <option selected="selected" value="">Please Select</option>
                             ${options}
                         </select>`;
@@ -136,6 +163,29 @@
         function resetForm() {
             document.getElementById("create_form").reset();
             $("textarea.summernote-editor").summernote('code', '');
+        }
+
+        function showHeatMapField(self) {
+            console.log('subcat', self.id);
+            console.log('subcat', document.getElementById(self.id).selectedOptions[0].text);
+
+            let sub_category = document.getElementById(self.id).selectedOptions[0].text;
+
+            if(sub_category == 'Heat Map') {
+                addHeatMapField();
+
+                document.getElementById('heatmap_url_wrapper').style.display = 'block';
+                document.getElementById('add_heatmap_url').style.display = 'block';
+
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        }
+
+        function addHeatMapField() {
+            let element = document.createElement('div');
+            element.innerHTML = `<input class="new-ticket__form-input" placeholder="Heat Map URL" name="heat_map_url[]" type="text" style="margin-bottom:10px;">`;
+
+            document.getElementById('heatmap_url_wrapper').appendChild(element);
         }
     </script>
 @append

@@ -16,6 +16,7 @@ use Kordy\Ticketit\Models\Ticket;
 use Kordy\Ticketit\Models\Status;
 use Sentinel;
 use DB;
+use Kordy\Ticketit\Repositories\CategoriesRepository;
 
 class TicketsController extends Controller
 {
@@ -25,7 +26,7 @@ class TicketsController extends Controller
     public function __construct(Ticket $tickets, Agent $agent)
     {
         Cache::flush();
-        $this->middleware('Kordy\Ticketit\Middleware\ResAccessMiddleware', ['only' => ['show']]);
+        // $this->middleware('Kordy\Ticketit\Middleware\ResAccessMiddleware', ['only' => ['show']]);
         $this->middleware('Kordy\Ticketit\Middleware\IsAgentMiddleware', ['only' => ['edit']]);
         $this->middleware('Kordy\Ticketit\Middleware\IsAdminMiddleware', ['only' => ['destroy']]);
 
@@ -52,9 +53,11 @@ class TicketsController extends Controller
             }
         } elseif ($user->isAgent()) {
             if ($complete) {
-                $collection = Ticket::complete()->agentUserTickets($user->id);
+                // $collection = Ticket::complete()->agentUserTickets($user->id);
+                $collection = Ticket::complete()->adminUserTickets($user->id, true);
             } else {
-                $collection = Ticket::active()->agentUserTickets($user->id);
+                // $collection = Ticket::active()->agentUserTickets($user->id);
+                $collection = Ticket::active()->adminUserTickets($user->id, true);
             }
         } else {
             if ($complete) {
@@ -93,6 +96,9 @@ class TicketsController extends Controller
         if($request->status) {
             $collection->where('ticketit.status_id', $request->status);
         }
+        if($request->sub_category) {
+            $collection->where('ticketit.category_id', $request->sub_category);
+        }
         if($request->message) {
             $message = str_replace('}}', ' ', str_replace('{{', ' ', $request->message));
 
@@ -107,7 +113,7 @@ class TicketsController extends Controller
 
         $this->renderTicketTable($collection);
 
-        $collection->editColumn('updated_at', '{!! \Carbon\Carbon::parse($updated_at)->format("m/d/Y") . " (" . \Carbon\Carbon::createFromFormat("Y-m-d H:i:s", $updated_at)->diffForHumans() . ")" !!}');
+        $collection->editColumn('updated_at', '{!! \Carbon\Carbon::parse($updated_at)->format("m/d/Y") . " (" . \Carbon\Carbon::createFromFormat("Y-m-d H:i:s", $updated_at)->diffForHumans("", true, false, 2) . " ago)" !!}');
 
         // method rawColumns was introduced in laravel-datatables 7, which is only compatible with >L5.4
         // in previous laravel-datatables versions escaping columns wasn't defaut
@@ -160,6 +166,10 @@ class TicketsController extends Controller
             return e($ticket->agent->name);
         });
 
+        $collection->addColumn('resolved', function ($ticket) {
+            return link_to_route(TSetting::grab('main_route').'.complete', 'Resolved', $ticket->id, ['class' => 'btn btn-success btn-sm']);
+        });
+
         return $collection;
     }
 
@@ -168,14 +178,15 @@ class TicketsController extends Controller
      *
      * @return Response
      */
-    public function index()
+    public function index(CategoriesRepository $cr)
     {
         $users = Agent::all();
         $statuses = Status::all();
+        $sub_categories = $cr->getSubCategories();
 
         $complete = false;
 
-        return view('ticketit::index', compact('complete', 'users', 'statuses'));
+        return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories'));
     }
 
     /**
@@ -187,10 +198,11 @@ class TicketsController extends Controller
     {
         $users = Agent::all();
         $statuses = Status::all();
+        $sub_categories = $cr->getSubCategories();
 
         $complete = true;
 
-        return view('ticketit::index', compact('complete', 'users', 'statuses'));
+        return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories'));
     }
 
     /**
@@ -265,6 +277,11 @@ class TicketsController extends Controller
 
         $content = $this->imagesToLink($request->get('content'));
 
+        // check if heat map urls is added
+        if(isset($request->heat_map_url[0]) && $request->heat_map_url[0]) {
+            $content .= $this->heatMapURLToTag($request->heat_map_url);
+        }
+
         $ticket->setPurifiedContent($content);
 
         $category = Models\Category::find($request->category_id);
@@ -286,11 +303,13 @@ class TicketsController extends Controller
             $ticket->user_id = Sentinel::getUser()->id;
         }
 
-        if($request->has('ticket_for')){
+        /* if($request->has('ticket_for')){
             $ticket->autoSelectAgent('superadmin');
         }else{
             $ticket->autoSelectAgent();
-        }
+        } */
+
+        $ticket->autoSelectAgent();
 
         $ticket->save();
 
@@ -675,6 +694,30 @@ class TicketsController extends Controller
     protected function imgToa($matches)
     {
         return "<a target='_blank' href='".$matches[2]."'> <font color ='black' >View Image</font></a>";
+    }
+
+    /**
+     * Replace heat map urls to tags
+     *
+     * @param array $urls
+     *
+     * @return void
+     */
+    protected function heatMapURLToTag($urls)
+    {
+        $html = '<br><p>';
+
+        foreach($urls as $url) {
+            if(!$url) {
+                continue;
+            }
+            
+            $html .= '<a href="' . $url . '" target="_blank">Heat Map URL</a><br>';
+        }
+
+        $html .= '</p>';
+
+        return $html;
     }
     
     

@@ -223,15 +223,16 @@ class Ticket extends Model
      */
     public function autoSelectAgent($for = 'superadmin')
     {
-        $cat_id = $this->category_id;
+        // $cat_id = $this->category_id;
         // $agents = Category::find($cat_id)->agents()->with(['agentOpenTickets' => function ($query) {
         //     $query->addSelect(['id', 'agent_id']);
         // }])->get();
 
-        $count = 0;
-        $lowest_tickets = 1000000;
+        // $count = 0;
+        // $lowest_tickets = 1000000;
+
         // If no agent selected, select the admin
-        if($for == 'superadmin'){
+        /* if($for == 'superadmin'){
             // $first_admin = Sentinel::findRoleBySlug('super-admin')->users()->first();
 
             // auto assign to leadgenerated super admin account which has user_id of 1
@@ -242,16 +243,17 @@ class Ticket extends Model
             }elseif (Sentinel::inRole('admin') ||  Sentinel::inRole('super-admin')) {
                 $first_admin = Sentinel::getUser();
             }
-        }
+        } */
 
-        $role = Sentinel::findRoleBySlug('ticket-agent');
+        // $role = Sentinel::findRoleBySlug('ticket-agent');
         // $agents = $role->users()->where('parent_user_id',$first_admin->id)->get();
-        $agents = Category::find($cat_id)->agents()->where('parent_user_id',$first_admin->id)->with(['agentOpenTickets' => function ($query) {
+        /* $agents = Category::find($cat_id)->agents()->where('parent_user_id',$first_admin->id)->with(['agentOpenTickets' => function ($query) {
             $query->addSelect(['id', 'agent_id']);
-        }])->get();
-        // 
+        }])->get(); */
+
+        
         // $first_admin = Agent::admins()->first();
-        $selected_agent_id = $first_admin->id;
+        /* $selected_agent_id = $first_admin->id;
 
         foreach ($agents as $agent) {
             if ($count == 0) {
@@ -265,8 +267,17 @@ class Ticket extends Model
                 }
             }
             $count++;
+        } */
+
+        $agent = Category::find($this->category_id)->agents()->first();
+
+        if($agent) {
+            $agent_id = $agent->id;
+        } else {
+            $agent_id = Sentinel::findById(1)->id;
         }
-        $this->agent_id = $selected_agent_id;
+
+        $this->agent_id = $agent_id;
 
         return $this;
     }

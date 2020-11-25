@@ -53,7 +53,10 @@
 				processing: false,
 				serverSide: true,
 				responsive: true,
-				destroy: true,
+                destroy: true,
+                buttons: [
+                    'colvis'
+                ],
 				pageLength: {{ $setting->grab('paginate_items') }},
 				lengthMenu: {{ json_encode($setting->grab('length_menu')) }},
 				ajax: url,
@@ -90,8 +93,9 @@
 					@if( $u->isAgent() || $u->isAdmin() )
 						{ data: 'priority', name: 'ticketit_priorities.name' },
 						{ data: 'owner', name: 'users.name' },
-						{ data: 'category', name: 'ticketit_categories.name' }
+						{ data: 'category', name: 'ticketit_categories.name' },
 					@endif
+					{ data: 'resolved', name: 'resolved' },
 				]
 			});
 		}
@@ -100,8 +104,9 @@
 			let user = document.getElementById('filter_owner').value;
 			let status = document.getElementById('filter_status').value;
 			let message = document.getElementById('filter_message').value;
+			let sub_category = document.getElementById('filter_sub_category').value;
 
-			let query_string = `?user=${user}&status=${status}&message=${message}`;
+			let query_string = `?user=${user}&status=${status}&message=${message}&sub_category=${sub_category}`;
 
 			initDatatable(query_string);
 		}

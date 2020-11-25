@@ -5,6 +5,7 @@ namespace Kordy\Ticketit\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Kordy\Ticketit\Models;
+use Kordy\Ticketit\Models\Comment;
 use Kordy\Ticketit\Controllers\NotificationsController;
 use Kordy\Ticketit\Models\Ticket;
 use Sentinel;
@@ -132,7 +133,12 @@ class CommentsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $comment = Comment::find($id);
+
+        $comment->setPurifiedContent($request->content);
+        $comment->save();
+
+        return redirect()->back();
     }
 
     /**
@@ -144,6 +150,8 @@ class CommentsController extends Controller
      */
     public function destroy($id)
     {
-        //
+        Comment::destroy($id);
+
+        return redirect()->back();
     }
 }

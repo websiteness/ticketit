@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Kordy\Ticketit\Models\Category;
+use Kordy\Ticketit\Models\Agent;
+
+use Kordy\Ticketit\Services\CategoriesService;
 
 class CategoriesController extends Controller
 {
@@ -126,5 +129,20 @@ class CategoriesController extends Controller
         \Cache::forget('ticketit::categories');
 
         return redirect()->action('\Kordy\Ticketit\Controllers\CategoriesController@index');
+    }
+
+    public function viewCategoryOwners(CategoriesService $category_service)
+    {
+        $agents = Agent::agents()->get();
+        $categories = $category_service->getAllCategories();
+
+        return view('ticketit::admin.category.owners', compact('agents', 'categories'));
+    }
+
+    public function storeCategoryOwners(Request $request, CategoriesService $category_service)
+    {
+        $category_service->setCategoryOwners($request->owners);
+
+        return redirect()->back();
     }
 }

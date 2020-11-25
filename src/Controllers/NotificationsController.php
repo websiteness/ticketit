@@ -11,6 +11,8 @@ use Kordy\Ticketit\Models\Ticket;
 use Kordy\Ticketit\Notifications\TicketNotification;
 use Sentinel;
 
+use Kordy\Ticketit\Services\NotificationService;
+
 
 class NotificationsController extends Controller
 {
@@ -23,13 +25,28 @@ class NotificationsController extends Controller
         $template = 'ticketit::emails.comment';
         $data = ['comment' => serialize($comment), 'ticket' => serialize($ticket)];
 
-        $this->sendNotification($template, $data, $ticket, $notification_owner, trans('ticketit::lang.notify-new-comment-from').self::OWNER.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
+        // send notif if comment was created by support
+        if($comment->user_id != $ticket->user_id) {
+            $this->sendNotification($template, $data, $ticket, $notification_owner, trans('ticketit::lang.notify-new-comment-from').self::OWNER.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
+        }
 
-        // //Send Notification to Agent
-        /* if($ticket->agent->email !== Sentinel::getUser()->email){
-            $this->sendNotification($template, $data, $ticket, $ticket->agent,
-                trans('ticketit::lang.notify-new-comment-from').$ticket->agent->name.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
-        } */
+        // send notification to agents
+        try {
+            $notif_service = new NotificationService;
+            $agents = $notif_service->getAllNotificationSubscribers('replies', $ticket->category_id, $ticket->agent_id);
+
+            foreach($agents as $agent) {
+                // dont send if is the one created the comment
+                if($agent->id == $comment->user_id) {
+                    return false;
+                }
+
+                $this->sendNotification($template, $data, $ticket, $agent, trans('ticketit::lang.notify-new-comment-from').self::OWNER.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
+            }
+        } catch(\Exception $e) {
+            \Log::error('Ticket Error on line '. $e->getLine());
+            \Log::error($e->getMessage());
+        }
         
         /* if($notification_owner->email !== Sentinel::getUser()->email){
             $this->sendNotification($template, $data, $ticket, $notification_owner,
@@ -49,8 +66,21 @@ class NotificationsController extends Controller
         ];
 
         if (strtotime($ticket->completed_at)) {
-            $this->sendNotification($template, $data, $ticket, $notification_owner,
-                $notification_owner->name.trans('ticketit::lang.notify-updated').$ticket->subject.trans('ticketit::lang.notify-status-to-complete'), 'status');
+            $this->sendNotification($template, $data, $ticket, $notification_owner, $notification_owner->name.trans('ticketit::lang.notify-updated').$ticket->subject.trans('ticketit::lang.notify-status-to-complete'), 'status');
+            
+            // send notification to agents
+            try {
+                $notif_service = new NotificationService;
+                $agents = $notif_service->getAllNotificationSubscribers('closed', $ticket->category_id, $ticket->agent_id);
+
+                foreach($agents as $agent) {
+                    $this->sendNotification($template, $data, $ticket, $agent, $notification_owner->name.trans('ticketit::lang.notify-updated').$ticket->subject.trans('ticketit::lang.notify-status-to-complete'), 'status');
+                }
+            } catch(\Exception $e) {
+                \Log::error('Ticket Error on line '. $e->getLine());
+                \Log::error($e->getMessage());
+            }
+            
         } else {
             $this->sendNotification($template, $data, $ticket, $notification_owner,
                 // $notification_owner->name.trans('ticketit::lang.notify-updated').$ticket->subject.trans('ticketit::lang.notify-status-to').$ticket->status->name, 'status');
@@ -68,8 +98,19 @@ class NotificationsController extends Controller
             'original_ticket'    => serialize($original_ticket),
         ];
 
-        $this->sendNotification($template, $data, $ticket, $notification_owner,
-            $notification_owner->name.trans('ticketit::lang.notify-transferred').$ticket->subject.trans('ticketit::lang.notify-to-you'), 'agent');
+        // send notification to agents
+        try {
+            $notif_service = new NotificationService;
+            $agents = $notif_service->getAllNotificationSubscribers('ticket_assigned', $ticket->category_id, $ticket->agent_id);
+
+            foreach($agents as $agent) {
+                // $this->sendNotification($template, $data, $ticket, $agent, $original_ticket->agent->name.trans('ticketit::lang.notify-transferred').$ticket->subject.trans('ticketit::lang.notify-to-you'), 'agent');
+                $this->sendNotification($template, $data, $ticket, $agent, $original_ticket->agent->name.trans('ticketit::lang.notify-transferred').$ticket->subject.' to '.$notification_owner->name, 'agent');
+            }
+        } catch(\Exception $e) {
+            \Log::error('Ticket Error on line '. $e->getLine());
+            \Log::error($e->getMessage());
+        }
     }
 
     public function newTicketNotifyAgent(Ticket $ticket)
@@ -82,8 +123,20 @@ class NotificationsController extends Controller
             'images'             => serialize($this->extractLinks($ticket->html))
         ];
 
-        $this->sendNotification($template, $data, $ticket, $ticket->agent,
-            $notification_owner->name.trans('ticketit::lang.notify-created-ticket').$ticket->subject, 'new-ticket');
+        // $this->sendNotification($template, $data, $ticket, $ticket->agent, $notification_owner->name.trans('ticketit::lang.notify-created-ticket').$ticket->subject, 'new-ticket');
+
+        // send notification to agents
+        try {
+            $notif_service = new NotificationService;
+            $agents = $notif_service->getAllNotificationSubscribers('new', $ticket->category_id, $ticket->agent_id);
+    
+            foreach($agents as $agent) {
+                $this->sendNotification($template, $data, $ticket, $agent, $notification_owner->name.trans('ticketit::lang.notify-created-ticket').$ticket->subject, 'new-ticket');
+            }
+        } catch(\Exception $e) {
+            \Log::error('Ticket Error on line '. $e->getLine());
+            \Log::error($e->getMessage());
+        }
 
         $template = 'ticketit::emails.assigned-zapier';
         $this->sendNotification($template, $data, $ticket, $ticket->agent,
@@ -150,7 +203,12 @@ class NotificationsController extends Controller
             'notification_owner' => serialize($notification_owner),
             'original_ticket'    => serialize($original_ticket),
         ];
-        // dd($original_ticket);
+
+        // dont send notif if comment was created by the ticket owner
+        if($comment->user_id == $ticket->user_id) {
+            return false;
+        }
+        
         if (strtotime($ticket->completed_at)) {
             $this->sendNotification($template, $data, $ticket, $notification_owner,
                 // $notification_owner->name.trans('ticketit::lang.comment-notify-updated').$ticket->subject.trans('ticketit::lang.notify-status-to-complete'), 'status');

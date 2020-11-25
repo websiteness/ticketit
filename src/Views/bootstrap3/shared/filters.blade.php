@@ -27,6 +27,17 @@
             </li>
             <li role="presentation">
                 <div class="form-group">
+                    <label>Sub Categoy</label>
+                    <select class="form-control" id="filter_sub_category">
+                        <option value="">Select Cateory</option>
+                        @foreach($sub_categories as $category)
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </li>
+            <li role="presentation">
+                <div class="form-group">
                     <label>Message</label>
                     <input type="text" class="form-control" id="filter_message" placeholder="Search messages" style="width:350px;"/>
                 </div>

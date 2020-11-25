@@ -12,6 +12,10 @@ use Cartalyst\Sentinel\Laravel\Facades\Activation;
 use Sentinel;
 use App\User;
 
+use Kordy\Ticketit\Repositories\CategoriesRepository;
+use Kordy\Ticketit\Repositories\NotificationSettingsRepository;
+use Kordy\Ticketit\Services\NotificationService;
+
 class AgentsController extends Controller
 {
     public function index()
@@ -175,5 +179,26 @@ class AgentsController extends Controller
         $form_cats = ($request->input('agent_cats') == null) ? [] : $request->input('agent_cats');
         $agent = Agent::find($id);
         $agent->categories()->sync($form_cats);
+    }
+
+    public function viewNotifications($agent_id, CategoriesRepository $cr, NotificationService $ns, NotificationSettingsRepository $nsr)
+    {
+        // dd($ns->getAllNotificationSubscribers('new', 6));
+        $agent = Agent::find($agent_id);
+        
+        $categories = $cr->getSubCategories();
+
+        $events = $ns->eventList();
+
+        $agent_settings = $ns->getUserSettings($agent_id);
+
+        return view('ticketit::admin.agent.settings', compact('agent', 'categories', 'events', 'agent_settings'));
+    }
+
+    public function saveNotificationSettings(Request $request, $agent_id, NotificationService $ns)
+    {
+        $ns->saveSettings($agent_id, $request->all());
+
+        return redirect()->back();
     }
 }
