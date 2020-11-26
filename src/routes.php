@@ -188,6 +188,12 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
                 Route::post('/store', '\Kordy\Ticketit\Controllers\CategoriesController@storeCategoryOwners')->name('store');
             });
         });
+
+        # Asana
+        Route::prefix('asana')->name('asana.')->group(function() {
+            Route::get('/', '\Kordy\Ticketit\Controllers\Integrations\AsanaController@index')->name('index');
+            Route::post('token/store', '\Kordy\Ticketit\Controllers\Integrations\AsanaController@store_token')->name('token.store');
+        });
     });
 
     # Stats
@@ -197,4 +203,6 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
         Route::get('categories-count', 'Kordy\Ticketit\Controllers\StatsController@getCategoriesCount')->name('categories_count');
         // Route::get('status', 'Kordy\Ticketit\Controllers\StatsController@getStatus')->name('status');
     });
+
+
 });
