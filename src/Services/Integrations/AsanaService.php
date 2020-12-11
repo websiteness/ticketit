@@ -294,7 +294,7 @@ class AsanaService
         $content .= 'Ticket #: ' . $ticket->id . "\n";
         $content .= 'Date: ' . $ticket->created_at->toDayDateTimeString() . "\n";
         $content .= 'Title: ' . $ticket->subject . "\n";
-        $content .= 'User: ' . $ticket->agent->name . "\n";
+        $content .= 'User: ' . $ticket->user->name . "\n";
         $content .= 'Category: ' . $category . "\n";
 
         if($ticket->category->parent_category) {
