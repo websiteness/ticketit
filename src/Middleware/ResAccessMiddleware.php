@@ -45,7 +45,8 @@ class ResAccessMiddleware
         }
 
         // Assigned Agent has access in the restricted mode enabled
-        if (Agent::isAgent() && Agent::isAssignedAgent($ticket_id)) {
+        // if (Agent::isAgent() && Agent::isAssignedAgent($ticket_id)) {
+        if (Agent::isAgent()) {
             return $next($request);
         }
 
