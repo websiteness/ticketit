@@ -193,6 +193,32 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
         Route::prefix('asana')->name('asana.')->group(function() {
             Route::get('/', '\Kordy\Ticketit\Controllers\Integrations\AsanaController@index')->name('index');
             Route::post('token/store', '\Kordy\Ticketit\Controllers\Integrations\AsanaController@store_token')->name('token.store');
+
+            Route::get('projects','\Kordy\Ticketit\Controllers\Integrations\AsanaController@get_projects')->name('projects');
+            Route::post('projects/store','\Kordy\Ticketit\Controllers\Integrations\AsanaController@store_project')->name('projects.store');
+
+            Route::prefix('categories')->name('categories.')->group(function() {
+                Route::get('/','\Kordy\Ticketit\Controllers\Integrations\AsanaController@categories_index')->name('index');
+                Route::post('map','\Kordy\Ticketit\Controllers\Integrations\AsanaController@map_sections')->name('map');
+            });
+
+            Route::prefix('users')->name('users.')->group(function() {
+                Route::get('/','\Kordy\Ticketit\Controllers\Integrations\AsanaController@users_index')->name('index');
+                Route::post('map','\Kordy\Ticketit\Controllers\Integrations\AsanaController@map_users')->name('map');
+            }); 
+
+            Route::prefix('settings')->name('settings.')->group(function() {
+                Route::post('store','\Kordy\Ticketit\Controllers\Integrations\AsanaController@store_settings')->name('store');
+            });
+
+            Route::prefix('tags')->name('tags.')->group(function() {
+                Route::get('list','\Kordy\Ticketit\Controllers\Integrations\AsanaController@get_tag_list')->name('list');
+            });
+            
+            Route::prefix('workspaces')->name('workspaces.')->group(function() {
+                Route::get('list','\Kordy\Ticketit\Controllers\Integrations\AsanaController@get_workspace_list')->name('list');
+                Route::post('store','\Kordy\Ticketit\Controllers\Integrations\AsanaController@store_workspace')->name('store');
+            });
         });
     });
 

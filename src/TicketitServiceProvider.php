@@ -99,11 +99,17 @@ class TicketitServiceProvider extends ServiceProvider
             // Send notification when ticket is created
             Ticket::created(function ($ticket) {
                 if (TSetting::grab('assigned_notification')) {
-                    $notification = new NotificationsController();
-                    $notification->newTicketNotifyAgent($ticket);
 
-                    $notification = new NotificationsController();
-                    $notification->newTicketNotifyUser($ticket);
+                    try {
+                        $notification = new NotificationsController();
+                        $notification->newTicketNotifyAgent($ticket);
+    
+                        $notification = new NotificationsController();
+                        $notification->newTicketNotifyUser($ticket);
+                    } catch(\Exception $e) {
+                        \Log::error('Tickets Error');
+                        \Log::error($e->getMessage());
+                    }
                 }
 
                 return true;

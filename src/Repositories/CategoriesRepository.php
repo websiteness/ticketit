@@ -28,4 +28,12 @@ class CategoriesRepository {
     {
         return Category::find($id);
     }
+
+    public function update_asana_gid($id, $section_gid)
+    {
+        $cat = Category::find($id);
+        $cat->asana_section_gid = $section_gid;
+        
+        return $cat->save();
+    }
 }

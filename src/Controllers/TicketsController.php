@@ -17,6 +17,7 @@ use Kordy\Ticketit\Models\Status;
 use Sentinel;
 use DB;
 use Kordy\Ticketit\Repositories\CategoriesRepository;
+use Kordy\Ticketit\Services\Integrations\AsanaService;
 
 class TicketsController extends Controller
 {
@@ -194,7 +195,7 @@ class TicketsController extends Controller
      *
      * @return Response
      */
-    public function indexComplete()
+    public function indexComplete(CategoriesRepository $cr)
     {
         $users = Agent::all();
         $statuses = Status::all();
@@ -262,7 +263,7 @@ class TicketsController extends Controller
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request)
+    public function store(Request $request, AsanaService $asana_service)
     {
         $this->validate($request, [
             'subject'     => 'required|min:3',
@@ -312,6 +313,14 @@ class TicketsController extends Controller
         $ticket->autoSelectAgent();
 
         $ticket->save();
+
+        // push ticket to asana
+        try {
+            $asana_service->push_ticket($ticket->id);
+        } catch(\Exception $e) {
+            \Log::error('Tickets Error: failed to push tickets to Asana');
+            \Log::error($e->getMessage());
+        }
 
         session()->flash('status', trans('ticketit::lang.the-ticket-has-been-created'));
 
@@ -456,7 +465,7 @@ class TicketsController extends Controller
      *
      * @return Response
      */
-    public function complete($id)
+    public function complete($id, AsanaService $asana_service)
     {
         if ($this->permToClose($id) == 'yes') {
             $ticket = $this->tickets->findOrFail($id);
@@ -468,6 +477,14 @@ class TicketsController extends Controller
 
             $subject = $ticket->subject;
             $ticket->save();
+
+            // complete asana task
+            try {
+                $asana_service->complete_task($id);
+            } catch(\Exception $e) {
+                \Log::error('Tickets Error: failed to mark ticket as complete on Asana');
+                \Log::error($e->getMessage());
+            }
 
             session()->flash('status', trans('ticketit::lang.the-ticket-has-been-completed', ['name' => $subject]));
 

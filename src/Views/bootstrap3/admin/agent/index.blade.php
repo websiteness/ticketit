@@ -34,7 +34,7 @@
                             <select class="form-control select2" id="agent" name="agent" required>
                                 <option value="">Select User</option>
                                 @foreach($users as $user)
-                                <option value="{{ $user->id }}">{{ $user->first_name . ' ' . $user->last_name . ' - ' . $user->email }}</option>
+                                <option value="{{ $user->id }}">{{ $user->first_name . ' ' . $user->last_name . ' - ' . $user->email . ' (' . $user->roles()->first()->name . ')' }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -55,47 +55,16 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        {{-- <td>{{ trans('ticketit::admin.table-id') }}</td> --}}
                         <td>{{ trans('ticketit::admin.table-name') }}</td>
-                        {{-- <td>{{ trans('ticketit::admin.table-categories') }}</td>
-                        <td>{{ trans('ticketit::admin.table-join-category') }}</td> --}}
                         <td>Actions</td>
                     </tr>
                 </thead>
                 <tbody>
                 @foreach($agents as $agent)
                     <tr>
-                        {{-- <td>
-                            {{ $agent->id }}
-                        </td> --}}
                         <td>
-                            {{ $agent->name . ' - ' . $agent->email }}
+                            {{ $agent->name . ' - ' . $agent->email . ' (' . $agent->roles()->first()->name . ')' }}
                         </td>
-                        {{-- <td>
-                            @foreach($agent->categories as $category)
-                                <span style="color: {{ $category->color }}">
-                                    {{  $category->name }}
-                                </span>
-                            @endforeach
-                        </td>
-                        <td>
-                            {!! CollectiveForm::open([
-                                            'method' => 'PATCH',
-                                            'route' => [
-                                                        $setting->grab('admin_route').'.agent.update',
-                                                        $agent->id
-                                                        ],
-                                            ]) !!}
-                            @foreach(\Kordy\Ticketit\Models\Category::all() as $agent_cat)
-                                <input name="agent_cats[]"
-                                       type="checkbox"
-                                       value="{{ $agent_cat->id }}"
-                                       {!! ($agent_cat->agents()->where("id", $agent->id)->count() > 0) ? "checked" : ""  !!}
-                                       > {{ $agent_cat->name }}
-                            @endforeach
-                            {!! CollectiveForm::submit(trans('ticketit::admin.btn-join'), ['class' => 'btn btn-info btn-sm']) !!}
-                            {!! CollectiveForm::close() !!}
-                        </td> --}}
                         <td>
                             {!! CollectiveForm::open([
                             'method' => 'DELETE',

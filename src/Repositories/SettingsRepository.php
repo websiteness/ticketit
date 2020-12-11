@@ -11,4 +11,9 @@ class SettingsRepository {
 
         return $hours->value ?? 0;
     }
+
+    public function getBySlug($slug)
+    {
+        return Setting::where('slug', $slug)->first();
+    }
 }
