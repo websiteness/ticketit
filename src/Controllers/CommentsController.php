@@ -9,6 +9,8 @@ use Kordy\Ticketit\Models\Comment;
 use Kordy\Ticketit\Controllers\NotificationsController;
 use Kordy\Ticketit\Models\Ticket;
 use Sentinel;
+use Illuminate\Support\Str;
+use Kordy\Ticketit\Services\Integrations\AsanaService;
 
 class CommentsController extends Controller
 {
@@ -45,7 +47,7 @@ class CommentsController extends Controller
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request)
+    public function store(Request $request, AsanaService $asana_service)
     {
         $this->validate($request, [
             'ticket_id'   => 'required|exists:ticketit,id',
@@ -65,7 +67,9 @@ class CommentsController extends Controller
 
         $comment = new Models\Comment();
 
-        $comment->setPurifiedContent($request->get('content'));
+        $content = $this->imagesToLink($request->content);
+
+        $comment->setPurifiedContent($content);
 
         $comment->ticket_id = $request->get('ticket_id');
         $comment->user_id = \Sentinel::getuser()->id;
@@ -73,14 +77,10 @@ class CommentsController extends Controller
 
         if(session('com_stat_both', false)){
 
-            $original_ticket = Models\Ticket::find($comment->ticket_id);
             $ticket = Models\Ticket::find($comment->ticket_id);
             $ticket->status_id = $request->get('status_change');
             $ticket->updated_at = $comment->created_at;
             $ticket->save();
-
-            // $notification = new NotificationsController();
-            // $notification->newCommentAndStatus($comment, $ticket, $original_ticket);
 
             session(['com_stat_both' => false]);
         }else{
@@ -94,6 +94,19 @@ class CommentsController extends Controller
             $ticket = Ticket::find($request->ticket_id);
             $ticket->status_id = 1;
             $ticket->save();
+        }
+
+        // update asana task
+        $asana_service->update_ticket($ticket->id);
+
+        // complete asana task
+        if($request->status_change && $request->status_change == 4) {
+            try {
+                $asana_service->complete_task($ticket->id);
+            } catch(\Exception $e) {
+                \Log::error('Tickets Error: failed to mark ticket as complete on Asana');
+                \Log::error($e->getMessage());
+            }
         }
 
         return back()->with('status', trans('ticketit::lang.comment-has-been-added-ok'));
@@ -131,12 +144,17 @@ class CommentsController extends Controller
      *
      * @return Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, AsanaService $asana_service)
     {
         $comment = Comment::find($id);
 
-        $comment->setPurifiedContent($request->content);
+        $content = $this->imagesToLink($request->content);
+        
+        $comment->setPurifiedContent($content);
         $comment->save();
+
+        // update asana task
+        $asana_service->update_ticket($comment->ticket_id);
 
         return redirect()->back();
     }
@@ -153,5 +171,45 @@ class CommentsController extends Controller
         Comment::destroy($id);
 
         return redirect()->back();
+    }
+
+    /**
+     * Filter Base64 Images Download Images and make there links
+     * @return String | content
+     */
+    protected function imagesToLink($input_content)
+    {
+        $description = $input_content;
+        $dom = new \DomDocument();
+        $dom->loadHtml($description, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_NOERROR | LIBXML_NOWARNING);    
+        $images = $dom->getElementsByTagName('img');
+        foreach($images as $k => $img)
+        {
+           $data = $img->getAttribute('src');
+           if(Str::contains($data, ';base64')){
+               list($type, $data) = explode(';', $data);
+               list(, $data)      = explode(',', $data);
+               $data = base64_decode($data);
+               $image_name= "/tickets_images/" . time().$k.'.png';
+               $path = public_path() . $image_name;
+               file_put_contents($path, $data);
+               $img->removeAttribute('src');
+               $img->setAttribute('src', url($image_name));
+           }
+        }
+        $description = $dom->saveHTML();
+        $pattern = '/<img.+src=(.)(.*)\1[^>]*>/iU';
+        $callback_fn = 'imgToa';
+        $content = preg_replace_callback($pattern, array(&$this,"imgToa"), $description);
+        return $content;
+    }
+
+    /**
+     * Replace Images Tags into Anchor tags
+     * @return String
+     */
+    protected function imgToa($matches)
+    {
+        return "<a target='_blank' href='".$matches[2]."'> <font color ='black' >View Image</font></a>";
     }
 }

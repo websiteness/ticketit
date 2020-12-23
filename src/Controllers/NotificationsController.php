@@ -20,6 +20,7 @@ class NotificationsController extends Controller
 
     public function newComment(Comment $comment)
     {
+        // dd($comment->user->ticketit_admin || $comment->user->ticketit_admin);
         $ticket = $comment->ticket;
         $notification_owner = $comment->ticket->user;
         $template = 'ticketit::emails.comment';
@@ -28,6 +29,11 @@ class NotificationsController extends Controller
         // send notif if comment was created by support
         if($comment->user_id != $ticket->user_id) {
             $this->sendNotification($template, $data, $ticket, $notification_owner, trans('ticketit::lang.notify-new-comment-from').self::OWNER.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
+        }
+
+        // do not send notif to agents if comment was created by agents
+        if($comment->user->ticketit_admin || $comment->user->ticketit_agent) {
+            return null;
         }
 
         // send notification to agents

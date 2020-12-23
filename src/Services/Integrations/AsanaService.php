@@ -5,6 +5,7 @@ use Kordy\Ticketit\Models\TSetting;
 use Kordy\Ticketit\Repositories\CategoriesRepository;
 use Kordy\Ticketit\Repositories\TicketsRepository;
 use Kordy\Ticketit\Repositories\SettingsRepository;
+use Kordy\Ticketit\Repositories\CommentsRepository;
 
 class AsanaService
 {
@@ -256,6 +257,33 @@ class AsanaService
         $this->assign_task_section($response['gid'], $ticket->category_id);
     }
 
+    public function update_ticket($ticket_id)
+    {
+        try {
+            if(!$this->get_auth_token()) {
+                return false;
+            }
+    
+            $ticket_repository = new TicketsRepository;
+            $ticket = $ticket_repository->getById($ticket_id);
+    
+            if(!$ticket->asana_task_gid) {
+                return false;
+            }
+    
+            $post = [
+                'data' => [
+                    'html_notes' => $this->build_html_notes($ticket)
+                ]
+            ];
+    
+            $this->make_api_request('tasks/' . $ticket->asana_task_gid, 'PUT', $post);
+        } catch(\Exception $e) {
+            \Log::error('Tickets Error: failed to update ticket on Asana');
+            \Log::error($e->getMessage());
+        }
+    }
+
     public function assign_task_section($task_gid, $category_id)
     {
         $category_repository = new CategoriesRepository;
@@ -307,6 +335,37 @@ class AsanaService
 
         foreach($images as $image) {
             $content .= '<a href="' . $image['href'] . '">' . trim($image['text']) . '</a>' . "\n";
+        }
+
+        // add comment
+        $comments_repository = new CommentsRepository;
+
+        $comments = $comments_repository->getAllByTicketId($ticket->id);
+
+        if($comments) {
+            $content .= "\n\n";
+
+            foreach($comments as $comment) {
+                // set comment owner
+                if($comment->user_id == $ticket->user_id) {
+                    $content .= '<strong>==============USER RESPONSE=========</strong>';
+                } else {
+                    $content .= '<strong>==============LG RESPONSE===========</strong>';
+                }
+
+                $content .= "\n";
+                $content .= $comment->content . "\n";
+
+                $images = $this->extractLinks($comment->html);
+
+                if($images) {
+                    $content .= 'Images:' . "\n";
+                    
+                    foreach($images as $image) {
+                        $content .= '<a href="' . $image['href'] . '">' . trim($image['text']) . '</a>' . "\n";
+                    }
+                }
+            }
         }
 
         return '<body>' . $content . '</body>';

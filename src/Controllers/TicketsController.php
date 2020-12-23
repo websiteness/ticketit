@@ -381,7 +381,7 @@ class TicketsController extends Controller
      *
      * @return Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, AsanaService $asana_service)
     {
         $user = Sentinel::getUser();
 
@@ -413,6 +413,16 @@ class TicketsController extends Controller
 
         if($request->status_id) {
             $ticket->status_id = $request->status_id;
+
+            // complete asana task
+            if($request->status_id == 4) {
+                try {
+                    $asana_service->complete_task($ticket->id);
+                } catch(\Exception $e) {
+                    \Log::error('Tickets Error: failed to mark ticket as complete on Asana');
+                    \Log::error($e->getMessage());
+                }
+            }
         }
 
         if($request->category) {

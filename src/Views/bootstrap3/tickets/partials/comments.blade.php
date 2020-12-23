@@ -34,7 +34,11 @@
                                         <span class="ticket-comment__date">
                                             {{ $ticket->created_at->format('m/d/Y') }}
                                         </span>
-                                        {{'(' . $ticket->created_at->diffForHumans() . ')' }}
+                                        @if($ticket->created_at->diffInDays() <= 7)
+                                            {{'(' . $ticket->created_at->diffForHumans() . ')' }}
+                                        @else
+                                            {{'(' . $ticket->created_at->diffForHumans("", true, false, 2) . ' ago)' }}
+                                        @endif
                                     </span>
                                 </div><!-- .ticket-comment__message -->
                             </div><!-- .ticket-comment__item -->
@@ -52,7 +56,7 @@
 
                                         @if($u->isAdmin())
                                         <div class="comment-comment__actions">
-                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editCommentModal" onclick="editComment('{{ $comment->id }}', '{{ $comment->html }}')" ><i class="fa fa-pencil"></i></button>
+                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editCommentModal" onclick="editComment('{{ $comment->id }}', '{{ addslashes($comment->html) }}')" ><i class="fa fa-pencil"></i></button>
                                             
                                             <form method="POST" action="{{ route($setting->grab('main_route').'-comment.destroy', $comment->id) }}" onsubmit="return confirm('Delete this comment?')">
                                             {{ csrf_field() }}
@@ -62,7 +66,16 @@
                                         </div>
                                         @endif
                                     </div><!-- .ticket-comment__message-content -->
-                                    <span class="ticket-comment__time-delivered"><span class="ticket-comment__date">{{ $ticket->created_at->format('m/d/Y') }}</span> {{'(' . $ticket->created_at->diffForHumans() . ')' }}</span>
+                                    <span class="ticket-comment__time-delivered">
+                                        <span class="ticket-comment__date">
+                                            {{ $comment->created_at->format('m/d/Y') }}
+                                        </span>
+                                        @if($comment->created_at->diffInDays() <= 7)
+                                            {{'(' . $comment->created_at->diffForHumans() . ')' }}
+                                        @else
+                                            {{'(' . $comment->created_at->diffForHumans("", true, false, 2) . ' ago)' }}
+                                        @endif
+                                    </span>
                                 </div><!-- .ticket-comment__message -->
                             </div><!-- .ticket-comment__item -->
                             @else
@@ -80,7 +93,7 @@
 
                                         @if($u->isAdmin())
                                         <div class="comment-comment__actions">
-                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editCommentModal" onclick="editComment('{{ $comment->id }}', '{{ $comment->html }}')" ><i class="fa fa-pencil"></i></button>
+                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editCommentModal" onclick="editComment('{{ $comment->id }}', '{{ addslashes($comment->html) }}')" ><i class="fa fa-pencil"></i></button>
                                             
                                             <form method="POST" action="{{ route($setting->grab('main_route').'-comment.destroy', $comment->id) }}" onsubmit="return confirm('Delete this comment?')">
                                             {{ csrf_field() }}
@@ -90,7 +103,16 @@
                                         </div>
                                         @endif
                                     </div><!-- .ticket-comment__message-content -->
-                                    <span class="ticket-comment__time-delivered"><span class="ticket-comment__date">{{ $comment->created_at->format('m/d/Y') . ' (' . $comment->created_at->diffForHumans() . ')' }}</span>
+                                    <span class="ticket-comment__time-delivered">
+                                        <span class="ticket-comment__date">
+                                            {{ $comment->created_at->format('m/d/Y') }}
+                                        </span>
+                                        @if($comment->created_at->diffInDays() <= 7)
+                                            {{'(' . $comment->created_at->diffForHumans() . ')' }}
+                                        @else
+                                            {{'(' . $comment->created_at->diffForHumans("", true, false, 2) . ' ago)' }}
+                                        @endif
+                                    </span>
                                 </div><!-- .ticket-comment__message -->
                                 <div class="ticket-comment__avatar">
                                     <img src="{{asset('images/ticket-system/support-thumbnail.png')}}" alt="">
