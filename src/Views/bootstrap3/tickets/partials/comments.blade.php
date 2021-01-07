@@ -56,7 +56,7 @@
 
                                         @if($u->isAdmin())
                                         <div class="comment-comment__actions">
-                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editCommentModal" onclick="editComment('{{ $comment->id }}', '{{ addslashes($comment->html) }}')" ><i class="fa fa-pencil"></i></button>
+                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editCommentModal" onclick="editComment('{{ $comment->id }}', '{{ addslashes(trim($comment->html)) }}')" ><i class="fa fa-pencil"></i></button>
                                             
                                             <form method="POST" action="{{ route($setting->grab('main_route').'-comment.destroy', $comment->id) }}" onsubmit="return confirm('Delete this comment?')">
                                             {{ csrf_field() }}
@@ -93,7 +93,7 @@
 
                                         @if($u->isAdmin())
                                         <div class="comment-comment__actions">
-                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editCommentModal" onclick="editComment('{{ $comment->id }}', '{{ addslashes($comment->html) }}')" ><i class="fa fa-pencil"></i></button>
+                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editCommentModal" onclick="editComment('{{ $comment->id }}', '{{ addslashes(trim($comment->html)) }}')" ><i class="fa fa-pencil"></i></button>
                                             
                                             <form method="POST" action="{{ route($setting->grab('main_route').'-comment.destroy', $comment->id) }}" onsubmit="return confirm('Delete this comment?')">
                                             {{ csrf_field() }}
@@ -162,13 +162,13 @@
 
 @push('footer_scripts')
 <script>
-        $('#editCommentModal').on('shown.bs.modal', function() {
-            $('.edit-comment-summernote-editor').summernote();
-        });
+    $('#editCommentModal').on('shown.bs.modal', function() {
+        $('.edit-comment-summernote-editor').summernote();
+    });
 
     function editComment(comment_id, content) {
-        console.log('comment', comment_id);
-        console.log('content', content);
+        // console.log('comment', comment_id);
+        // console.log('content', content);
 
         setTimeout(function() {
             $('.edit-comment-summernote-editor').summernote('destroy');

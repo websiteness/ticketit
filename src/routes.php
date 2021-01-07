@@ -219,6 +219,11 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
                 Route::get('list','\Kordy\Ticketit\Controllers\Integrations\AsanaController@get_workspace_list')->name('list');
                 Route::post('store','\Kordy\Ticketit\Controllers\Integrations\AsanaController@store_workspace')->name('store');
             });
+            
+            Route::prefix('status')->name('status.')->group(function() {
+                Route::get('list','\Kordy\Ticketit\Controllers\Integrations\AsanaController@status_index')->name('index');
+                Route::post('map','\Kordy\Ticketit\Controllers\Integrations\AsanaController@map_statuses')->name('map');
+            });
         });
     });
 

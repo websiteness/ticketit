@@ -94,10 +94,18 @@ class CommentsController extends Controller
             $ticket = Ticket::find($request->ticket_id);
             $ticket->status_id = 1;
             $ticket->save();
+
+            $asana_service->update_task_status_tag($ticket);
         }
 
         // update asana task
         $asana_service->update_ticket($ticket->id);
+
+        // update task tag if status was changed
+        if($request->status_change)
+        {
+            $asana_service->update_task_status_tag($ticket);
+        }
 
         // complete asana task
         if($request->status_change && $request->status_change == 4) {

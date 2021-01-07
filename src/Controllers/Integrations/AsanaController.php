@@ -7,6 +7,7 @@ use Kordy\Ticketit\Models\TSetting;
 use Kordy\Ticketit\Services\Integrations\AsanaService;
 use Kordy\Ticketit\Services\CategoriesService;
 use Kordy\Ticketit\Models\Agent;
+use Kordy\Ticketit\Repositories\StatusRepository;
 
 class AsanaController extends Controller
 {
@@ -114,12 +115,27 @@ class AsanaController extends Controller
      */
     public function store_settings(Request $request, AsanaService $asana_service)
     {
-        // dd($request->all());
         $asana_service->store_project($request->project);
         $asana_service->store_tags($request->tags);
         
         return redirect()->back();
     }
 
+    /**
+     * Status
+     */
+    public function status_index(StatusRepository $status_repository, AsanaService $asana_service) {
+        $statuses = $status_repository->getAll();
+        $tags =  $asana_service->get_tags();
 
+        // dd($statuses);
+
+        return view('ticketit::admin.asana.status.index', compact('statuses', 'tags'));
+    }
+
+    public function map_statuses(Request $request, AsanaService $asana_service)
+    {
+        $asana_service->map_statuses($request->statuses);
+        return redirect()->back();
+    }
 }

@@ -6,6 +6,7 @@ use Kordy\Ticketit\Repositories\CategoriesRepository;
 use Kordy\Ticketit\Repositories\TicketsRepository;
 use Kordy\Ticketit\Repositories\SettingsRepository;
 use Kordy\Ticketit\Repositories\CommentsRepository;
+use Kordy\Ticketit\Repositories\StatusRepository;
 
 class AsanaService
 {
@@ -158,6 +159,17 @@ class AsanaService
         session()->flash('status', 'Successfully saved!');
     }
 
+    public function map_statuses($statuses)
+    {
+        foreach($statuses as $key => $status) {
+
+            $status_repository = new StatusRepository;
+            $status_repository->update_asana_gid($key, $status);
+        }
+
+        session()->flash('status', 'Successfully saved!');
+    }
+
     public function get_tags()
     {
         $workspace_gid = $this->get_workspace()->value;
@@ -245,6 +257,19 @@ class AsanaService
             $post['data']['tags'] = $tags;
         }
 
+        // get default ticket tag
+        $status_repository = new StatusRepository;
+        $status = $status_repository->getById($ticket->status_id);
+
+        if($status && $status->asana_tag_gid) {
+            // array_merge($post['data']['tags'], [$status->asana_tag_gid]);
+            if($tags) {
+                $post['data']['tags'] = array_merge($tags, [$status->asana_tag_gid]);
+            } else {
+                $post['data']['tags'] = [$status->asana_tag_gid];
+            }
+        }
+
         $response = $this->make_api_request('tasks', 'POST', $post);
 
         // set ticket gid
@@ -302,6 +327,55 @@ class AsanaService
         $url = 'sections/' . $category->asana_section_gid . '/addTask';
 
         $this->make_api_request($url, 'POST', $post);
+    }
+
+    public function add_task_tag($task_gid, $tag_gid)
+    {
+        $post = [
+            'data' => [
+                'tag' => $tag_gid
+            ]
+        ];
+
+        $url = 'tasks/' . $task_gid . '/addTag';
+
+        $this->make_api_request($url, 'POST', $post);
+    }
+
+    public function remove_task_tag($task_gid, $tag_gid)
+    {
+        $post = [
+            'data' => [
+                'tag' => $tag_gid
+            ]
+        ];
+
+        $url = 'tasks/' . $task_gid . '/removeTag';
+
+        $this->make_api_request($url, 'POST', $post);
+    }
+
+    public function update_task_status_tag($ticket)
+    {
+        try {
+
+            $status_repository = new StatusRepository;
+            
+            $statuses = $status_repository->getAll();
+
+            // remove previous status tags
+            foreach($statuses as $status) {
+                $this->remove_task_tag($ticket->asana_task_gid, $status->asana_tag_gid);
+            }
+        
+            $status = $status_repository->getById($ticket->status_id);
+        
+            $this->add_task_tag($ticket->asana_task_gid, $status->asana_tag_gid);
+
+        } catch(\Exception $e) {
+            \Log::error('Tickets Error: failed to update Asana task tag');
+            \Log::error($e->getMessage());
+        }
     }
 
     public function build_html_notes($ticket)

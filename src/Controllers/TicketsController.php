@@ -415,14 +415,14 @@ class TicketsController extends Controller
             $ticket->status_id = $request->status_id;
 
             // complete asana task
-            if($request->status_id == 4) {
+            /* if($request->status_id == 4) {
                 try {
                     $asana_service->complete_task($ticket->id);
                 } catch(\Exception $e) {
                     \Log::error('Tickets Error: failed to mark ticket as complete on Asana');
                     \Log::error($e->getMessage());
                 }
-            }
+            } */
         }
 
         if($request->category) {
@@ -444,6 +444,21 @@ class TicketsController extends Controller
         }
 
         $ticket->save();
+
+        if($request->status_id) {
+
+            $asana_service->update_task_status_tag($ticket);
+
+            // complete asana task
+            if($request->status_id == 4) {
+                try {
+                    $asana_service->complete_task($ticket->id);
+                } catch(\Exception $e) {
+                    \Log::error('Tickets Error: failed to mark ticket as complete on Asana');
+                    \Log::error($e->getMessage());
+                }
+            }
+        }
 
         session()->flash('status', trans('ticketit::lang.the-ticket-has-been-modified'));
 

@@ -10,6 +10,9 @@
             <li role="presentation" @if(Route::currentRouteName() == $setting->grab('admin_route').'.asana.users.index') class="active" @endif>
                 <a href="{{ route($setting->grab('admin_route').'.asana.users.index') }}">Users Mapping</a>
             </li>
+            <li role="presentation" @if(Route::currentRouteName() == $setting->grab('admin_route').'.asana.status.index') class="active" @endif>
+                <a href="{{ route($setting->grab('admin_route').'.asana.status.index') }}">Status Mapping</a>
+            </li>
         </ul>
     </div>
 </div>
