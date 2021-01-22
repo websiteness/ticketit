@@ -17,6 +17,8 @@ use Kordy\Ticketit\Models\Status;
 use Sentinel;
 use DB;
 use Kordy\Ticketit\Repositories\CategoriesRepository;
+use Kordy\Ticketit\Repositories\CommentsRepository;
+use Kordy\Ticketit\Repositories\SettingsRepository;
 use Kordy\Ticketit\Services\Integrations\AsanaService;
 
 class TicketsController extends Controller
@@ -75,6 +77,7 @@ class TicketsController extends Controller
             ->join('ticketit_categories', 'ticketit_categories.id', '=', 'ticketit.category_id')
             ->select([
                 'ticketit.id',
+                'ticketit.user_id',
                 'ticketit.status_id',
                 'ticketit.subject AS subject',
                 'ticketit_statuses.name AS status',
@@ -95,7 +98,20 @@ class TicketsController extends Controller
             $collection->where('ticketit.user_id', $request->user);
         }
         if($request->status) {
-            $collection->where('ticketit.status_id', $request->status);
+            if($request->status == 'no_response') {
+                $collection->whereDoesntHave('comments', function($query) {
+                    $query->where('ticketit_comments.user_id', '!=', 'ticketit.user_id');
+                });
+            } elseif($request->status == 'overdue') {
+                $settings_repository = new SettingsRepository;
+                $overdue_hours = $settings_repository->getOverdueHours();
+                $datetime_now = \Carbon\Carbon::now()->subHours($overdue_hours);
+
+                $collection->where('ticketit.created_at', '<', $datetime_now)
+                    ->whereDoesntHave('comments');
+            } else {
+                $collection->where('ticketit.status_id', $request->status);
+            }
         }
         if($request->sub_category) {
             $collection->where('ticketit.category_id', $request->sub_category);
@@ -108,7 +124,22 @@ class TicketsController extends Controller
         if($request->filter_hide_closed_tickets) {
             $collection->where('ticketit.status_id', '!=', 4);
         }
-        
+        if($request->last_reply) {
+            // $comments_repository = new CommentsRepository;
+
+            if($request->last_reply == 'user') {
+                $collection->where(function($query) {
+                    $query->where('ticketit.user_id', function($query) {
+                        return $query->from('ticketit_comments')->select('ticketit_comments.user_id')->whereColumn('ticketit_comments.ticket_id', 'ticketit.id')->orderBy('ticketit_comments.id', 'desc')->limit(1);
+                    })
+                    ->orWhereDoesntHave('comments');
+                });
+            } else {
+                $collection->where('ticketit.user_id', '!=', function($query) {
+                    return $query->from('ticketit_comments')->select('ticketit_comments.user_id')->whereColumn('ticketit_comments.ticket_id', 'ticketit.id')->orderBy('ticketit_comments.id', 'desc')->limit(1);
+                });
+            }
+        }
 
         $collection = $datatables->of($collection);
 
@@ -171,6 +202,21 @@ class TicketsController extends Controller
             return link_to_route(TSetting::grab('main_route').'.complete', 'Resolved', $ticket->id, ['class' => 'btn btn-success btn-sm']);
         });
 
+        $collection->editColumn('last_reply', function ($ticket) {
+            $comments_repository = new CommentsRepository;
+            $comment = $comments_repository->getLastCommentByTicketId($ticket->id);
+
+            if(!$comment) {
+                return 'User';
+            }
+
+            if($ticket->user_id == $comment->user_id) {
+                return 'User';
+            } else {
+                return 'Support';
+            }
+        });
+
         return $collection;
     }
 
@@ -181,6 +227,11 @@ class TicketsController extends Controller
      */
     public function index(CategoriesRepository $cr)
     {
+
+        // $tickets = new \Kordy\Ticketit\Repositories\TicketsRepository;
+
+        // dd($tickets->getNoResponseCount()->pluck('id'));
+
         $users = Agent::all();
         $statuses = Status::all();
         $sub_categories = $cr->getSubCategories();

@@ -9,4 +9,9 @@ class CommentsRepository {
     {
         return Comment::where('ticket_id', $ticket_id)->get();
     }
+
+    public function getLastCommentByTicketId($ticket_id)
+    {
+        return Comment::where('ticket_id', $ticket_id)->orderBy('id', 'desc')->first();
+    }
 }

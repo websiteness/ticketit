@@ -34,6 +34,14 @@
 		initDatatable();
 
 		function initDatatable(filter = null) {
+
+            let btn_search_filter = document.getElementById('btn_search_filter');
+            
+            if(btn_search_filter)
+            {
+                document.getElementById('btn_search_filter').innerText = "Searching...";
+            }
+
 			let url = '{!! route($setting->grab('main_route').'.data', $complete) !!}';
 
 			if(filter) {
@@ -88,16 +96,25 @@
 					{ data: 'id', name: 'ticketit.id' },
 					{ data: 'subject', name: 'subject' },
 					{ data: 'status', name: 'ticketit_statuses.name' },
-					{ data: 'updated_at', name: 'ticketit.updated_at' },
-					{ data: 'agent', name: 'users.name' },
 					@if( $u->isAgent() || $u->isAdmin() )
+					{ data: 'last_reply', name: 'ticketit.last_reply' },
+					@endif
+					{ data: 'updated_at', name: 'ticketit.updated_at' },
+					@if( $u->isAgent() || $u->isAdmin() )
+					{ data: 'agent', name: 'users.name' },
 						{ data: 'priority', name: 'ticketit_priorities.name' },
 						{ data: 'owner', name: 'users.name' },
 						{ data: 'category', name: 'ticketit_categories.name' },
 					@endif
 					{ data: 'resolved', name: 'resolved' },
 				]
-			});
+            });
+            
+            if(btn_search_filter)
+            {
+                closeNav();
+                document.getElementById('btn_search_filter').innerText = "Search";
+            }
 		}
 
 		function filterTickets() {
@@ -105,8 +122,9 @@
 			let status = document.getElementById('filter_status').value;
 			let message = document.getElementById('filter_message').value;
 			let sub_category = document.getElementById('filter_sub_category').value;
+			let last_reply = document.getElementById('filter_last_reply').value;
 
-			let query_string = `?user=${user}&status=${status}&message=${message}&sub_category=${sub_category}`;
+			let query_string = `?user=${user}&status=${status}&message=${message}&sub_category=${sub_category}&last_reply=${last_reply}`;
 
 			initDatatable(query_string);
 		}
