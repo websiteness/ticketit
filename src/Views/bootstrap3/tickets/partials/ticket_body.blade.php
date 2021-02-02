@@ -13,6 +13,7 @@
   right: 0;
   padding: 5px;
 }
+
 </style>
 @endpush
 
@@ -142,12 +143,15 @@
                     @endif
                   </tbody>
                 </table>
+
                     {!! CollectiveForm::submit('Update', ['class' => 'btn btn-success ticket-update-btn']) !!}
                 {!! CollectiveForm::close() !!}
               </div><!-- x_content -->
             </div><!-- .x_panel -->
           </div><!-- .col-md-12 col-sm-12 col-xs-12 -->
         </div><!-- .col-md-12 col-sm-12 col-xs-12 -->
+
+ 
     </div>
 </div>
 

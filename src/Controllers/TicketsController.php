@@ -20,13 +20,15 @@ use Kordy\Ticketit\Repositories\CategoriesRepository;
 use Kordy\Ticketit\Repositories\CommentsRepository;
 use Kordy\Ticketit\Repositories\SettingsRepository;
 use Kordy\Ticketit\Services\Integrations\AsanaService;
+use App\User;
 
 class TicketsController extends Controller
 {
     protected $tickets;
     protected $agent;
+    protected $user;
 
-    public function __construct(Ticket $tickets, Agent $agent)
+    public function __construct(Ticket $tickets, Agent $agent, User $user)
     {
         Cache::flush();
         // $this->middleware('Kordy\Ticketit\Middleware\ResAccessMiddleware', ['only' => ['show']]);
@@ -35,6 +37,7 @@ class TicketsController extends Controller
 
         $this->tickets = $tickets;
         $this->agent = $agent;
+        $this->user = $user;
     }
 
     public function data(Request $request, $complete = false)
@@ -419,9 +422,13 @@ class TicketsController extends Controller
 
         $comments = $ticket->comments()->paginate(TSetting::grab('paginate_items'));
 
+        // $user_tickets = Agent::tickets();
+        $subscriptions = $ticket->user->account->subscriptions;
+     
+
         return view('ticketit::tickets.show',
             compact('ticket', 'status_lists', 'priority_lists', 'category_lists', 'subcategories', 'selected_category', 'selected_subcategory', 'agent_lists', 'comments',
-                'close_perm', 'reopen_perm'));
+                'close_perm', 'reopen_perm', 'subscriptions'));
     }
 
     /**

@@ -93,6 +93,12 @@ class Ticket extends Model
         return $this->belongsTo('App\User', 'user_id');
     }
 
+    public function ticket_user()
+    {
+        return $this->belongsTo('Kordy\Ticketit\Models\Agent', 'user_id');
+    }
+
+
     /**
      * Get Ticket agent.
      *
