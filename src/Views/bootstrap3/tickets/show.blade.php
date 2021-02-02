@@ -80,12 +80,15 @@
     }
 
     .subscription-span-mg {
-        margin-top:20px;
         text-align: initial;
     }
 
     .contact-info-dec-mg{
         margin-top: -17px;
+    }
+    
+    .mt-5{
+        margin-top: 5px;
     }
 </style>
 @stop
@@ -126,7 +129,7 @@
                             <p class="fw-600 contact-info-details align-center"> <span class="contact-info-span-main"> <img src="{{asset('images/email-result.png')}}" alt="" width="20px" height="20px"> </span> <span class="contact-info-span" > Email: {{ $ticket->user->email }} </span> </p>  
                             <p class="fw-600 contact-info-details align-center"> <span class="contact-info-span-main"> <img src="{{asset('images/pricing/phone-system.png')}}" alt="" width="20px" height="20px"> </span> <span class="contact-info-span" > Phone: </span> </p>  
                             <p class="fw-600 contact-info-details align-center"> <span class="contact-info-span-main"> <img src="{{asset('images/company-creation-mapping/facebook-hover.png')}}" alt="" width="20px" height="20px"> </span> <span class="contact-info-span" > Facebook: </span> </p>  
-                            <p class="fw-600 contact-info-details align-center contact-info-dec-mg"> <span class="contact-info-span-main"> <img src="{{asset('images/pricing-icon/plan.png')}}" alt="" width="20px" height="20px"> </span> <span class="contact-info-span subscription-span-mg">Subscription Plan: @foreach($subscriptions as $subscription){{ $subscription['name'] }}, @endforeach 
+                            <p class="fw-600 contact-info-details align-center contact-info-dec-mg mt-5"> <span class="contact-info-span-main"> <img src="{{asset('images/pricing-icon/plan.png')}}" alt="" width="20px" height="20px"> </span> <span class="contact-info-span subscription-span-mg">Subscription Plan: @foreach($subscriptions as $subscription) {{ $subscription->name }},@endforeach 
                             </span> </p>         
                         </div>
                         <form action="{{ route('developer.process.login.as.user.submit')}}" method="POST">
