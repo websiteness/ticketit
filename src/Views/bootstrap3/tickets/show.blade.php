@@ -14,8 +14,7 @@
         font-weight: 600;
     }
     .thumbnail {
-        height: 101.5vh;
-        overflow: auto;
+        height: auto;
     }
     .th-show {
         text-align: left;
@@ -39,6 +38,55 @@
     .text-white {
         color: white;
     }
+    .caption-bot {
+        height: 70vh;
+        overflow: auto;
+    }
+    .ticket-profile-pic {
+        padding-top: 10px;
+        text-align: center;
+    }
+    .contact-info{
+        padding-left: 10px;
+        padding-right: 10px;
+        padding-top: 10px;
+        padding-bottom: -20px;
+    }
+
+    .contact-info h4{
+        margin-bottom: -10px;
+    }
+
+    .contact-info-details{
+        display: flex;
+        align-items: center;
+    }
+    .contact-info-span-main{
+        display: block;
+    }
+
+    .contact-info-span{
+        margin-top: 5px;
+        display: block;
+        margin-left: 3px;
+    }
+    .contact-info h3 {
+        display: inline;
+        vertical-align: middle;
+    }
+    .contact-info hr {
+        margin-top: 10px; 
+        margin-bottom: 0px;
+    }
+
+    .subscription-span-mg {
+        margin-top:20px;
+        text-align: initial;
+    }
+
+    .contact-info-dec-mg{
+        margin-top: -17px;
+    }
 </style>
 @stop
 @section('content')
@@ -47,9 +95,9 @@
     <div class="row">
 
         @if(Sentinel::inRole('super-admin'))
-            <div class="col-lg-9 col-md-9 col-sm-9">
+            <div class="col-lg-8 col-md-8 col-sm-8">
         @elseif(Sentinel::inRole('ticket-agent'))
-            <div class="col-lg-9 col-md-9 col-sm-9">
+            <div class="col-lg-8 col-md-8 col-sm-8">
         @else
             <div class="col-lg-12 col-md-12 col-sm-12">
         @endif
@@ -63,17 +111,14 @@
             </div>
 
             @if(Sentinel::inRole('super-admin') || Sentinel::inRole('ticket-agent'))
-            <div class="col-sm-3 ticket-sidenavbar-mt-20 h-100 ticket-sidenav">
+            <div class="col-sm-4 ticket-sidenavbar-mt-20 h-100 ticket-sidenav">
                 <div class="thumbnail">
                     <div class="caption">
                         <div class="row ticket-profile-pic">
-                            <div class="col-sm-4">
-                                <img src="{{asset('images/user-big.png')}}" class="img-circle" alt="" width="120" height="100">
-                            </div>
-                          
+                            <img src="{{asset('images/user-big.png')}}" class="img-circle" alt="" width="100" height="88">                
                         </div>
                         <div class="row contact-info">
-                            <h3> <span> <img src="{{asset('images/icon-user.png')}}" alt=""></span> Contact Info</h3>
+                            <span><img src="{{asset('images/icon-user.png')}}" alt="" width="20px" height="20px"><h3>Contact Info</h3></span>
                             <hr>
                         </div>
                         <div class="text-light">
@@ -81,10 +126,8 @@
                             <p class="fw-600 contact-info-details align-center"> <span class="contact-info-span-main"> <img src="{{asset('images/email-result.png')}}" alt="" width="20px" height="20px"> </span> <span class="contact-info-span" > Email: {{ $ticket->user->email }} </span> </p>  
                             <p class="fw-600 contact-info-details align-center"> <span class="contact-info-span-main"> <img src="{{asset('images/pricing/phone-system.png')}}" alt="" width="20px" height="20px"> </span> <span class="contact-info-span" > Phone: </span> </p>  
                             <p class="fw-600 contact-info-details align-center"> <span class="contact-info-span-main"> <img src="{{asset('images/company-creation-mapping/facebook-hover.png')}}" alt="" width="20px" height="20px"> </span> <span class="contact-info-span" > Facebook: </span> </p>  
-                            <p class="fw-600 contact-info-details align-center"> <span class="contact-info-span-main"> <img src="{{asset('images/pricing-icon/plan.png')}}" alt="" width="20px" height="20px"> </span> <span class="contact-info-span">Subscription Plan: <p class="fw-600 contact-info-details" >@foreach($subscriptions as $subscription){{ $subscription['name'] }}, @endforeach </p> 
-                            </span> </p>  
-                            
-                         
+                            <p class="fw-600 contact-info-details align-center contact-info-dec-mg"> <span class="contact-info-span-main"> <img src="{{asset('images/pricing-icon/plan.png')}}" alt="" width="20px" height="20px"> </span> <span class="contact-info-span subscription-span-mg">Subscription Plan: @foreach($subscriptions as $subscription){{ $subscription['name'] }}, @endforeach 
+                            </span> </p>         
                         </div>
                         <form action="{{ route('developer.process.login.as.user.submit')}}" method="POST">
                         {{ csrf_field() }}
@@ -93,7 +136,7 @@
                         </form>
                         <!-- <p><a class="btn btn-success btn-block text-sm btn-login-as-user" role="button" id="{{$ticket->user->id }}">Login as user</a> </p> -->
                     </div>
-                    <div class="caption col-sm">
+                    <div class="caption-bot col-sm">
                         <table class="table table-bordered ">
                             <thead>
                                 <tr>
@@ -124,7 +167,6 @@
 @section('footer')
 <script>
     $(document).ready(function() {
-    
         $(".btn-ticket-view").click(function(event) {
             event.preventDefault();
             var id = $(this).attr('id');        
@@ -132,14 +174,12 @@
                 window.location = '/tickets/' + id;
             }
         });
-
         $(".deleteit").click(function(event) {
             event.preventDefault();
             if (confirm("{!! trans('ticketit::lang.show-ticket-js-delete') !!}" + $(this).attr("node") + " ?")) {
                 var form = $(this).attr("form");
                 $("#" + form).submit();
             }
-
         });
         $('#category_id').change(function() {
             var loadpage = "{!! route($setting->grab('main_route').'agentselectlist') !!}/" + $(this).val() + "/{{ $ticket->id }}";
@@ -150,17 +190,13 @@
             $(this).find('.modal-body p').text($message);
             $title = $(e.relatedTarget).attr('data-title');
             $(this).find('.modal-title').text($title);
-
             // Pass form reference to modal for submission on yes/ok
             var form = $(e.relatedTarget).closest('form');
             $(this).find('.modal-footer #confirm').data('form', form);
         });
-
-        <!--Form confirm(yes / ok) handler, submits form-- >
-            $('#confirmDelete').find('.modal-footer #confirm').on('click', function() {
-                $(this).data('form').submit();
-            });
-
+        $('#confirmDelete').find('.modal-footer #confirm').on('click', function() {
+            $(this).data('form').submit();
+        });
         $('#comment_reply').click(function() {
             $('#comment_form').css('display', 'block');
             $('#comment_reply').css('display', 'none');
@@ -175,7 +211,8 @@
 {{-- {!! json_encode($status_lists) !!} --}}
 <script>
     $('document').ready(function() {
-        var subcategories = { !!json_encode($subcategories) !!};
+
+        var subcategories = {!! json_encode($subcategories) !!};
         let val = $('.cat option:selected').val();
 
         if (typeof(subcategories[val]) !== 'undefined' && subcategories[val] !== '' && subcategories[val] !== null) {
@@ -218,7 +255,7 @@
     });
 
     function selectCategory(ev) {
-        var subcategories = { !!json_encode($subcategories) !!};
+        var subcategories = {!!json_encode($subcategories)!!};
         if (typeof(subcategories[ev]) !== 'undefined' && subcategories[ev] !== '' && subcategories[ev] !== null) {
             $('.subcat').html(generateDropdown(ev, subcategories));
         } else {
@@ -249,7 +286,7 @@
     }
 
     function generateStatusesSelectBox() {
-        var statuses = { !!json_encode($status_lists) !!}
+        var statuses = {!!json_encode($status_lists)!!};
         var options = ''
         Object.keys(statuses).forEach(key => {
             options += '<option value="' + key + '">' + statuses[key] + '</option>'
