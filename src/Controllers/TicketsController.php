@@ -424,14 +424,9 @@ class TicketsController extends Controller
 
         $comments = $ticket->comments()->paginate(TSetting::grab('paginate_items'));
 
-        // $user_tickets = Agent::tickets();
-        $subscriptions = $ticket->user->account->subscription_items->load('plan');
-        // $subscriptions = Account::findOrFail($user_id)
-
-
         return view('ticketit::tickets.show',
             compact('ticket', 'status_lists', 'priority_lists', 'category_lists', 'subcategories', 'selected_category', 'selected_subcategory', 'agent_lists', 'comments',
-                'close_perm', 'reopen_perm', 'subscriptions'));
+                'close_perm', 'reopen_perm',));
     }
 
     /**

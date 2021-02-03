@@ -148,9 +148,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($ticket->ticket_user->tickets as $ticket)
+                                @foreach($ticket->ticket_user->userTotalTickets as $ticket)
                                 <tr>
-                                    <th > <small>{{ str_limit($ticket->subject,17) }}</small></th>
+                                    <th > <small>{{ str_limit($ticket->subject,22) }}</small></th>
                                     <th class="text-center" width="15px">
                                         <a class="btn btn-sm btn-success btn-view-ticket btn-ticket-view" role="button" id="{{ $ticket->id }}"><i class="fa fa-eye"></i></a>
                                     </th>
