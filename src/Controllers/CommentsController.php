@@ -16,7 +16,8 @@ class CommentsController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('Kordy\Ticketit\Middleware\IsAdminMiddleware', ['only' => ['edit', 'update', 'destroy']]);
+        $this->middleware('Kordy\Ticketit\Middleware\IsAgentMiddleware', ['only' => ['edit', 'update', 'destroy']]);
+        $this->middleware('Kordy\Ticketit\Middleware\IsAdminMiddleware', ['only' => ['edit']]);
         $this->middleware('Kordy\Ticketit\Middleware\ResAccessMiddleware', ['only' => 'store']);
     }
 
@@ -49,6 +50,7 @@ class CommentsController extends Controller
      */
     public function store(Request $request, AsanaService $asana_service)
     {
+       
         $this->validate($request, [
             'ticket_id'   => 'required|exists:ticketit,id',
             'content'     => 'required|min:6',
@@ -142,6 +144,7 @@ class CommentsController extends Controller
     public function edit($id)
     {
         //
+    
     }
 
     /**

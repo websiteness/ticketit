@@ -96,15 +96,19 @@ class Agent extends User
             $user = User::find($id);
             if ($user->ticketit_agent) {
                 return true;
+            } else {
+                return false;
             }
 
-            return false;
+            
         }
         if (Sentinel::check()) {
             if (Sentinel::getUser()->ticketit_agent) {
                 return true;
+            } else {
+                return false;
             }
-            return false;
+            
         }
     }
 

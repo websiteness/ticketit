@@ -11,6 +11,7 @@
     }
 </style>
 @endpush
+
 <div class="ticket-system">
     <div class="ticket-system__tabs" role="tabpanel" data-example-id="togglable-tabs">
         <div class="row">
@@ -30,6 +31,8 @@
                                         <h5>{{ $ticket->user->name }}:</h5>
                                             {!! $ticket->html !!}
                                     </div><!-- .ticket-comment__message-content -->
+
+                                  
                                     <span class="ticket-comment__time-delivered">
                                         <span class="ticket-comment__date">
                                             {{ $ticket->created_at->format('m/d/Y') }}
@@ -42,6 +45,7 @@
                                     </span>
                                 </div><!-- .ticket-comment__message -->
                             </div><!-- .ticket-comment__item -->
+                  
                             @if(!$comments->isEmpty())
                             @foreach($comments as $comment)
                             @if(!$comment->user->ticketit_admin && !$comment->user->ticketit_agent)
@@ -51,10 +55,10 @@
                                 </div><!-- .ticket-comment__avatar -->
                                 <div class="ticket-comment__message">
                                     <div class="ticket-comment__message-content">
-                                        <h5>{{ $comment->user->name }}:</h5>
+                                        <h5>{{ $comment->user->name }}:</h5>                                
                                         {!! $comment->html !!}
 
-                                        @if($u->isAdmin())
+                                        @if($u->isAdmin() || $u->isAgent())
                                         <div class="comment-comment__actions">
                                             <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editCommentModal" onclick="editComment('{{ $comment->id }}', '{{ addslashes(trim($comment->html)) }}')" ><i class="fa fa-pencil"></i></button>
                                             
@@ -91,7 +95,7 @@
                                         </h5>
                                         {!! $comment->html !!}
 
-                                        @if($u->isAdmin())
+                                        @if($u->isAdmin() || $u->isAgent())
                                         <div class="comment-comment__actions">
                                             <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editCommentModal" onclick="editComment('{{ $comment->id }}', '{{ addslashes(trim($comment->html)) }}')" ><i class="fa fa-pencil"></i></button>
                                             
