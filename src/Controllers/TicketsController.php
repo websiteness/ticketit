@@ -321,6 +321,7 @@ class TicketsController extends Controller
      */
     public function store(Request $request, AsanaService $asana_service)
     {
+        //dd($request->all());
         $this->validate($request, [
             'subject'     => 'required|min:3',
             'content'     => 'required|min:6',
@@ -331,8 +332,11 @@ class TicketsController extends Controller
         $ticket = new Ticket();
 
         $ticket->subject = $request->subject;
+        $ticket->html = $request->html;
 
         $content = $this->imagesToLink($request->get('content'));
+
+     
 
         // check if heat map urls is added
         if(isset($request->heat_map_url[0]) && $request->heat_map_url[0]) {
@@ -378,7 +382,7 @@ class TicketsController extends Controller
             \Log::error($e->getMessage());
         }
 
-        session()->flash('status', trans('ticketit::lang.the-ticket-has-been-created'));
+        session()->flash('status', trans('ticketit::lang.the-ticket-has-been-createcreated'));
 
         return redirect()->action('\Kordy\Ticketit\Controllers\TicketsController@index');
     }
@@ -394,39 +398,47 @@ class TicketsController extends Controller
     {
         $ticket = $this->tickets->findOrFail($id);
 
-        list($priority_lists, $category_lists, $status_lists, $subcategories) = $this->PCS();
+        $user = Sentinel::getUser();
+        
+        if($ticket->user_id == $user->id || Sentinel::inRole('agent') || Sentinel::inRole('ticket-agent') || Sentinel::inRole('super-admin') ){
+            list($priority_lists, $category_lists, $status_lists, $subcategories) = $this->PCS();
 
-        $close_perm = $this->permToClose($id);
-        $reopen_perm = $this->permToReopen($id);
-
-        if(Sentinel::inRole('client')){
-            $first_admin = Sentinel::getUser()->admin_user;
-        }elseif (Sentinel::inRole('admin')) {
-            $first_admin = Sentinel::getUser();
-        }elseif(Sentinel::inRole('agent')){
-            $first_admin = Sentinel::getUser()->admin_user;
-        }elseif(Sentinel::inRole('super-admin')){
-            $first_admin = Sentinel::findRoleBySlug('super-admin')->users()->first();
-        }
-
-        // $cat_agents = Models\Category::find($ticket->category_id)->agents()->where('parent_user_id',$first_admin->id)->agentsLists();
-
-        $cat_agents = Agent::agentsLists();
-        // dd($cat_agents);
-        if (is_array($cat_agents)) {
-            $agent_lists = ['auto' => 'Auto Select'] + $cat_agents;
+            $close_perm = $this->permToClose($id);
+            $reopen_perm = $this->permToReopen($id);
+    
+            if(Sentinel::inRole('client')){
+                $first_admin = Sentinel::getUser()->admin_user;
+            }elseif (Sentinel::inRole('admin')) {
+                $first_admin = Sentinel::getUser();
+            }elseif(Sentinel::inRole('agent')){
+                $first_admin = Sentinel::getUser()->admin_user;
+            }elseif(Sentinel::inRole('super-admin')){
+                $first_admin = Sentinel::findRoleBySlug('super-admin')->users()->first();
+            }
+    
+            // $cat_agents = Models\Category::find($ticket->category_id)->agents()->where('parent_user_id',$first_admin->id)->agentsLists();
+    
+            $cat_agents = Agent::agentsLists();
+            // dd($cat_agents);
+            if (is_array($cat_agents)) {
+                $agent_lists = ['auto' => 'Auto Select'] + $cat_agents;
+            } else {
+                $agent_lists = ['auto' => 'Auto Select'];
+            }
+    
+            $selected_category = ($ticket->category->parent_category) ? $ticket->category->parent_category->id : $ticket->category->id;
+            $selected_subcategory = ($ticket->category->parent_category) ? $ticket->category->id : null;
+    
+            $comments = $ticket->comments()->paginate(TSetting::grab('paginate_items'));
+    
+            return view('ticketit::tickets.show',
+                compact('ticket', 'status_lists', 'priority_lists', 'category_lists', 'subcategories', 'selected_category', 'selected_subcategory', 'agent_lists', 'comments',
+                    'close_perm', 'reopen_perm'));
         } else {
-            $agent_lists = ['auto' => 'Auto Select'];
+            return redirect()->route(TSetting::grab('main_route').'.index');
         }
 
-        $selected_category = ($ticket->category->parent_category) ? $ticket->category->parent_category->id : $ticket->category->id;
-        $selected_subcategory = ($ticket->category->parent_category) ? $ticket->category->id : null;
-
-        $comments = $ticket->comments()->paginate(TSetting::grab('paginate_items'));
-
-        return view('ticketit::tickets.show',
-            compact('ticket', 'status_lists', 'priority_lists', 'category_lists', 'subcategories', 'selected_category', 'selected_subcategory', 'agent_lists', 'comments',
-                'close_perm', 'reopen_perm',));
+       
     }
 
     /**

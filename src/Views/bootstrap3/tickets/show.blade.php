@@ -96,7 +96,6 @@
 @include('ticketit::shared.header')
 <div class="container">
     <div class="row">
-
         @if(Sentinel::inRole('super-admin'))
             <div class="col-lg-8 col-md-8 col-sm-8">
         @elseif(Sentinel::inRole('ticket-agent'))
@@ -150,9 +149,9 @@
                             <tbody>
                                 @foreach($ticket->ticket_user->userTotalTickets as $ticket)
                                 <tr>
-                                    <th > <small>{{ str_limit($ticket->subject,22) }}</small></th>
+                                    <th > <small>{{ str_limit($ticket->subject,30) }}</small></th>                                   
                                     <th class="text-center" width="15px">
-                                        <a class="btn btn-sm btn-success btn-view-ticket btn-ticket-view" role="button" id="{{ $ticket->id }}"><i class="fa fa-eye"></i></a>
+                                        <a href="/tickets/{{ $ticket->id }}" class="btn btn-sm btn-success btn-view-ticket btn-ticket-view" style="background-color: {{ $ticket->status->color }}; border-color: {{ $ticket->status->color }};"><i class="fa fa-eye"></i></a>                       
                                     </th>
                                 </tr>
                                @endforeach
@@ -170,13 +169,6 @@
 @section('footer')
 <script>
     $(document).ready(function() {
-        $(".btn-ticket-view").click(function(event) {
-            event.preventDefault();
-            var id = $(this).attr('id');        
-            if (id != undefined && id != null) {
-                window.location = '/tickets/' + id;
-            }
-        });
         $(".deleteit").click(function(event) {
             event.preventDefault();
             if (confirm("{!! trans('ticketit::lang.show-ticket-js-delete') !!}" + $(this).attr("node") + " ?")) {
