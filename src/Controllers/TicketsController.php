@@ -399,8 +399,8 @@ class TicketsController extends Controller
         $ticket = $this->tickets->findOrFail($id);
 
         $user = Sentinel::getUser();
-        
-        if($ticket->user_id == $user->id || Sentinel::inRole('agent') || Sentinel::inRole('ticket-agent') || Sentinel::inRole('super-admin') ){
+ 
+        if($ticket->user_id == $user->id || Sentinel::getUser()->ticketit_agent || Sentinel::getUser()->ticketit_admin){
             list($priority_lists, $category_lists, $status_lists, $subcategories) = $this->PCS();
 
             $close_perm = $this->permToClose($id);

@@ -7,7 +7,7 @@
 <div class="panel panel-default">
 
     <div class="panel-heading">
-        @if(Sentinel::inRole('super-admin') || Sentinel::inRole('ticket-agent'))
+        @if(Sentinel::getUser()->ticketit_agent || Sentinel::getUser()->ticketit_admin)
         <div class="pull-left">
             <h2>{{ trans('ticketit::lang.index-my-tickets') }}</h2>
         </div>
@@ -21,7 +21,7 @@
         @endif
     </div>
     
-    @if(Sentinel::inRole('super-admin') || Sentinel::inRole('ticket-agent') )
+    @if(Sentinel::getUser()->ticketit_agent || Sentinel::getUser()->ticketit_admin )
     <div class="panel-body">
         @include('ticketit::shared.filters')
     </div>
