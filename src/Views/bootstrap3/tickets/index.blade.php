@@ -7,7 +7,7 @@
 <div class="panel panel-default">
 
     <div class="panel-heading">
-        @if(Sentinel::inRole('super-admin'))
+        @if(Sentinel::inRole('super-admin') || Sentinel::inRole('ticket-agent'))
         <div class="pull-left">
             <h2>{{ trans('ticketit::lang.index-my-tickets') }}</h2>
         </div>
@@ -20,8 +20,8 @@
             {!! link_to_route($setting->grab('main_route').'.create', trans('ticketit::lang.btn-create-new-ticket'), null, ['class' => 'btn btn-primary pull-right']) !!}</h2>
         @endif
     </div>
-
-    @if(Sentinel::inRole('super-admin'))
+    
+    @if(Sentinel::inRole('super-admin') || Sentinel::inRole('ticket-agent') )
     <div class="panel-body">
         @include('ticketit::shared.filters')
     </div>
