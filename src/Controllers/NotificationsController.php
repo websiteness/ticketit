@@ -27,7 +27,14 @@ class NotificationsController extends Controller
 
         // send notif if comment was created by support
         if($comment->user_id != $ticket->user_id) {
-            $this->sendNotification($template, $data, $ticket, $notification_owner, trans('ticketit::lang.notify-new-comment-from').self::OWNER.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
+
+            try {
+                $this->sendNotification($template, $data, $ticket, $notification_owner, trans('ticketit::lang.notify-new-comment-from').self::OWNER.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
+            } catch (\Exception $e) {
+                \Log::error('Tickets Error');
+                \Log::error($e->getMessage());
+            }
+            
         }
         
         // do not send notif to agents if comment was created by agents

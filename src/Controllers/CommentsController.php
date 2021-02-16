@@ -50,7 +50,6 @@ class CommentsController extends Controller
      */
     public function store(Request $request, AsanaService $asana_service)
     {
-       
         $this->validate($request, [
             'ticket_id'   => 'required|exists:ticketit,id',
             'content'     => 'required|min:6',
