@@ -16,6 +16,7 @@
             font-weight: bold;
         }
 	</style>
+	
 @stop
 
 @section('content')
@@ -29,11 +30,11 @@
 	<script>
 		$(document).ready(function() {
 			$('.select2').select2();
+		
 		});
-
 		initDatatable();
 
-		function initDatatable(filter = null) {
+		 function initDatatable(filter = null) {
 
             let btn_search_filter = document.getElementById('btn_search_filter');
             
@@ -61,7 +62,7 @@
 				processing: false,
 				serverSide: true,
 				responsive: true,
-                destroy: true,
+                destroy: true, 
                 buttons: [
                     'colvis'
                 ],
@@ -102,20 +103,88 @@
 					{ data: 'updated_at', name: 'ticketit.updated_at' },
 					@if( $u->isAgent() || $u->isAdmin() )
 					{ data: 'agent', name: 'users.name' },
-						{ data: 'priority', name: 'ticketit_priorities.name' },
-						{ data: 'owner', name: 'users.name' },
-						{ data: 'category', name: 'ticketit_categories.name' },
+					{ data: 'priority', name: 'ticketit_priorities.name' },
+					{ data: 'owner', name: 'users.name' },
+					{ data: 'category', name: 'ticketit_categories.name' },
 					@endif
 					{ data: 'resolved', name: 'resolved' },
 				]
             });
-            
+			
+			if(localStorage.getItem('ticket_column_visible')) {
+				let ticket_column_visible = localStorage.getItem('ticket_column_visible');
+				let tickets_table = $('.table').DataTable();
+				tickets_table.columns().visible(false)
+				tickets_table.columns(ticket_column_visible).visible(true);
+			}
+
             if(btn_search_filter)
             {
                 closeNav();
                 document.getElementById('btn_search_filter').innerText = "Search";
             }
 		}
+
+		// $('select#tickets_show').change( function (e) {
+		// 	let data = $(this).children(":selected").attr('data-column');
+		// 	console.log(data)
+		// 	let tickets_table = $('.table').DataTable();
+		// 	if(data == "all") {
+		// 		tickets_table.columns().visible(true);
+		// 		let result = tickets_table.columns().visible().reduce((a, v, i) => v ? [...a, i] : a, [])
+		// 		localStorage.setItem('ticket_column_visible', result)
+		// 	} else {
+		// 		let column = tickets_table.column(data);
+		// 		column.visible( ! column.visible() );
+		// 		let result = tickets_table.columns().visible().reduce((a, v, i) => v ? [...a, i] : a, [])
+		// 		localStorage.setItem('ticket_column_visible', result)		
+		// 	}
+		// });
+		
+		// let dropdownvalue = '';
+		
+		// $('select#tickets_show').change(function (e) {
+		// 	let data = $(this).children(":selected").attr('data-column');	
+		// 	let tickets_table = $('.table').DataTable();
+			
+		// 	if(data == "all") {
+		// 		tickets_table.columns().visible(true);
+		// 		let result = tickets_table.columns().visible().reduce((a, v, i) => v ? [...a, i] : a, [])
+		// 		localStorage.setItem('ticket_column_visible', result)
+		// 	} else {	
+		// 		let column = tickets_table.column(data);
+		// 		column.visible( ! column.visible() );
+		// 		let result = tickets_table.columns().visible().reduce((a, v, i) => v ? [...a, i] : a, [])
+		// 		localStorage.setItem('ticket_column_visible', result)		
+		// 	}
+
+		// 	dropdownvalue = data;
+		// });
+
+
+		
+
+		$('.ticket_dropdown_option').click(function (e) {
+			
+			let data = $(this).attr('data-column');
+			// console.log(data)
+			
+			
+			let tickets_table = $('.table').DataTable();
+			if(data == "*") {
+				tickets_table.columns().visible(true);
+				let result = tickets_table.columns().visible().reduce((a, v, i) => v ? [...a, i] : a, [])
+				localStorage.setItem('ticket_column_visible', result)
+			} else {
+				let column = tickets_table.column(data);
+				column.visible( ! column.visible() );
+				let result = tickets_table.columns().visible().reduce((a, v, i) => v ? [...a, i] : a, [])
+				localStorage.setItem('ticket_column_visible', result)			
+			}
+
+		});
+		
+
 
 		function filterTickets() {
 			let user = document.getElementById('filter_owner').value;
