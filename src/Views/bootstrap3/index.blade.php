@@ -116,6 +116,15 @@
 				let tickets_table = $('.table').DataTable();
 				tickets_table.columns().visible(false)
 				tickets_table.columns(ticket_column_visible).visible(true);
+
+                // convert to array
+                let column_arr = ticket_column_visible.split(',');
+
+                // set active columns to checked
+                column_arr.forEach((item) => {
+                    $(`input[data-column='${item}']`).prop('checked', true);
+                });
+
 			}
 
             if(btn_search_filter)

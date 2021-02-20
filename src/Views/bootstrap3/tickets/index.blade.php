@@ -673,11 +673,6 @@
         display:block;
     }
 
-    #companies-search-active-labels,
-    #clients-search-active-labels {
-        /* margin-top: -17px; */
-    }
-
     #companies-search-active-labels .label,
     #clients-search-active-labels .label {
         background-color: #f8f8fa !important;
@@ -771,12 +766,12 @@
                         <div id="companies-search-active-labels" style="margin-left: 100px;">
                             <div style="display: flex;" data-search-id="#companies-search" data-dropdown-id="#companiesDropdown" data-list-id="#companies-list">
                                 <input type="text" class="form-control" id="companies-search" name="" placeholder="Toggle Columns" autocomplete="off" style="height: 40px;" readonly>
-                                <div class="input-group-btn position_unset open" id="companiesDropdown">
+                                <div class="input-group-btn position_unset" id="companiesDropdown">
                                     <button type="button" class="btn btn-default dropdown-toggle mega-dropdown" data-toggle="dropdown" aria-expanded="false"><span class="caret"></span>
                                     </button>
                                     <div class="dropdown-menu row " role="menu">
-                                        <ul id="companies-list" class="mega-dropdown-menu_alphabet" style="">
-                                            <li class="main_alphabet" style="">
+                                        <ul id="companies-list" class="mega-dropdown-menu_alphabet">
+                                            <li class="main_alphabet">
                                                 <ul class="sub_menu">
                                                 <li class="main_sub_alphabet search_term search_term_companies" data-search-term="tesla" data-name="Tesla">
                                                         <div class="checkbox">
@@ -785,7 +780,7 @@
                                                                 Show all
                                                             </label>
                                                         </div>
-                                                    </li
+                                                    </li>
                                                     <li class="main_sub_alphabet search_term search_term_companies " data-search-term="tesla" data-name="Tesla">
                                                         <div class="checkbox">
                                                             <label>
