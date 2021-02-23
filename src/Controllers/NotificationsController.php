@@ -242,85 +242,91 @@ class NotificationsController extends Controller
      */
     public function sendNotification($template, $data, $ticket, $notification_owner, $subject, $type)
     {
-        /**
-         * @var User
-         */
-        $to = $notification_owner;
-        $setting = new TSetting();
-        $notify_data = [
-            'channels'  =>  ['database'],
-            'title'     =>  'Ticket Support Notification',
-            'message'   =>  $subject,
-            'action'    =>  route($setting->grab('main_route').'.show', $ticket->id),
-            'image'     =>  '#'
-        ];
+        try {
 
-        /* if($type == 'comment'){
+            /**
+             * @var User
+             */
             $to = $notification_owner;
-            $notify_data['title'] = 'New Comment on Ticket';
-        }
-        else if($type == 'new-ticket'){
-            $to = $ticket->agent;
-            $notify_data['title'] = 'New Ticket created';
-        }
-        else if ($type !== 'agent') {
-            $to = $ticket->user;
-            $notify_data['title'] = 'Ticket Notification';
-            if ($ticket->user->email != $notification_owner->email) {
-                $to = $ticket->user;
-            }
+            $setting = new TSetting();
+            $notify_data = [
+                'channels'  =>  ['database'],
+                'title'     =>  'Ticket Support Notification',
+                'message'   =>  $subject,
+                'action'    =>  route($setting->grab('main_route').'.show', $ticket->id),
+                'image'     =>  '#'
+            ];
 
-            if ($ticket->agent->email != $notification_owner->email) {
+            /* if($type == 'comment'){
+                $to = $notification_owner;
+                $notify_data['title'] = 'New Comment on Ticket';
+            }
+            else if($type == 'new-ticket'){
                 $to = $ticket->agent;
+                $notify_data['title'] = 'New Ticket created';
             }
-        }
-        else {
-            $to = $ticket->agent;
-        } */
+            else if ($type !== 'agent') {
+                $to = $ticket->user;
+                $notify_data['title'] = 'Ticket Notification';
+                if ($ticket->user->email != $notification_owner->email) {
+                    $to = $ticket->user;
+                }
 
-        /* if(env('TICKET_SYSTEM', 'prod') == 'dev'){
-            $to = ['email' => env('DEVELOPER_EMAIL',''), 'name' => 'Ticket Testing'];
-            $to = (object) $to;
-        } */
-
-        if($type == 'new-ticket-zapier'){
-            // $to = [$to];
-            $zapp =  (object)['email' => env('TICKETS_SECOND_EMAIL',''), 'name' => env('APP_NAME')];
-            // array_push($to, $zapp);
-            $to = $zapp;
-        }
-
-
-        if (LaravelVersion::lt('5.4')) {
-            $mail_callback = function ($m) use ($to, $notification_owner, $subject) {
-                $m->to($to->email, $to->name);
-
-                $m->replyTo($notification_owner->email, $notification_owner->name);
-
-                $m->subject($subject);
-            };
-
-            if (TSetting::grab('queue_emails') == 'yes') {
-                Mail::queue($template, $data, $mail_callback);
-            } else {
-                Mail::send($template, $data, $mail_callback);
-            }
-        } elseif (LaravelVersion::min('5.4')) {
-            $mail = new \Kordy\Ticketit\Mail\TicketitNotification($template, $data, $notification_owner, $subject);
-
-            if (TSetting::grab('queue_emails') == 'yes') {
-                Mail::to($to)->queue($mail);
-            } else {
-                Mail::to($to)->send($mail);
-            }
-
-            // Send User Inapp Notification when email sent
-            if(isset($to->id)){
-                $user = Sentinel::findUserById($to->id);
-                {
-                    $user->notify(new TicketNotification($notify_data));
+                if ($ticket->agent->email != $notification_owner->email) {
+                    $to = $ticket->agent;
                 }
             }
+            else {
+                $to = $ticket->agent;
+            } */
+
+            /* if(env('TICKET_SYSTEM', 'prod') == 'dev'){
+                $to = ['email' => env('DEVELOPER_EMAIL',''), 'name' => 'Ticket Testing'];
+                $to = (object) $to;
+            } */
+
+            if($type == 'new-ticket-zapier'){
+                // $to = [$to];
+                $zapp =  (object)['email' => env('TICKETS_SECOND_EMAIL',''), 'name' => env('APP_NAME')];
+                // array_push($to, $zapp);
+                $to = $zapp;
+            }
+
+
+            if (LaravelVersion::lt('5.4')) {
+                $mail_callback = function ($m) use ($to, $notification_owner, $subject) {
+                    $m->to($to->email, $to->name);
+
+                    $m->replyTo($notification_owner->email, $notification_owner->name);
+
+                    $m->subject($subject);
+                };
+
+                if (TSetting::grab('queue_emails') == 'yes') {
+                    Mail::queue($template, $data, $mail_callback);
+                } else {
+                    Mail::send($template, $data, $mail_callback);
+                }
+            } elseif (LaravelVersion::min('5.4')) {
+                $mail = new \Kordy\Ticketit\Mail\TicketitNotification($template, $data, $notification_owner, $subject);
+
+                if (TSetting::grab('queue_emails') == 'yes') {
+                    Mail::to($to)->queue($mail);
+                } else {
+                    Mail::to($to)->send($mail);
+                }
+
+                // Send User Inapp Notification when email sent
+                if(isset($to->id)){
+                    $user = Sentinel::findUserById($to->id);
+                    {
+                        $user->notify(new TicketNotification($notify_data));
+                    }
+                }
+            }
+
+        } catch(\Exception $e) {
+            \Sentry\captureException($e);
         }
     }
 }
