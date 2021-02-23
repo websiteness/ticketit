@@ -232,11 +232,6 @@ class TicketsController extends Controller
      */
     public function index(CategoriesRepository $cr)
     {
-
-        // $tickets = new \Kordy\Ticketit\Repositories\TicketsRepository;
-
-        // dd($tickets->getNoResponseCount()->pluck('id'));
-
         $users = Agent::all();
         $statuses = Status::all();
         $sub_categories = $cr->getSubCategories();
@@ -382,7 +377,7 @@ class TicketsController extends Controller
             \Log::error($e->getMessage());
         }
 
-        session()->flash('status', trans('ticketit::lang.the-ticket-has-been-createcreated'));
+        session()->flash('status', trans('ticketit::lang.the-ticket-has-been-created'));
 
         return redirect()->action('\Kordy\Ticketit\Controllers\TicketsController@index');
     }
