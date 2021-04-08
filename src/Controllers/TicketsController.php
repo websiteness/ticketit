@@ -506,6 +506,11 @@ class TicketsController extends Controller
             $ticket->agent_id = $request->input('agent_id');
         }
 
+        // if ticket is closed, set it to complete
+        if($request->status_id == 4) {
+            $ticket->completed_at = Carbon::now();
+        }
+
         $ticket->save();
 
         if($request->status_id) {

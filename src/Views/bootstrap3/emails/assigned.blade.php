@@ -30,7 +30,7 @@
 		'content'	=>	$ticket->email_content
 	]) !!} --}}
 
-	<h3 class="email-template__intro" style="margin: 0 0 20px;font-weight: 400;font-size: 20px;">Hello Support Team,</h3>
+	<h3 class="email-template__intro" style="margin: 0 0 20px;font-weight: 400;font-size: 20px;">Hello {{ $notification_owner->name }},</h3>
 	<p class="email-template__message" style="line-height: 1.4em;font-size: 15px;">
 		A new ticket has been created in the Lead Generated support system.
 	</p>

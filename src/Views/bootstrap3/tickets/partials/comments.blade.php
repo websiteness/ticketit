@@ -165,7 +165,14 @@
 </div>
 
 @push('footer_scripts')
+<script src="//unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 <script>
+    $('#btn-reply').click(function(e){
+        if ($('.summernote-editor').summernote('isEmpty')) {
+            e.preventDefault();
+            swal("Alert", "No comment detected. Please fill in to proceed.", "warning");
+        }
+    });
     $('#editCommentModal').on('shown.bs.modal', function() {
         $('.edit-comment-summernote-editor').summernote();
     });

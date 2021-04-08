@@ -80,10 +80,11 @@ class TicketitServiceProvider extends ServiceProvider
                         $notification->ticketStatusUpdated($modified_ticket, $original_ticket);
                     }
 
-                    if ($original_ticket->agent->id != $modified_ticket->agent->id) {
+                    // commented out for
+                    /* if ($original_ticket->agent->id != $modified_ticket->agent->id) {
                         $notification = new NotificationsController();
                         $notification->ticketAgentUpdated($modified_ticket, $original_ticket);
-                    }
+                    } */
                 }
                 
                 /* if (TSetting::grab('assigned_notification')) {

@@ -739,7 +739,7 @@
     }
 
     .dropdown-menu {
-        left: 120px !important;
+        left: 120px;
     }
 
     .btn-primary{

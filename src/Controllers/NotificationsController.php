@@ -69,12 +69,22 @@ class NotificationsController extends Controller
 
     public function ticketStatusUpdated(Ticket $ticket, Ticket $original_ticket)
     {
+        // don't send notif if it was the user who changed the ticket status
+        if(!Sentinel::getuser()->ticketit_admin && !Sentinel::getuser()->ticketit_agent) {
+            return;
+        }
+                    
+
         $notification_owner = $ticket->user;
         $template = 'ticketit::emails.status';
+
+        $latest_comment = Comment::where('ticket_id', $ticket->id)->orderBy('id','desc')->first();
+
         $data = [
             'ticket'             => serialize($ticket),
             'notification_owner' => serialize($notification_owner),
             'original_ticket'    => serialize($original_ticket),
+            'latest_comment'    => serialize($latest_comment),
         ];
 
         if (strtotime($ticket->completed_at)) {

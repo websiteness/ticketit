@@ -1,6 +1,7 @@
 <?php $notification_owner = unserialize($notification_owner);?>
 <?php $original_ticket = unserialize($original_ticket);?>
 <?php $ticket = unserialize($ticket);?>
+<?php $latest_comment = unserialize($latest_comment);?>
 
 {{-- @extends($email) --}}
 @extends('ticketit::emails.templates.leadgenerated')
@@ -56,7 +57,7 @@
 	      <td colspan="2" style="padding: 20px 10px 5px 0;width: 100px;"><span class="heading-bold" style="font-weight: 600;">Reply from Lead Generated Support:</span></td>
 	    </tr>
 	    <tr>
-	      <td colspan="2"> {!! $ticket->email_content !!} </td>
+	      <td colspan="2"> {!! $latest_comment->email_content !!} </td>
 	    </tr>
 	  </tbody>
 	</table>

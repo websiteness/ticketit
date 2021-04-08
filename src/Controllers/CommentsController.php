@@ -3,6 +3,7 @@
 namespace Kordy\Ticketit\Controllers;
 
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Kordy\Ticketit\Models;
 use Kordy\Ticketit\Models\Comment;
@@ -79,8 +80,14 @@ class CommentsController extends Controller
         if(session('com_stat_both', false)){
 
             $ticket = Models\Ticket::find($comment->ticket_id);
-            $ticket->status_id = $request->get('status_change');
             $ticket->updated_at = $comment->created_at;
+            $ticket->status_id = $request->status_change;
+
+            if($request->status_change == 4)
+            {
+                $ticket->completed_at = Carbon::now();
+            }
+            
             $ticket->save();
 
             session(['com_stat_both' => false]);
@@ -91,7 +98,7 @@ class CommentsController extends Controller
         }
 
         // Change status 'Waiting on support' if a user replies
-        if(!Sentinel::getuser()->ticketit_admin && !Sentinel::getuser()->ticketit_admin) {
+        if(!Sentinel::getuser()->ticketit_admin && !Sentinel::getuser()->ticketit_agent) {
             $ticket = Ticket::find($request->ticket_id);
             $ticket->status_id = 1;
             $ticket->save();
