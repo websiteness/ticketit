@@ -425,10 +425,17 @@ class TicketsController extends Controller
             $selected_subcategory = ($ticket->category->parent_category) ? $ticket->category->id : null;
     
             $comments = $ticket->comments()->paginate(TSetting::grab('paginate_items'));
+
+            try {
+                $plan_names = implode(', ', $ticket->user->account->get_plan_names());
+            } catch (\Exception $e) {
+                $plan_names = '';
+                \Log::info($e->getMessage());
+            }
     
             return view('ticketit::tickets.show',
                 compact('ticket', 'status_lists', 'priority_lists', 'category_lists', 'subcategories', 'selected_category', 'selected_subcategory', 'agent_lists', 'comments',
-                    'close_perm', 'reopen_perm'));
+                    'close_perm', 'reopen_perm', 'plan_names'));
         } else {
             return redirect()->route(TSetting::grab('main_route').'.index');
         }
