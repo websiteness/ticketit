@@ -8,7 +8,7 @@
         "laravelcollective/html": "^6.2.1",
         "illuminate/support": "^8.0",
         "yajra/laravel-datatables-oracle": "9.*",
-        "jenssegers/date": "^3.5.0",
+        "jenssegers/date": "^4.0.0",
         "mews/purifier": "^3.3.5",
         "doctrine/dbal": "^3.1"
 
