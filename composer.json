@@ -4,13 +4,13 @@
     "type": "laravel-package",
     "keywords": ["laravel","helpdesk", "ticket", "support"],
     "require": {
-        "laravel/framework": "^5.1",
-        "laravelcollective/html": "^5.1",
-        "illuminate/support": "^5.1",
-        "yajra/laravel-datatables-oracle": "^6.0|^8.0",
+        "laravel/framework": "^8.0",
+        "laravelcollective/html": "^6.2.1",
+        "illuminate/support": "^8.0",
+        "yajra/laravel-datatables-oracle": "9.*",
         "jenssegers/date": "^3.0",
-        "mews/purifier": "^2.0",
-        "doctrine/dbal": "^2.5|^2.6"
+        "mews/purifier": "^3.3.5",
+        "doctrine/dbal": "^3.1"
 
     },
     "license": "MIT",
