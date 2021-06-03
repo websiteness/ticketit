@@ -211,7 +211,7 @@ class TicketsController extends Controller
         });
 
         $collection->addColumn('resolved', function ($ticket) {
-            $route = url(TSetting::grab('main_route').'/complete/'.$ticket->id);
+            $route = url(TSetting::grab('main_route')."/".$ticket->id.'/complete');
             return '<a class="btn btn-success btn-sm" href="'.$route.'"> Resolved </a>';    
         });
 
