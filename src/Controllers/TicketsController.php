@@ -150,12 +150,16 @@ class TicketsController extends Controller
 
         $this->renderTicketTable($collection);
 
-        $collection->editColumn('updated_at', '{!! \Carbon\Carbon::parse($updated_at)->format("m/d/Y") . " (" . \Carbon\Carbon::createFromFormat("Y-m-d H:i:s", $updated_at)->diffForHumans("", true, false, 2) . " ago)" !!}');
-
+    
+  
+        //$collection->editColumn('updated_at', '{!! \Carbon\Carbon::parse($updated_at)->format("m/d/Y") . " (" . \Carbon\Carbon::createFromFormat("Y-m-d H:i:s", $updated_at)->diffForHumans("", true, false, 2) . " ago)" !!}');
+        $collection->editColumn('updated_at', function($col){
+            return Carbon::parse($col->updated_at)->format("m/d/Y")." (". Carbon::createFromFormat("Y-m-d H:i:s", $col->updated_at)->diffForHumans("", true, false, 2) ." ago)";
+        });
         // method rawColumns was introduced in laravel-datatables 7, which is only compatible with >L5.4
         // in previous laravel-datatables versions escaping columns wasn't defaut
         if (LaravelVersion::min('5.4')) {
-            $collection->rawColumns(['subject', 'status', 'priority', 'category', 'agent']);
+            $collection->rawColumns(['subject', 'status', 'priority', 'category', 'agent', 'resolved']);
         }
 
         return $collection->make(true);
@@ -164,12 +168,15 @@ class TicketsController extends Controller
     public function renderTicketTable($collection)
     {
         $collection->editColumn('subject', function ($ticket) {
-            return '<span class="ticket-subject">' . (string) link_to_route(
-                TSetting::grab('main_route').'.show',
-                str_limit($ticket->subject, 30, '...'),
-                $ticket->id
-            )
-            . '</span>';
+            // return '<span class="ticket-subject">' . (string) link_to_route(
+            //     TSetting::grab('main_route').'.show',
+            //     str_limit($ticket->subject, 30, '...'),
+            //     $ticket->id
+            // )
+            // . '</span>';
+
+            $show_route = TSetting::grab('main_route').'/show';
+            return "<span class='ticket-subject'> <a href='". url($show_route."/{$ticket->id}") ."'> ". Str::limit($ticket->subject, 20) ." </a> </span>";
         });
 
         $collection->editColumn('status', function ($ticket) {
@@ -204,7 +211,8 @@ class TicketsController extends Controller
         });
 
         $collection->addColumn('resolved', function ($ticket) {
-            return link_to_route(TSetting::grab('main_route').'.complete', 'Resolved', $ticket->id, ['class' => 'btn btn-success btn-sm']);
+            $route = url(TSetting::grab('main_route').'/complete/'.$ticket->id);
+            return '<a class="btn btn-success btn-sm" href="'.$route.'"> Resolved </a>';    
         });
 
         $collection->editColumn('last_reply', function ($ticket) {
