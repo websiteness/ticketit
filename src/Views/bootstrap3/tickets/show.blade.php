@@ -149,7 +149,7 @@
                             <tbody>
                                 @foreach($ticket->ticket_user->userTotalTickets as $ticket)
                                 <tr>
-                                    <th > <small>{{ Str::limit($ticket->subject, 20); }}</small></th>                                   
+                                    <th > <small>{{ substr($ticket->subject, 0, 20) }}</small></th>                                   
                                     <th class="text-center" width="15px">
                                         <a href="/tickets/{{ $ticket->id }}" class="btn btn-sm btn-success btn-view-ticket btn-ticket-view" style="background-color: {{ $ticket->status->color }}; border-color: {{ $ticket->status->color }};"><i class="fa fa-eye"></i></a>                       
                                     </th>
