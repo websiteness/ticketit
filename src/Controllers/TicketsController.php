@@ -175,7 +175,7 @@ class TicketsController extends Controller
             // )
             // . '</span>';
 
-            $show_route = TSetting::grab('main_route').'/show';
+            $show_route = TSetting::grab('main_route');
             return "<span class='ticket-subject'> <a href='". url($show_route."/{$ticket->id}") ."'> ". Str::limit($ticket->subject, 20) ." </a> </span>";
         });
 
