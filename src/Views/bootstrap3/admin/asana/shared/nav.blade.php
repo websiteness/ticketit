@@ -4,6 +4,7 @@
             <li role="presentation" @if(Route::currentRouteName() == $setting->grab('admin_route').'.asana.index') class="active" @endif>
                 <a href="{{ route($setting->grab('admin_route').'.asana.index') }}">Asana Integration</a>
             </li>
+
             <li role="presentation" @if(Route::currentRouteName() == $setting->grab('admin_route').'.asana.categories.index') class="active" @endif>
                 <a href="{{ route($setting->grab('admin_route').'.asana.categories.index') }}">Category Mapping</a>
             </li>

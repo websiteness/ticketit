@@ -62,6 +62,9 @@
                         <li role="presentation" class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\Integrations\AsanaController@index').'*') ? "active" : "" !!}">
                             <a href="{{ action('\Kordy\Ticketit\Controllers\Integrations\AsanaController@index') }}">Asana</a>
                         </li>
+                        <li role="presentation" class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\Integrations\InfinityController@index').'*') ? "active" : "" !!}">
+                            <a href="{{ action('\Kordy\Ticketit\Controllers\Integrations\InfinityController@index') }}">Infinity</a>
+                        </li>
                         <li role="presentation" class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\CategoriesController@viewCategoryOwners').'*') ? "active" : "" !!}">
                             <a href="{{ action('\Kordy\Ticketit\Controllers\CategoriesController@viewCategoryOwners') }}">Category Owners</a>
                         </li>
