@@ -132,5 +132,10 @@ class InfinityService
         session()->flash('status', 'Successfully saved!');
     }
 
+    public function get_attributes($workspace_id, $board_id)
+    {
+        $route = $workspace_id.'/'.$board_id.'/attributes';
+        return $this->make_api_request($route, 'GET');
+    }
 
 }

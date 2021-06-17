@@ -72,4 +72,14 @@ class InfinityController extends Controller
         $folders = $infinity_service->get_folders($wsid, $bid);
         return $folders;
     }
+
+    public function tickets_mapping_index()
+    {   
+        $selected_workspace = TSetting::getBySlug('infinity_workspace_id');
+        $selected_board = TSetting::getBySlug('infinity_board_id');
+
+        $infinity_service = new InfinityService();
+        $attributes = $infinity_service->get_attributes($selected_workspace->value, $selected_board->value);
+        return view('ticketit::admin.infinity.tickets_mapping', compact('attributes'));
+    }
 }
