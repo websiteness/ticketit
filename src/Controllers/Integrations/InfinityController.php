@@ -76,11 +76,30 @@ class InfinityController extends Controller
 
     public function tickets_mapping_index()
     {   
+        $fields = [
+            'infinity_ticket_id' => 'Ticket ID',
+            'infinity_subject' =>  'Subject',
+            'infinity_description' => 'Description',
+            'infinity_ticket_owner' => 'Ticket Owner'
+        ];
+        $selected_fields = [];
         $selected_workspace = TSetting::getBySlug('infinity_workspace_id');
         $selected_board = TSetting::getBySlug('infinity_board_id');
+        foreach($fields as $key => $value) {
+            $field = TSetting::getBySlug($key);
 
-        $infinity_service = new InfinityService();
+            array_push($selected_fields,['slug' => $field->slug, 'value' => $field->value]);
+        }     
+        $infinity_service = new InfinityService();       
         $attributes = $infinity_service->get_attributes($selected_workspace->value, $selected_board->value);
-        return view('ticketit::admin.infinity.tickets_mapping', compact('attributes'));
+        return view('ticketit::admin.infinity.tickets_mapping', compact('attributes', 'fields', 'selected_fields' ));
+    }
+
+    public function store_fields(Request $request)
+    {   
+    
+        $infinity_service = new InfinityService();
+        $folders = $infinity_service->store_fields($request->except(['_token']));
+        return redirect()->back();
     }
 }

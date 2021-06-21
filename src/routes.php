@@ -228,13 +228,13 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
 
         Route::prefix('infinity')->name('infinity.')->group(function() {
             Route::get('/', '\Kordy\Ticketit\Controllers\Integrations\InfinityController@index')->name('index');
-            Route::get('tickets/mapping','\Kordy\Ticketit\Controllers\Integrations\InfinityController@tickets_mapping_index')->name('tickets.mapping');
+            Route::get('fields/mapping','\Kordy\Ticketit\Controllers\Integrations\InfinityController@tickets_mapping_index')->name('fields.mapping');
             Route::get('boards','\Kordy\Ticketit\Controllers\Integrations\InfinityController@get_boards')->name('boards');
             Route::post('boards/store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_board')->name('boards.store');
             Route::get('folders/workspace/{workspace}/board/{board}','\Kordy\Ticketit\Controllers\Integrations\InfinityController@get_folders')->name('folders');
             Route::post('folders/store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_folder')->name('folders.store');  
             Route::post('token/store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_token')->name('token.store');  
-
+            Route::post('fields/map','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_fields')->name('fields.map');  
            
             Route::prefix('workspaces')->name('workspaces.')->group(function() {
                 Route::get('list','\Kordy\Ticketit\Controllers\Integrations\InfinityController@get_workspace_list')->name('list');

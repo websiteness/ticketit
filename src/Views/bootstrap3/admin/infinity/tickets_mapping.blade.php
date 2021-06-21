@@ -21,7 +21,7 @@
     <div class="panel panel-default">
         <div class="panel-body">
             @include('ticketit::admin.infinity.shared.nav')
-            <form method="POST" action="">
+            <form method="POST" action="{{ route($setting->grab('admin_route').'.infinity.fields.map') }}">
                 {{ csrf_field() }}
                 <table class="notification-settings__tbl table table-bordered">
                     <thead>
@@ -30,13 +30,25 @@
                             <td>Value</td>
                         </tr>
                     </thead>
-                    <tbody>
-                    @foreach($attributes as $attribute)
-                        <tr>
-                     
-                            <td>{{$attribute['name']}}</td>
-                            <td width="40%">{{$attribute['id']}}</td>
-                       
+                    <tbody>            
+                    <hr>                  
+                    @foreach($fields as $key => $field)
+                        <tr>                  
+                            <td>{{ $field }}</td>
+                            <td width="30%">
+                                <select class="select2 form-control" name="{{ $key }}" style="width:100%;">
+                                    <option value="">Select Field</option>
+                                    @if($attributes)        
+                                        @foreach ($attributes as $attribute)  
+                                            @foreach ($selected_fields as $selected_field)
+                                                @if($selected_field['slug'] == $key)
+                                                <option value="{{ $attribute['id'] }}" @if ($selected_field['value'] == $attribute['id']) selected @endif >{{ $attribute['name'] }}</option>   
+                                                @endif
+                                            @endforeach                                        
+                                        @endforeach
+                                    @endif
+                                </select>
+                            </td>
                         </tr> 
                         @endforeach
                     </tbody>
@@ -46,6 +58,7 @@
         </div>
     </div>
     <br>
+
 @stop
 
 @section('footer')

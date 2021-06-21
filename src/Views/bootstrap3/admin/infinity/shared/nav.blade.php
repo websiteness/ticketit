@@ -5,8 +5,8 @@
                 <a href="{{ route($setting->grab('admin_route').'.infinity.index') }}">Infinity Integration</a>
             </li>
 
-            <li role="presentation" @if(Route::currentRouteName() == $setting->grab('admin_route').'.infinity.tickets.mapping') class="active" @endif>
-                <a href="{{ route($setting->grab('admin_route').'.infinity.tickets.mapping') }}">Tickets Mapping</a>
+            <li role="presentation" @if(Route::currentRouteName() == $setting->grab('admin_route').'.infinity.fields.mapping') class="active" @endif>
+                <a href="{{ route($setting->grab('admin_route').'.infinity.fields.mapping') }}">Field Mapping</a>
             </li>
 <!-- 
             <li role="presentation" @if(Route::currentRouteName() == $setting->grab('admin_route').'.asana.categories.index') class="active" @endif>

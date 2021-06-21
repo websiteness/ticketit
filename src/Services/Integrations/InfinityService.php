@@ -138,4 +138,16 @@ class InfinityService
         return $this->make_api_request($route, 'GET');
     }
 
+    public function store_fields($fields)
+    {
+        foreach($fields as $key => $value) {
+            TSetting::updateOrCreate(
+                ['slug' => $key],
+                ['slug' => $key, 'value' => $value, 'default' => $value]
+            );
+        }
+
+        session()->flash('status', 'Successfully saved!');
+    }
+
 }
