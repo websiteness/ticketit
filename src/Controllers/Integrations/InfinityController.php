@@ -56,14 +56,15 @@ class InfinityController extends Controller
     public function store_board(Request $request, InfinityService $infinity_service)
     {
         $infinity_service->store_board($request->board);   
-        return redirect()->back();
-    }
-
-    public function store_folder(Request $request, InfinityService $infinity_service)
-    {
         $infinity_service->store_folder($request->folder);   
         return redirect()->back();
     }
+
+    // public function store_folder(Request $request, InfinityService $infinity_service)
+    // {
+    //     $infinity_service->store_folder($request->folder);   
+    //     return redirect()->back();
+    // }
 
 
     public function get_folders($wsid, $bid)

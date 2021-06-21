@@ -28,10 +28,9 @@
 @section('content')
 @include('ticketit::shared.header')
 <div class="panel panel-default">
-    <div class="panel-body">
-        @if($token)
+    <div class="panel-body"> 
         @include('ticketit::admin.infinity.shared.nav')
-        <form method="POST" action="">
+        <form method="POST" action="{{ route($setting->grab('admin_route').'.infinity.token.store') }}">
             {{ csrf_field() }}
             <div class="row">
                 <div class="col-md-6">
@@ -43,7 +42,7 @@
                 </div>
             </div>
         </form>
-        @endif
+   
         @if($token)
         <hr>
         <form id="workspace_form" method="POST" action="{{ route($setting->grab('admin_route').'.infinity.workspaces.store') }}">
@@ -54,9 +53,9 @@
                         <label for="exampleInputEmail1">Select Workspace</label>
                         <select required id="selected-workspace" class="form-control" name="workspace" style="width:100%;">
                             <option value=''>Select Workspace</option>
-                            @if(count($workspaces) > 0 )
+                            @if($workspaces)
                                 @foreach($workspaces as $workspace)
-                                    @if(isset($selected_workspace)  )
+                                    @if(isset($selected_workspace->value)  )
                                         <option value="{{ $workspace['id'] }}" {{ $workspace['id'] == $selected_workspace->value ? 'selected' : '' }}>{{ $workspace['name'] }}</option>                                
                                     @else
                                         <option value="{{ $workspace['id'] }}" >{{ $workspace['name'] }}</option>
@@ -69,39 +68,39 @@
                 </div>
             </div>
         </form>
-        @endif
-        @if($workspaces)
-        <hr>
-        <form id="boards_form" method="POST" action="{{ route($setting->grab('admin_route').'.infinity.boards.store') }}" style="display: none;">
-            {{ csrf_field() }}
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="exampleInputEmail1">Select Board</label>
-                        <select required  id="selected-board" class="form-control select2" name="board" style="width:100%;">
-                            <option value="">Select Board</option>
-                        </select>
+       
+       @if(isset($selected_workspace))
+            <hr>
+            <form id="boards_form" method="POST" action="{{ route($setting->grab('admin_route').'.infinity.boards.store') }}" style="display: none;">
+                {{ csrf_field() }}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Select Board</label>
+                            <select required  id="selected-board" class="form-control select2" name="board" style="width:100%;">
+                                <option value="">Select Board</option>
+                            </select>
+                        </div>
+                        <!-- <button id="save-board" type="submit" class="btn btn-success" disabled="disabled">Save</button> -->
                     </div>
-                    <button id="save-board" type="submit" class="btn btn-success" disabled="disabled">Save</button>
                 </div>
-            </div>
-        </form>
-        @endif
-        <hr>
-        <form id="folders_form" method="POST" action="{{ route($setting->grab('admin_route').'.infinity.folders.store') }}" style="display: none;">
-            {{ csrf_field() }}
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="exampleInputEmail1">Select Folder</label>
-                        <select required  id="selected-folder" class="form-control select2" name="folder" style="width:100%;">
-                            <option value="">Select Folder</option>
-                        </select>
+            <!-- </form> -->
+            <!-- <form id="folders_form" method="POST" action="{{ route($setting->grab('admin_route').'.infinity.folders.store') }}" style="display: none;"> -->
+                <!-- {{ csrf_field() }} -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Select Folder</label>
+                            <select required  id="selected-folder" class="form-control select2" name="folder" style="width:100%;">
+                                <option value="">Select Folder</option>
+                            </select>
+                        </div>
+                        <button id="save-board-folder" type="submit" class="btn btn-success" disabled="disabled">Save</button>
                     </div>
-                    <button id="save-folder" type="submit" class="btn btn-success" disabled="disabled">Save</button>
                 </div>
-            </div>
-        </form>
+            </form>
+        @endif
+        @endif
     </div>
 </div>
 <br>
@@ -111,11 +110,16 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
-        loadBoards();
+        let selected_workspace_id = $('#selected-workspace').find(":selected").val();
+        let id = parseInt(selected_workspace_id);
+        if(!isNaN(id) && typeof id === 'number') {
+            loadBoards();
+        }
+
         $("#selected-workspace").change(function() {
             if($(this).val() != '') {
                 $('#selected-board').find('option').remove().end().append('<option value="">Select Board</option>').val('');
-                loadBoards();
+                $('#selected-folder').find('option').remove().end().append('<option value="">Select Folder</option>').val('');    
                 $('#save-workspace').attr('disabled', false);
             } else {
                 $('#save-workspace').attr('disabled', true);
@@ -183,7 +187,7 @@
                 method: 'get',
                 url: new_route,
                 beforeSend: function() {
-                    $('#save-folder').text('Please Wait...');
+                    $('#save-board-folder').text('Please Wait...');
                 },
                 success: function(res) {
                     $('#folders_form').show();
@@ -199,8 +203,8 @@
                         }
                         folder.append('<option '+$select+' value='+item['id']+'>'+ item['name'] +'</option>');
                     });  
-                    $('#save-folder').attr('disabled', false);
-                    $('#save-folder').text('Save');
+                    $('#save-board-folder').attr('disabled', false);
+                    $('#save-board-folder').text('Save');
                 }
             });
         }

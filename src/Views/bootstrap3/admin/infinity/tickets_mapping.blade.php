@@ -35,7 +35,7 @@
                         <tr>
                      
                             <td>{{$attribute['name']}}</td>
-                            <td width="40%"></td>
+                            <td width="40%">{{$attribute['id']}}</td>
                        
                         </tr> 
                         @endforeach
