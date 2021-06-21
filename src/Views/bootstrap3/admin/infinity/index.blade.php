@@ -33,7 +33,7 @@
         <form method="POST" action="{{ route($setting->grab('admin_route').'.infinity.token.store') }}">
             {{ csrf_field() }}
             <div class="row">
-                <div class="col-md-6">
+                <div  class="col-md-6">
                     <div class="form-group">
                         <label for="exampleInputEmail1">Personal Access Token</label>
                         <input type="text" required name="token" class="form-control" min="0" value="{{ $token }}" required>
