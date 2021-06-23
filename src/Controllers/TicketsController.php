@@ -23,6 +23,7 @@ use Kordy\Ticketit\Services\Integrations\AsanaService;
 use App\User;
 use App\Models\Account;
 use AppendIterator;
+use Kordy\Ticketit\Services\Integrations\InfinityService;
 
 class TicketsController extends Controller
 {
@@ -368,6 +369,16 @@ class TicketsController extends Controller
         $ticket->autoSelectAgent();
 
         $ticket->save();
+
+        //send to infinity
+        $infinity_service = new InfinityService();
+        $infinity_ticket = $infinity_service->store_ticket_data($ticket);
+
+        if(!$infinity_ticket) {
+            \Log::error('Tickets Error: failed to push tickets to Infinity');
+ 
+        }
+      
 
         // push ticket to asana
         try {

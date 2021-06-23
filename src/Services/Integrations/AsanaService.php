@@ -291,6 +291,8 @@ class AsanaService
     
             $ticket_repository = new TicketsRepository;
             $ticket = $ticket_repository->getById($ticket_id);
+
+            
     
             if(!$ticket->asana_task_gid) {
                 return false;

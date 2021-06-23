@@ -120,6 +120,7 @@
             if($(this).val() != '') {
                 $('#selected-board').find('option').remove().end().append('<option value="">Select Board</option>').val('');
                 $('#selected-folder').find('option').remove().end().append('<option value="">Select Folder</option>').val('');    
+                loadBoards();
                 $('#save-workspace').attr('disabled', false);
             } else {
                 $('#save-workspace').attr('disabled', true);
@@ -129,6 +130,7 @@
             if($(this).val() != '') {
                 $('#selected-folder').find('option').remove().end().append('<option value="">Select Folder</option>').val('');
                 loadFolders();
+            
                 $('#save-board').attr('disabled', false);
             } else {
                 $('#save-board').attr('disabled', true);
@@ -187,7 +189,7 @@
                 method: 'get',
                 url: new_route,
                 beforeSend: function() {
-                    $('#save-board-folder').text('Please Wait...');
+                    $('#save-board-folder').text('Fetching folders please wait ...');
                 },
                 success: function(res) {
                     $('#folders_form').show();

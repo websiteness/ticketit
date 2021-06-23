@@ -87,7 +87,6 @@ class InfinityController extends Controller
         $selected_board = TSetting::getBySlug('infinity_board_id');
         foreach($fields as $key => $value) {
             $field = TSetting::getBySlug($key);
-
             array_push($selected_fields,['slug' => $field->slug, 'value' => $field->value]);
         }     
         $infinity_service = new InfinityService();       
@@ -101,5 +100,13 @@ class InfinityController extends Controller
         $infinity_service = new InfinityService();
         $folders = $infinity_service->store_fields($request->except(['_token']));
         return redirect()->back();
+    }
+
+    public function user_mapping_index()
+    {
+        $infinity_service = new InfinityService();
+        $data = $infinity_service->get_user_by_workspace();
+
+        return view('ticketit::admin.infinity.users_mapping');
     }
 }

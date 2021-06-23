@@ -7,6 +7,10 @@ use Kordy\Ticketit\Repositories\TicketsRepository;
 use Kordy\Ticketit\Repositories\SettingsRepository;
 use Kordy\Ticketit\Repositories\CommentsRepository;
 use Kordy\Ticketit\Repositories\StatusRepository;
+use Sentinel;
+use GuzzleHttp\Client;
+use Kordy\Ticketit\Models\Ticket;
+use Kordy\Ticketit\Services\Integrations\AsanaService;
 
 class InfinityService
 {
@@ -149,5 +153,95 @@ class InfinityService
 
         session()->flash('status', 'Successfully saved!');
     }
+    
+    public function store_ticket_data($ticket)
+    {
+        $client = new Client();
+        $asana_service = new AsanaService();
+        $infinity_slugs =  TSetting::where('slug', 'like', 'infinity%')->get();
+        $fields = collect($infinity_slugs)->whereNotIn('slug',['infinity_token','infinity_workspace_id','infinity_board_id', 'infinity_folder_id'])->toArray();
+        $key_fields =  collect($fields)->pluck('slug')->toArray();
+        $infinity_token = collect($infinity_slugs)->where('slug','infinity_token')->toArray();
+        $infinity_folder_id = collect($infinity_slugs)->where('slug','infinity_folder_id')->toArray(); 
+        $infinity_workspace_id = collect($infinity_slugs)->where('slug','infinity_workspace_id')->toArray();
+        $infinity_board_id = collect($infinity_slugs)->where('slug','infinity_board_id')->toArray();
+        $infinity_values = [];
+        $x = 0;
 
+        foreach ($key_fields as $key_field) {
+            foreach($fields as $key => $field) {
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_description'){
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' => $asana_service->build_html_notes($ticket),
+                    ];
+                }
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_subject'){
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' => $ticket->subject,
+                    ];
+                }
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_owner'){
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' => Sentinel::findById($ticket->user_id)->getFullNameAttribute(),
+                    ];
+                }
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_id'){
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' => (string)$ticket->id,
+                    ];
+                }
+            }
+        }     
+
+        $infinity_data = [
+            "folder_id" => array_shift($infinity_folder_id)['value'],
+            "values" => $infinity_values 
+        ];
+
+        try {
+            $url = "https://app.startinfinity.com/api/v1/".array_shift($infinity_workspace_id)['value']."/".array_shift($infinity_board_id)['value']."/items";
+            $options = [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Authorization' => "Bearer ".array_shift($infinity_token)['value'].""
+                ],
+                'json' => $infinity_data
+            ];
+
+            $data = $client->post($url, $options);
+            $res = $data->getBody();
+            if (json_decode($res)->id) {
+                $ticket = Ticket::find($ticket->id);
+                $ticket->infinity_item_id = json_decode($res)->id;
+                $ticket->save();
+                return true;
+            } else {
+                return false;
+            }
+        } catch (\Throwable $th) {
+            return false;
+        }
+    }
+
+    public function get_user_by_workspace()
+    {
+        $workspace_id = TSetting::where('slug','infinity_workspace_id')->first();
+        //Todo
+        //Get user by role (ticket agent)
+        //get user @ infinity by workspace id
+        
+    }
+
+    //Todo
+    // get array of users
+    //create array of users 
+    //store to 1 slug only
+    public function store_mapped_users($users)
+    {
+        
+    }
 }

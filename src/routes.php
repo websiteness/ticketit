@@ -229,6 +229,7 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
         Route::prefix('infinity')->name('infinity.')->group(function() {
             Route::get('/', '\Kordy\Ticketit\Controllers\Integrations\InfinityController@index')->name('index');
             Route::get('fields/mapping','\Kordy\Ticketit\Controllers\Integrations\InfinityController@tickets_mapping_index')->name('fields.mapping');
+            Route::get('users/mapping','\Kordy\Ticketit\Controllers\Integrations\InfinityController@user_mapping_index')->name('users.mapping');
             Route::get('boards','\Kordy\Ticketit\Controllers\Integrations\InfinityController@get_boards')->name('boards');
             Route::post('boards/store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_board')->name('boards.store');
             Route::get('folders/workspace/{workspace}/board/{board}','\Kordy\Ticketit\Controllers\Integrations\InfinityController@get_folders')->name('folders');
