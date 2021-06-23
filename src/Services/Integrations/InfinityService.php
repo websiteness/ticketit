@@ -11,6 +11,7 @@ use Sentinel;
 use GuzzleHttp\Client;
 use Kordy\Ticketit\Models\Ticket;
 use Kordy\Ticketit\Services\Integrations\AsanaService;
+use Kordy\Ticketit\Models\Status;
 
 class InfinityService
 {
@@ -19,11 +20,8 @@ class InfinityService
     private function make_api_request($path, $method, $post = [])
     {
         $url = 'https://app.startinfinity.com/api/' . $path;
-
         $token = $this->pre_token ?? $this->get_auth_token();
-
         $curl = curl_init();
-
         curl_setopt_array($curl, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
@@ -37,38 +35,34 @@ class InfinityService
             ],
         ]);
 
-        if($post) {
+        if ($post) {
             curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($post));
         }
 
         $response = curl_exec($curl);
-
         $status_code = curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
-
         curl_close($curl);
-
         $valid_status_codes = [200, 201];
 
-        if(!in_array($status_code, $valid_status_codes)) {
-           return false;
-        //return $response;
+        if (!in_array($status_code, $valid_status_codes)) {
+            return false;
+            //return $response;
         }
-
         return json_decode($response, true);
     }
 
-    
+
 
     public function get_auth_token()
     {
         $token = TSetting::getBySlug('infinity_token');
-        if( isset( $token->value ) ){
+        if (isset($token->value)) {
             return $token->value;
         }
         return null;
     }
 
-    
+
     public function get_workspaces()
     {
         return $this->make_api_request('me/workspaces', 'GET');
@@ -82,20 +76,16 @@ class InfinityService
     public function store_auth_token($token)
     {
         $this->pre_token = $token;
-        
         $workspaces = $this->get_workspaces();
-
         // validate token
-        if(!$workspaces) {
+        if (!$workspaces) {
             session()->flash('warning', 'Token authentication failed.');
             return;
         }
-
         TSetting::updateOrCreate(
             ['slug' => 'infinity_token'],
             ['slug' => 'infinity_token', 'value' => $token, 'default' => $token]
         );
-
         session()->flash('status', 'Token saved!');
         return;
     }
@@ -106,11 +96,10 @@ class InfinityService
             ['slug' => 'infinity_workspace_id'],
             ['slug' => 'infinity_workspace_id', 'value' => $id, 'default' => $id]
         );
-
         session()->flash('status', 'Successfully saved!');
     }
 
-    
+
     public function store_board($board)
     {
         TSetting::updateOrCreate(
@@ -122,11 +111,11 @@ class InfinityService
 
     public function get_folders($ws_id, $b_id)
     {
-        $route = $ws_id.'/folder/'.$b_id;
+        $route = $ws_id . '/folder/' . $b_id;
         return $this->make_api_request($route, 'GET');
     }
 
-        
+
     public function store_folder($folder)
     {
         TSetting::updateOrCreate(
@@ -138,19 +127,18 @@ class InfinityService
 
     public function get_attributes($workspace_id, $board_id)
     {
-        $route = $workspace_id.'/'.$board_id.'/attributes';
+        $route = $workspace_id . '/' . $board_id . '/attributes';
         return $this->make_api_request($route, 'GET');
     }
 
     public function store_fields($fields)
     {
-        foreach($fields as $key => $value) {
+        foreach ($fields as $key => $value) {
             TSetting::updateOrCreate(
                 ['slug' => $key],
                 ['slug' => $key, 'value' => $value, 'default' => $value]
             );
         }
-
         session()->flash('status', 'Successfully saved!');
     }
     
@@ -230,18 +218,36 @@ class InfinityService
     public function get_user_by_workspace()
     {
         $workspace_id = TSetting::where('slug','infinity_workspace_id')->first();
-        //Todo
-        //Get user by role (ticket agent)
-        //get user @ infinity by workspace id
-        
+        $workspaces = $this->get_workspaces();
+        $workspace_users = collect($workspaces)->where('id', $workspace_id->value)->values()->shift()['users'];
+        return $workspace_users;
     }
 
-    //Todo
-    // get array of users
-    //create array of users 
-    //store to 1 slug only
     public function store_mapped_users($users)
+    {   
+        foreach($users as $key => $value) {
+            $agent = Agent::find($key);
+            $agent->infinity_user_id = $value;
+            $agent->save();
+        }
+        session()->flash('status', 'Successfully saved!');
+    }
+
+    public function get_statuses()
     {
-        
+        $selected_workspace = TSetting::getBySlug('infinity_workspace_id');
+        $selected_board = TSetting::getBySlug('infinity_board_id');
+        $statuses = $this->get_attributes($selected_workspace->value, $selected_board->value );
+        return collect($statuses)->where('name', 'Tags')->where('type', 'label')->values()->shift()['settings']['labels'];
+    }
+
+    public function store_mapped_status($statuses)
+    {
+        foreach($statuses as $key => $value) {
+            $status = Status::find($key);
+            $status->infinity_status_id = $value;
+            $status->save();
+        }
+        session()->flash('status', 'Successfully saved!');
     }
 }

@@ -7,7 +7,9 @@ use Kordy\Ticketit\Models\TSetting;
 use Kordy\Ticketit\Services\Integrations\InfinityService;
 use Kordy\Ticketit\Services\CategoriesService;
 use Kordy\Ticketit\Models\Agent;
+use Kordy\Ticketit\Models\Status;
 use Kordy\Ticketit\Repositories\StatusRepository;
+
 
 class InfinityController extends Controller
 {
@@ -97,8 +99,7 @@ class InfinityController extends Controller
     }
 
     public function store_fields(Request $request)
-    {   
-    
+    {      
         $infinity_service = new InfinityService();
         $folders = $infinity_service->store_fields($request->except(['_token']));
         return redirect()->back();
@@ -107,8 +108,33 @@ class InfinityController extends Controller
     public function user_mapping_index()
     {
         $infinity_service = new InfinityService();
-        $data = $infinity_service->get_user_by_workspace();
+        $workspace_users = $infinity_service->get_user_by_workspace();
+        $agents = Agent::agents()->get();
+        return view('ticketit::admin.infinity.users_mapping', compact('agents','workspace_users'));
+    }
 
-        return view('ticketit::admin.infinity.users_mapping');
+    public function store_mapped_users(Request $request)
+    {
+        $infinity_service = new InfinityService();
+        $users = collect($request->only('users'))->values()->shift();
+        $data = $infinity_service->store_mapped_users($users);
+        return redirect()->back();
+    }
+
+    public function ticket_status_mapping_index()
+    {
+        $infinity_service = new InfinityService();
+        $infinity_statuses =  $infinity_service->get_statuses();
+        $ticket_statuses = Status::all();
+        return view('ticketit::admin.infinity.ticket_status_mapping', compact('infinity_statuses', 'ticket_statuses'));
+    }
+
+    public function store_mapped_status(Request $request)
+    {
+        $statuses = collect($request->only('statuses'))->values()->shift();
+        $infinity_service = new InfinityService();
+        $infinity_service->store_mapped_status($statuses);
+        return redirect()->back();
+
     }
 }

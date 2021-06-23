@@ -18,34 +18,34 @@
     <div class="panel panel-default">
         <div class="panel-body">
             @include('ticketit::admin.infinity.shared.nav')
-            <form method="POST" action="{{ route($setting->grab('admin_route').'.infinity.users.store') }}">
+            <form method="POST" action="{{ route($setting->grab('admin_route').'.infinity.status.store') }}">
                 {{ csrf_field() }}
                 <table class="notification-settings__tbl table table-bordered">
                     <thead>
                         <tr>
-                            <td>Users</td>
+                            <td>Status</td>
                             <td>Value</td>
                         </tr>
                     </thead>
                     <tbody>            
-                    <hr>       
-                    @foreach ($agents as $agent)                       
-                        <tr>                     
-                            <td>{{ $agent->name }} - {{ $agent->email }} - {{ $agent->infinity_user_id }}</td>
+                    <hr>                                   
+                        @foreach ( $ticket_statuses as $t_status )
+                        <tr>               
+                            <td>{{ $t_status->name }}</td>
                             <td width="30%">
-                                <select class="select2 form-control" name="users[{{ $agent->id }}]" style="width:100%;">
-                                    <option value="">Select User</option>
-                                    @foreach ($workspace_users as $user)
-                                        @if(isset($agent->infinity_user_id))
-                                            <option value="{{ $user['id'] }}" {{ $agent->infinity_user_id == $user['id'] ? 'selected' : '' }}>{{ $user['name'] }}</option>                                
+                                <select class="select2 form-control" name="statuses[{{ $t_status->id }}]" style="width:100%;">
+                                    <option value="">Select Status</option>        
+                                    @foreach ($infinity_statuses as $infinity_status)
+                                        @if(isset($t_status->infinity_status_id))
+                                            <option value="{{ $infinity_status['id'] }}" {{$t_status->infinity_status_id == $infinity_status['id'] ? 'selected' : '' }}>{{ $infinity_status['name'] }}</option>                                
                                         @else
-                                            <option value="{{ $user['id'] }}" >{{ $user['name'] }}</option>
+                                            <option value="{{ $infinity_status['id'] }}" >{{  $infinity_status['name'] }}</option>
                                         @endif
-                                    @endforeach                      
+                                    @endforeach                                                
                                 </select>
                             </td>                 
                         </tr> 
-                    @endforeach     
+                        @endforeach      
                     </tbody>
                 </table>
                 <button class="btn btn-success pull-right">Save</button>
