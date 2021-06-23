@@ -87,7 +87,9 @@ class InfinityController extends Controller
         $selected_board = TSetting::getBySlug('infinity_board_id');
         foreach($fields as $key => $value) {
             $field = TSetting::getBySlug($key);
-            array_push($selected_fields,['slug' => $field->slug, 'value' => $field->value]);
+            if(isset($field->slug)) {
+                array_push($selected_fields,['slug' => $field->slug, 'value' => $field->value]);
+            }
         }     
         $infinity_service = new InfinityService();       
         $attributes = $infinity_service->get_attributes($selected_workspace->value, $selected_board->value);

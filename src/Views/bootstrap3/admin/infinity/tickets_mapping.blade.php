@@ -37,16 +37,18 @@
                             <td>{{ $field }}</td>
                             <td width="30%">
                                 <select class="select2 form-control" name="{{ $key }}" style="width:100%;">
-                                    <option value="">Select Field</option>
-                                    @if($attributes)        
+                                    <option value="">Select Field</option>                                    
                                         @foreach ($attributes as $attribute)  
-                                            @foreach ($selected_fields as $selected_field)
-                                                @if($selected_field['slug'] == $key)
-                                                <option value="{{ $attribute['id'] }}" @if ($selected_field['value'] == $attribute['id']) selected @endif >{{ $attribute['name'] }}</option>   
-                                                @endif
-                                            @endforeach                                        
-                                        @endforeach
-                                    @endif
+                                            @if(!empty($selected_fields))   
+                                                @foreach ($selected_fields as $selected_field)
+                                                    @if($selected_field['slug'] == $key)
+                                                        <option value="{{ $attribute['id'] }}" @if ($selected_field['value'] == $attribute['id']) selected @endif >{{ $attribute['name'] }}</option>   
+                                                    @endif                                                
+                                                @endforeach     
+                                            @else 
+                                                <option value="{{ $attribute['id'] }}" >{{ $attribute['name'] }}</option>   
+                                            @endif                                                                            
+                                        @endforeach                               
                                 </select>
                             </td>
                         </tr> 
