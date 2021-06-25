@@ -1,5 +1,7 @@
 <?php
 namespace Kordy\Ticketit\Services\Integrations;
+
+use Exception;
 use Kordy\Ticketit\Models\Agent;
 use Kordy\Ticketit\Models\TSetting;
 use Kordy\Ticketit\Repositories\CategoriesRepository;
@@ -153,6 +155,11 @@ class InfinityService
         $infinity_folder_id = collect($infinity_slugs)->where('slug','infinity_folder_id')->toArray(); 
         $infinity_workspace_id = collect($infinity_slugs)->where('slug','infinity_workspace_id')->toArray();
         $infinity_board_id = collect($infinity_slugs)->where('slug','infinity_board_id')->toArray();
+        $infinity_status_id = Status::where('id', $ticket->status_id)->first();
+        $ws_id = array_shift($infinity_workspace_id)['value'];
+        $b_id = array_shift($infinity_board_id)['value'];
+        $statuses = $this->get_attributes($ws_id,$b_id);
+        $infinity_status_label_attr_id =  collect($statuses)->where('name', 'Tags')->where('type', 'label')->values()->shift()['id'] ;
         $infinity_values = [];
         $x = 0;
 
@@ -181,17 +188,21 @@ class InfinityService
                         'attribute_id' => $field['value'],
                         'data' => (string)$ticket->id,
                     ];
-                }
+                    $infinity_values[$x++] = [
+                        'attribute_id' =>  $infinity_status_label_attr_id, 
+                        'data' => [$infinity_status_id->infinity_status_id],
+                    ];
+                }               
             }
+     
         }     
-
         $infinity_data = [
             "folder_id" => array_shift($infinity_folder_id)['value'],
             "values" => $infinity_values 
         ];
 
         try {
-            $url = "https://app.startinfinity.com/api/v1/".array_shift($infinity_workspace_id)['value']."/".array_shift($infinity_board_id)['value']."/items";
+            $url = "https://app.startinfinity.com/api/v1/".$ws_id."/".$b_id."/items";
             $options = [
                 'headers' => [
                     'Content-Type' => 'application/json',
@@ -199,19 +210,18 @@ class InfinityService
                 ],
                 'json' => $infinity_data
             ];
-
             $data = $client->post($url, $options);
             $res = $data->getBody();
-            if (json_decode($res)->id) {
-                $ticket = Ticket::find($ticket->id);
-                $ticket->infinity_item_id = json_decode($res)->id;
-                $ticket->save();
+            if (isset(json_decode($res)->id)) {
+                $_ticket = Ticket::find($ticket->id);
+                $_ticket->infinity_item_id = json_decode($res)->id;
+                $_ticket->save();      
                 return true;
             } else {
                 return false;
             }
-        } catch (\Throwable $th) {
-            return false;
+        } catch (Exception $e) {
+            \Log::info($e->getMessage());
         }
     }
 

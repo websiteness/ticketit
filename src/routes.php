@@ -238,7 +238,7 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
             Route::post('fields/map','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_fields')->name('fields.map'); 
             Route::post('users/store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_users')->name('users.store'); 
             Route::get('ticket/status/mapping','\Kordy\Ticketit\Controllers\Integrations\InfinityController@ticket_status_mapping_index')->name('ticket.status.mapping');  
-            Route::post('status/store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_status')->name('status.store');  
+            Route::post        ('status/store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_status')->name('status.store');  
 
 
             Route::prefix('workspaces')->name('workspaces.')->group(function() {

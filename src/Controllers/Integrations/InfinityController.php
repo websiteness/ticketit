@@ -26,6 +26,7 @@ class InfinityController extends Controller
         $selected_workspace = TSetting::getBySlug('infinity_workspace_id');
         $selected_board = TSetting::getBySlug('infinity_board_id');
         $selected_folder =  TSetting::getBySlug('infinity_folder_id');
+        
         return view('ticketit::admin.infinity.index', compact('token', 'workspaces', 'boards', 'selected_workspace', 'selected_board', 'selected_folder'));
     } 
 
@@ -93,9 +94,10 @@ class InfinityController extends Controller
                 array_push($selected_fields,['slug' => $field->slug, 'value' => $field->value]);
             }
         }     
+        $selected_fields_slugs = collect($selected_fields)->pluck('slug')->toArray();
         $infinity_service = new InfinityService();       
         $attributes = $infinity_service->get_attributes($selected_workspace->value, $selected_board->value);
-        return view('ticketit::admin.infinity.tickets_mapping', compact('attributes', 'fields', 'selected_fields' ));
+        return view('ticketit::admin.infinity.tickets_mapping', compact('attributes', 'fields', 'selected_fields', 'selected_fields_slugs' ));
     }
 
     public function store_fields(Request $request)
@@ -118,11 +120,13 @@ class InfinityController extends Controller
         $infinity_service = new InfinityService();
         $users = collect($request->only('users'))->values()->shift();
         $data = $infinity_service->store_mapped_users($users);
+
         return redirect()->back();
     }
 
     public function ticket_status_mapping_index()
     {
+
         $infinity_service = new InfinityService();
         $infinity_statuses =  $infinity_service->get_statuses();
         $ticket_statuses = Status::all();

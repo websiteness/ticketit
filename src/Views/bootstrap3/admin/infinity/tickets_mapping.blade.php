@@ -30,29 +30,39 @@
                             <td>Value</td>
                         </tr>
                     </thead>
-                    <tbody>            
-                    <hr>                  
+                    <tbody>                            
                     @foreach($fields as $key => $field)
+                        @if(in_array($key, $selected_fields_slugs))
                         <tr>                  
                             <td>{{ $field }}</td>
                             <td width="30%">
                                 <select class="select2 form-control" name="{{ $key }}" style="width:100%;">
                                     <option value="">Select Field</option>                                    
                                         @foreach ($attributes as $attribute)  
-                                            @if(!empty($selected_fields))   
-                                                @foreach ($selected_fields as $selected_field)
-                                                    @if($selected_field['slug'] == $key)
-                                                        <option value="{{ $attribute['id'] }}" @if ($selected_field['value'] == $attribute['id']) selected @endif >{{ $attribute['name'] }}</option>   
-                                                    @endif                                                
-                                                @endforeach     
-                                            @else 
-                                                <option value="{{ $attribute['id'] }}" >{{ $attribute['name'] }}</option>   
-                                            @endif                                                                            
+                                            @foreach ($selected_fields as $selected_field)
+                                       
+                                                @if($selected_field['slug'] == $key)
+                                                    <option value="{{ $attribute['id'] }}" @if ($selected_field['value'] == $attribute['id']) selected @endif >{{ $attribute['name'] }}</option>                                        
+                                                @endif                                                       
+                                            @endforeach     
                                         @endforeach                               
                                 </select>
                             </td>
                         </tr> 
-                        @endforeach
+                        @else
+                            <tr>                  
+                                <td>{{ $field }}</td>
+                                <td width="30%">
+                                    <select class="select2 form-control" name="{{ $key }}" style="width:100%;">
+                                        <option value="">Select Field</option>                                    
+                                            @foreach ($attributes as $attribute)  
+                                            <option value="{{ $attribute['id'] }}"  >{{ $attribute['name'] }}</option>                       
+                                            @endforeach
+                                    </select>
+                                </td>
+                            </tr> 
+                        @endif
+                    @endforeach
                     </tbody>
                 </table>
                 <button class="btn btn-success pull-right">Save</button>
