@@ -575,7 +575,7 @@ class TicketsController extends Controller
      *
      * @return Response
      */
-    public function complete($id, AsanaService $asana_service)
+    public function complete($id, AsanaService $asana_service, InfinityService $infinity_service)
     {
         if ($this->permToClose($id) == 'yes') {
             $ticket = $this->tickets->findOrFail($id);
@@ -586,10 +586,13 @@ class TicketsController extends Controller
             }
 
             $subject = $ticket->subject;
-            $ticket->save();
+          $ticket->save();
+
+     
 
             // complete asana task
             try {
+                $infinity_service->close_ticket($ticket);
                 $asana_service->complete_task($id);
             } catch(\Exception $e) {
                 \Log::error('Tickets Error: failed to mark ticket as complete on Asana');

@@ -366,4 +366,59 @@ class InfinityService
         }
 
     }
+
+    public function close_ticket($ticket)
+    {
+        
+        $client = new Client();
+        $infinity_slugs =  TSetting::where('slug', 'like', 'infinity%')->get();
+        $infinity_token = collect($infinity_slugs)->where('slug','infinity_token')->toArray();
+        $infinity_folder_id = collect($infinity_slugs)->where('slug','infinity_folder_id')->toArray(); 
+        $infinity_workspace_id = collect($infinity_slugs)->where('slug','infinity_workspace_id')->toArray();
+        $infinity_board_id = collect($infinity_slugs)->where('slug','infinity_board_id')->toArray();
+        $infinity_status_id = Status::where('id', $ticket->status_id)->first();
+        $ws_id = array_shift($infinity_workspace_id)['value'];
+        $b_id = array_shift($infinity_board_id)['value'];
+        $statuses = $this->get_attributes($ws_id,$b_id);
+        $infinity_status_label_attr_id =  collect($statuses)->where('name', 'Status')->where('type', 'label')->values()->shift()['id'] ;
+        $infinity_values = [];
+
+
+        $infinity_values = [
+            'attribute_id' =>  $infinity_status_label_attr_id, 
+            'data' => [$infinity_status_id->infinity_status_id]
+        ];
+
+
+        
+        $infinity_data = [
+            "folder_id" => array_shift($infinity_folder_id)['value'],
+            "values" => [$infinity_values]
+        ];
+        $url = "https://app.startinfinity.com/api/v2/workspaces/".$ws_id."/boards/".$b_id."/items/".$ticket->infinity_item_id;
+
+       
+        try {
+          
+            $options = [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Authorization' => "Bearer ".array_shift($infinity_token)['value'].""
+                ],
+                'json' => $infinity_data
+            ];
+            $data = $client->put($url, $options);
+            $res = $data->getBody();
+            if (isset(json_decode($res)->id)) {
+                $_ticket = Ticket::find($ticket->id);
+                $_ticket->infinity_item_id = json_decode($res)->id;
+                $_ticket->save();      
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception $e) {
+            \Log::info($e->getMessage());
+        }
+    }
 }
