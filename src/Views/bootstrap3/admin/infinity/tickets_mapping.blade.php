@@ -30,14 +30,15 @@
                             <td>Value</td>
                         </tr>
                     </thead>
-                    <tbody>                            
+                    <tbody>                                     
                     @foreach($fields as $key => $field)
                         @if(in_array($key, $selected_fields_slugs))
                         <tr>                  
                             <td>{{ $field }}</td>
                             <td width="30%">
                                 <select class="select2 form-control" name="{{ $key }}" style="width:100%;">
-                                    <option value="">Select Field</option>                                    
+                                    <option value="">Select Field</option>             
+                                    @if($attributes)         
                                         @foreach ($attributes as $attribute)  
                                             @foreach ($selected_fields as $selected_field)
                                        
@@ -45,7 +46,10 @@
                                                     <option value="{{ $attribute['id'] }}" @if ($selected_field['value'] == $attribute['id']) selected @endif >{{ $attribute['name'] }}</option>                                        
                                                 @endif                                                       
                                             @endforeach     
-                                        @endforeach                               
+                                        @endforeach    
+
+                                        @endif
+                                                        
                                 </select>
                             </td>
                         </tr> 
@@ -54,15 +58,17 @@
                                 <td>{{ $field }}</td>
                                 <td width="30%">
                                     <select class="select2 form-control" name="{{ $key }}" style="width:100%;">
-                                        <option value="">Select Field</option>                                    
+                                        <option value="">Select Field</option>         
+                                        @if($attributes)                               
                                             @foreach ($attributes as $attribute)  
                                             <option value="{{ $attribute['id'] }}"  >{{ $attribute['name'] }}</option>                       
                                             @endforeach
+                                            @endif
                                     </select>
                                 </td>
                             </tr> 
                         @endif
-                    @endforeach
+                    @endforeach           
                     </tbody>
                 </table>
                 <button class="btn btn-success pull-right">Save</button>

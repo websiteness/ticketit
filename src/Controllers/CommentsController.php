@@ -12,6 +12,7 @@ use Kordy\Ticketit\Models\Ticket;
 use Sentinel;
 use Illuminate\Support\Str;
 use Kordy\Ticketit\Services\Integrations\AsanaService;
+use Kordy\Ticketit\Services\Integrations\InfinityService;
 
 class CommentsController extends Controller
 {
@@ -108,6 +109,13 @@ class CommentsController extends Controller
 
         // update asana task
         $asana_service->update_ticket($ticket->id);
+        $infinity_service = new InfinityService();
+        $update_ticket = $infinity_service->updateTicket($ticket);
+
+        if(!$update_ticket) {
+            \Log::error('Tickets Error: failed to update ticket.');
+        
+        }
 
         // update task tag if status was changed
         if($request->status_change)

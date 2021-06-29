@@ -159,7 +159,7 @@ class InfinityService
         $ws_id = array_shift($infinity_workspace_id)['value'];
         $b_id = array_shift($infinity_board_id)['value'];
         $statuses = $this->get_attributes($ws_id,$b_id);
-        $infinity_status_label_attr_id =  collect($statuses)->where('name', 'Tags')->where('type', 'label')->values()->shift()['id'] ;
+        $infinity_status_label_attr_id =  collect($statuses)->where('name', 'Status')->where('type', 'label')->values()->shift()['id'] ;
         $infinity_values = [];
         $x = 0;
 
@@ -183,19 +183,27 @@ class InfinityService
                         'data' => Sentinel::findById($ticket->user_id)->getFullNameAttribute(),
                     ];
                 }
-                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_id'){
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_id'){ // Add status to mapping
                     $infinity_values[$x++] = [
                         'attribute_id' => $field['value'],
                         'data' => (string)$ticket->id,
                     ];
                     $infinity_values[$x++] = [
                         'attribute_id' =>  $infinity_status_label_attr_id, 
-                        'data' => [$infinity_status_id->infinity_status_id],
+                        'data' =>[$infinity_status_id->infinity_status_id],
                     ];
-                }               
+                }     
+                
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_agent_id'){ // Add status to mapping
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' => [$ticket->agent->infinity_user_id],
+                    ];
+                } 
             }
      
         }     
+        
         $infinity_data = [
             "folder_id" => array_shift($infinity_folder_id)['value'],
             "values" => $infinity_values 
@@ -229,7 +237,9 @@ class InfinityService
     {
         $workspace_id = TSetting::where('slug','infinity_workspace_id')->first();
         $workspaces = $this->get_workspaces();
-        $workspace_users = collect($workspaces)->where('id', $workspace_id->value)->values()->shift()['users'];
+
+            $workspace_users = collect($workspaces)->where('id', $workspace_id->value)->values()->shift()['users'];
+  
         return $workspace_users;
     }
 
@@ -247,8 +257,14 @@ class InfinityService
     {
         $selected_workspace = TSetting::getBySlug('infinity_workspace_id');
         $selected_board = TSetting::getBySlug('infinity_board_id');
-        $statuses = $this->get_attributes($selected_workspace->value, $selected_board->value );
-        return collect($statuses)->where('name', 'Tags')->where('type', 'label')->values()->shift()['settings']['labels'];
+        if(isset($selected_workspace->value) && isset($selected_board)) {
+            $statuses = $this->get_attributes($selected_workspace->value, $selected_board->value );
+            return collect($statuses)->where('name', 'Status')->where('type', 'label')->values()->shift()['settings']['labels'];
+        } else {
+            return false;;
+        }
+
+  
     }
 
     public function store_mapped_status($statuses)
@@ -259,5 +275,95 @@ class InfinityService
             $status->save();
         }
         session()->flash('status', 'Successfully saved!');
+    }
+
+    public function updateTicket($ticket)
+    {
+        $client = new Client();
+        $asana_service = new AsanaService();
+        $infinity_slugs =  TSetting::where('slug', 'like', 'infinity%')->get();
+        $fields = collect($infinity_slugs)->whereNotIn('slug',['infinity_token','infinity_workspace_id','infinity_board_id', 'infinity_folder_id'])->toArray();
+        $key_fields =  collect($fields)->pluck('slug')->toArray();
+        $infinity_token = collect($infinity_slugs)->where('slug','infinity_token')->toArray();
+        $infinity_folder_id = collect($infinity_slugs)->where('slug','infinity_folder_id')->toArray(); 
+        $infinity_workspace_id = collect($infinity_slugs)->where('slug','infinity_workspace_id')->toArray();
+        $infinity_board_id = collect($infinity_slugs)->where('slug','infinity_board_id')->toArray();
+        $infinity_status_id = Status::where('id', $ticket->status_id)->first();
+        $ws_id = array_shift($infinity_workspace_id)['value'];
+        $b_id = array_shift($infinity_board_id)['value'];
+        $statuses = $this->get_attributes($ws_id,$b_id);
+        $infinity_status_label_attr_id =  collect($statuses)->where('name', 'Status')->where('type', 'label')->values()->shift()['id'] ;
+        $infinity_values = [];
+        $x = 0;
+
+        foreach ($key_fields as $key_field) {
+            foreach($fields as $key => $field) {
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_description'){
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' => $asana_service->build_html_notes($ticket),
+                    ];
+                }
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_subject'){
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' => $ticket->subject,
+                    ];
+                }
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_owner'){
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' => Sentinel::findById($ticket->user_id)->getFullNameAttribute(),
+                    ];
+                }
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_id'){ // Add status to mapping
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' => (string)$ticket->id,
+                    ];
+                    $infinity_values[$x++] = [
+                        'attribute_id' =>  $infinity_status_label_attr_id, 
+                        'data' =>[$infinity_status_id->infinity_status_id],
+                    ];
+                }     
+                
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_agent_id'){ // Add status to mapping
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' => [$ticket->agent->infinity_user_id],
+                    ];
+                } 
+            }
+     
+        }     
+        
+        $infinity_data = [
+            "folder_id" => array_shift($infinity_folder_id)['value'],
+            "values" => $infinity_values 
+        ];
+     
+        try {
+            $url = "https://app.startinfinity.com/api/v2/workspaces/".$ws_id."/boards/".$b_id."/items/".$ticket->infinity_item_id;
+            $options = [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Authorization' => "Bearer ".array_shift($infinity_token)['value'].""
+                ],
+                'json' => $infinity_data
+            ];
+            $data = $client->put($url, $options);
+            $res = $data->getBody();
+            if (isset(json_decode($res)->id)) {
+                $_ticket = Ticket::find($ticket->id);
+                $_ticket->infinity_item_id = json_decode($res)->id;
+                $_ticket->save();      
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception $e) {
+            \Log::info($e->getMessage());
+        }
+
     }
 }

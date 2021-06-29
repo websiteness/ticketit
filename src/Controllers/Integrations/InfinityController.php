@@ -83,7 +83,9 @@ class InfinityController extends Controller
             'infinity_ticket_id' => 'Ticket ID',
             'infinity_subject' =>  'Subject',
             'infinity_description' => 'Description',
-            'infinity_ticket_owner' => 'Ticket Owner'
+            'infinity_ticket_owner' => 'Ticket Owner',
+            'infinity_ticket_status' => 'Status',
+            'infinity_ticket_agent_id' => 'Developer'
         ];
         $selected_fields = [];
         $selected_workspace = TSetting::getBySlug('infinity_workspace_id');
@@ -95,8 +97,16 @@ class InfinityController extends Controller
             }
         }     
         $selected_fields_slugs = collect($selected_fields)->pluck('slug')->toArray();
-        $infinity_service = new InfinityService();       
-        $attributes = $infinity_service->get_attributes($selected_workspace->value, $selected_board->value);
+        $infinity_service = new InfinityService();   
+        
+        if(isset($selected_workspace->value) && isset($selected_board->value)) {
+            $attributes = $infinity_service->get_attributes($selected_workspace->value, $selected_board->value);
+        } else {
+            $attributes = false;
+        }
+  
+     
+
         return view('ticketit::admin.infinity.tickets_mapping', compact('attributes', 'fields', 'selected_fields', 'selected_fields_slugs' ));
     }
 
@@ -129,7 +139,9 @@ class InfinityController extends Controller
 
         $infinity_service = new InfinityService();
         $infinity_statuses =  $infinity_service->get_statuses();
-        $ticket_statuses = Status::all();
+   
+            $ticket_statuses = Status::all();
+      
         return view('ticketit::admin.infinity.ticket_status_mapping', compact('infinity_statuses', 'ticket_statuses'));
     }
 

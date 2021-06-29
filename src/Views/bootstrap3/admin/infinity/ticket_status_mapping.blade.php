@@ -28,24 +28,26 @@
                         </tr>
                     </thead>
                     <tbody>            
-                    <hr>                                   
+                    <hr>                                          
                         @foreach ( $ticket_statuses as $t_status )
                         <tr>               
                             <td>{{ $t_status->name }}</td>
                             <td width="30%">
                                 <select class="select2 form-control" name="statuses[{{ $t_status->id }}]" style="width:100%;">
-                                    <option value="">Select Status</option>        
-                                    @foreach ($infinity_statuses as $infinity_status)
-                                        @if(isset($t_status->infinity_status_id))
-                                            <option value="{{ $infinity_status['id'] }}" {{$t_status->infinity_status_id == $infinity_status['id'] ? 'selected' : '' }}>{{ $infinity_status['name'] }}</option>                                
-                                        @else
-                                            <option value="{{ $infinity_status['id'] }}" >{{  $infinity_status['name'] }}</option>
-                                        @endif
-                                    @endforeach                                                
+                                    <option value="">Select Status</option>     
+                                    @if($infinity_statuses)
+                                        @foreach ($infinity_statuses as $infinity_status)
+                                            @if(isset($t_status->infinity_status_id))
+                                                <option value="{{ $infinity_status['id'] }}" {{$t_status->infinity_status_id == $infinity_status['id'] ? 'selected' : '' }}>{{ $infinity_status['name'] }}</option>                                
+                                            @else
+                                                <option value="{{ $infinity_status['id'] }}" >{{  $infinity_status['name'] }}</option>
+                                            @endif
+                                        @endforeach     
+                                    @endif                         
                                 </select>
                             </td>                 
                         </tr> 
-                        @endforeach      
+                        @endforeach                
                     </tbody>
                 </table>
                 <button class="btn btn-success pull-right">Save</button>
