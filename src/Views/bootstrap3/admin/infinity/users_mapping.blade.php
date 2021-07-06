@@ -31,7 +31,7 @@
                     <hr>       
                     @foreach ($agents as $agent)                       
                         <tr>                     
-                            <td>{{ $agent->name }} - {{ $agent->email }} - {{ $agent->infinity_user_id }}</td>
+                            <td>{{ $agent->name }} - {{ $agent->email }}</td>
                             <td width="30%">
                                 <select class="select2 form-control" name="users[{{ $agent->id }}]" style="width:100%;">
                                     <option value="">Select User</option>
