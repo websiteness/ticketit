@@ -238,15 +238,21 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
             Route::post('fields/map','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_fields')->name('fields.map'); 
             Route::post('users/store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_users')->name('users.store'); 
             Route::get('ticket/status/mapping','\Kordy\Ticketit\Controllers\Integrations\InfinityController@ticket_status_mapping_index')->name('ticket.status.mapping');  
-            Route::post        ('status/store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_status')->name('status.store');  
+            Route::post('status/store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_status')->name('status.store');  
+            Route::get('versions/workspace/{workspace}/board/{board}','\Kordy\Ticketit\Controllers\Integrations\InfinityController@get_versions')->name('versions');
 
 
             Route::prefix('workspaces')->name('workspaces.')->group(function() {
                 Route::get('list','\Kordy\Ticketit\Controllers\Integrations\InfinityController@get_workspace_list')->name('list');
                 Route::post('store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_workspace')->name('store');
-                // Route::post('store','\Kordy\Ticketit\Controllers\Integrations\AsanaController@store_workspace')->name('store');
+  
             });
-
+            Route::prefix('categories')->name('categories.')->group(function() {
+                Route::get('/','\Kordy\Ticketit\Controllers\Integrations\InfinityController@categories_mapping_index')->name('index');
+                Route::post('store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_categories')->name('store');
+                Route::get('sub/index','\Kordy\Ticketit\Controllers\Integrations\InfinityController@sub_categories_mapping_index')->name('sub.index');
+                Route::post('sub/store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_sub_categories')->name('sub.store');
+            });
         });
         
     });

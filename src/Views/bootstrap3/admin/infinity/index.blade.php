@@ -95,10 +95,24 @@
                                 <option value="">Select Folder</option>
                             </select>
                         </div>
-                        <button id="save-board-folder" type="submit" class="btn btn-success" disabled="disabled">Save</button>
+           
                     </div>
                 </div>
-            </form>
+     
+
+        <div class="row">
+            <div class="col-md-6">
+            <div class="form-group">
+                <label for="exampleInputEmail1">Select Version</label>
+                <select required  id="selected-version" class="form-control select2" name="version" style="width:100%;">
+                    <option value="">Select Version</option>
+                </select>
+                </div>
+                <button id="save-board-folder" type="submit" class="btn btn-success" disabled="disabled">Save</button>
+            </div>
+        </div>
+
+        </form>
         @endif
         @endif
     </div>
@@ -114,6 +128,7 @@
         let id = parseInt(selected_workspace_id);
         if(!isNaN(id) && typeof id === 'number') {
             loadBoards();
+  
         }
 
         $("#selected-workspace").change(function() {
@@ -130,7 +145,7 @@
             if($(this).val() != '') {
                 $('#selected-folder').find('option').remove().end().append('<option value="">Select Folder</option>').val('');
                 loadFolders();
-            
+
                 $('#save-board').attr('disabled', false);
             } else {
                 $('#save-board').attr('disabled', true);
@@ -179,8 +194,6 @@
         let selected_workspace_id = $('#selected-workspace').find(":selected").val();
         let ws_id = parseInt(selected_workspace_id);
         let selected_board_id = $('#selected-board').find(":selected").val();
-        console.log(selected_board_id)
-        console.log(ws_id)
         //get folder by workspace and board
         if( typeof selected_board_id === 'string') {
             let route = "{{ route($setting->grab('admin_route').'.infinity.folders', ['workspace' => 'ws_id', 'board' => 'board_id']) }}";         
@@ -189,10 +202,10 @@
                 method: 'get',
                 url: new_route,
                 beforeSend: function() {
-                    $('#save-board-folder').text('Fetching folders please wait ...');
+                    $('#save-board-folder').text('Fetching data please wait ...');
                 },
                 success: function(res) {
-                    $('#folders_form').show();
+                    $('#boards_form').show();
                     var folder = $('select[name="folder"]');
                     let selected_folder = '';
                     $.each(res, function(i, item) {                           
@@ -204,6 +217,45 @@
                             $select = "selected=selected";
                         }
                         folder.append('<option '+$select+' value='+item['id']+'>'+ item['name'] +'</option>');
+                    });  
+                    $('#save-board-folder').attr('disabled', false);
+                    $('#save-board-folder').text('Save');
+                    loadVersions();
+                }
+            });
+        }
+    }
+
+    function loadVersions() {
+        let selected_workspace_id = $('#selected-workspace').find(":selected").val();
+        let ws_id = parseInt(selected_workspace_id);
+        let selected_board_id = $('#selected-board').find(":selected").val();
+        console.log(selected_board_id)
+
+        if( typeof selected_board_id === 'string') {
+            let route = "{{ route($setting->grab('admin_route').'.infinity.versions', ['workspace' => 'ws_id', 'board' => 'board_id']) }}";         
+            let new_route = route.replace('ws_id', ws_id).replace('board_id', selected_board_id);
+            console.log(new_route)
+            $.ajax({
+                method: 'get',
+                url: new_route,
+                beforeSend: function() {
+                    $('#save-board-folder').text('Fetching data please wait ...');
+                },
+                success: function(res) {
+                    console.log(res)
+                    $('#boards_form').show();
+                    var versions = $('select[name="version"]');
+                    let selected_version = '';
+                    $.each(res, function(i, item) {                           
+                    var $select = '';
+                        @if(isset($selected_version->value))
+                            selected_version = `{{ $selected_version->value }}`;
+                        @endif
+                        if(selected_version == item['id']){
+                            $select = "selected=selected";
+                        }
+                        versions.append('<option '+$select+' value='+item['id']+'>'+ item['name'] +'</option>');
                     });  
                     $('#save-board-folder').attr('disabled', false);
                     $('#save-board-folder').text('Save');

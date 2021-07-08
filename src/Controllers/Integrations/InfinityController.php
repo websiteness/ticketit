@@ -8,6 +8,7 @@ use Kordy\Ticketit\Services\Integrations\InfinityService;
 use Kordy\Ticketit\Services\CategoriesService;
 use Kordy\Ticketit\Models\Agent;
 use Kordy\Ticketit\Models\Status;
+use Kordy\Ticketit\Models\Category;
 use Kordy\Ticketit\Repositories\StatusRepository;
 
 
@@ -23,11 +24,13 @@ class InfinityController extends Controller
         $token = $infinity_service->get_auth_token();
         $workspaces = $infinity_service->get_workspaces();
         $boards = $infinity_service->get_boards();
+
+        $selected_version = TSetting::getBySlug('infinity_version_id');
         $selected_workspace = TSetting::getBySlug('infinity_workspace_id');
         $selected_board = TSetting::getBySlug('infinity_board_id');
         $selected_folder =  TSetting::getBySlug('infinity_folder_id');
-        
-        return view('ticketit::admin.infinity.index', compact('token', 'workspaces', 'boards', 'selected_workspace', 'selected_board', 'selected_folder'));
+       
+        return view('ticketit::admin.infinity.index', compact('token', 'workspaces', 'boards', 'selected_workspace', 'selected_board', 'selected_folder', 'selected_version'));
     } 
 
     public function store_token(Request $request, InfinityService $infinity_service)
@@ -58,8 +61,10 @@ class InfinityController extends Controller
 
     public function store_board(Request $request, InfinityService $infinity_service)
     {
+
         $infinity_service->store_board($request->board);   
         $infinity_service->store_folder($request->folder);   
+        $infinity_service->store_version($request->version);
         return redirect()->back();
     }
 
@@ -136,11 +141,9 @@ class InfinityController extends Controller
 
     public function ticket_status_mapping_index()
     {
-
         $infinity_service = new InfinityService();
         $infinity_statuses =  $infinity_service->get_statuses();
-   
-            $ticket_statuses = Status::all();
+        $ticket_statuses = Status::all();
       
         return view('ticketit::admin.infinity.ticket_status_mapping', compact('infinity_statuses', 'ticket_statuses'));
     }
@@ -151,6 +154,52 @@ class InfinityController extends Controller
         $infinity_service = new InfinityService();
         $infinity_service->store_mapped_status($statuses);
         return redirect()->back();
-
     }
+
+    public function get_versions($ws_id, $b_id)     
+    {
+        $infinity_service = new InfinityService();
+        $versions = $infinity_service->get_versions($ws_id, $b_id);
+        return $versions;
+    }
+
+    public function categories_mapping_index()
+    {
+        $infinity_service = new InfinityService();
+        $infinity_categories = $infinity_service->get_categories();
+        $categories = Category::all();
+        return view('ticketit::admin.infinity.categories_mapping', compact('infinity_categories','categories'));
+    }
+
+    
+    public function store_mapped_categories(Request $request)
+    {
+        $categories = collect($request->only('categories'))->values()->shift();
+        $infinity_service = new InfinityService();
+        $infinity_service->store_mapped_categories($categories);
+        return redirect()->back();
+    }
+
+    public function sub_categories_mapping_index()
+    {
+        $infinity_service = new InfinityService();
+        $infinity_modules = $infinity_service->get_module();
+        $categories = Category::where('parent','!=', null)->get();
+
+        return view('ticketit::admin.infinity.sub_categories_mapping', compact('infinity_modules','categories'));
+    }
+
+    public function store_mapped_sub_categories(Request $request)
+    {
+        $categories = collect($request->only('categories'))->values()->shift();
+        $infinity_service = new InfinityService();
+        $infinity_service->store_mapped_sub_categories($categories);
+        return redirect()->back();
+    }
+
+
+
+
+
+    
 }

@@ -14,6 +14,7 @@ use GuzzleHttp\Client;
 use Kordy\Ticketit\Models\Ticket;
 use Kordy\Ticketit\Services\Integrations\AsanaService;
 use Kordy\Ticketit\Models\Status;
+use Kordy\Ticketit\Models\Category;
 
 class InfinityService
 {
@@ -224,11 +225,9 @@ class InfinityService
                 $_ticket = Ticket::find($ticket->id);
                 $_ticket->infinity_item_id = json_decode($res)->id;
                 $_ticket->save();      
-
                 \Log::info('Ticket sucessfully sent');
                 return true;
             } else {
-                
                 \Log::info('Error sending ticket.');
                 return false;
             }
@@ -359,8 +358,10 @@ class InfinityService
                 $_ticket = Ticket::find($ticket->id);
                 $_ticket->infinity_item_id = json_decode($res)->id;
                 $_ticket->save();      
+                \Log::info('Ticket sucessfully sent');
                 return true;
             } else {
+                \Log::info('Error updating ticket.');
                 return false;
             }
         } catch (Exception $e) {
@@ -417,4 +418,71 @@ class InfinityService
             \Log::info($e->getMessage());
         }
     }
+
+    public function get_versions($ws_id, $b_id)
+    {
+        $versions = $this->get_attributes($ws_id, $b_id);
+        $infinity_versions_attr =  collect($versions)->where('name', 'CRM Version')->where('type', 'label')->values()->shift()['settings']['labels'];
+        return $infinity_versions_attr;
+    }
+
+    public function store_version($id)
+    {
+        TSetting::updateOrCreate(
+            ['slug' => 'infinity_version_id'],
+            ['slug' => 'infinity_version_id', 'value' => $id, 'default' => $id]
+        );
+        session()->flash('status', 'Successfully saved!');
+    }
+
+    
+    public function get_categories()
+    {
+        $selected_workspace = TSetting::getBySlug('infinity_workspace_id');
+        $selected_board = TSetting::getBySlug('infinity_board_id');
+        if(isset($selected_workspace->value) && isset($selected_board)) {
+            $categories = $this->get_attributes($selected_workspace->value, $selected_board->value );
+            return collect($categories)->where('name', 'Ticket Category')->where('type', 'label')->values()->shift()['settings']['labels'];
+        } else {
+            return false;;
+        }  
+    }
+
+    
+    public function store_mapped_categories($categories)
+    {
+        foreach($categories as $key => $value) {
+            $status = Category::find($key);
+            $status->infinity_category_id = $value;
+            $status->save();
+        }
+        session()->flash('status', 'Successfully saved!');
+    }
+
+    public function get_module()
+    {
+        $selected_workspace = TSetting::getBySlug('infinity_workspace_id');
+        $selected_board = TSetting::getBySlug('infinity_board_id');
+        if(isset($selected_workspace->value) && isset($selected_board)) {
+            $modules = $this->get_attributes($selected_workspace->value, $selected_board->value );
+            return collect($modules)->where('name', 'Module')->where('type', 'label')->values()->shift()['settings']['labels'];
+        } else {
+            return false;;
+        }  
+    }
+
+        
+    public function store_mapped_sub_categories($categories)
+    {
+        foreach($categories as $key => $value) {
+            $status = Category::find($key);
+            $status->infinity_category_id = $value;
+            $status->save();
+        }
+        session()->flash('status', 'Successfully saved!');
+    }
+
+
+
+    
 }
