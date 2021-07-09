@@ -159,8 +159,12 @@ class InfinityService
         $infinity_status_id = Status::where('id', $ticket->status_id)->first();
         $ws_id = array_shift($infinity_workspace_id)['value'];
         $b_id = array_shift($infinity_board_id)['value'];
-        $statuses = $this->get_attributes($ws_id,$b_id);
-        $infinity_status_label_attr_id =  collect($statuses)->where('name', 'Dev Stage')->where('type', 'label')->values()->shift()['id'] ;
+        $attr = $this->get_attributes($ws_id,$b_id);
+        $infinity_status_label_attr_id =  collect($attr)->where('name', 'Dev Stage')->where('type', 'label')->values()->shift()['id'];
+        $modules = $this->get_module();
+        $categories = $this->get_categories();
+
+
         $infinity_values = [];
         $x = 0;
 
@@ -208,10 +212,26 @@ class InfinityService
                         'data' => $images,
                     ];
                 }
+
+                
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_category'){ 
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' =>  [$ticket->category->parent_category ? $ticket->category->parent_category->infinity_category_id : $ticket->category->infinity_category_id]
+                    ];    
+                }
+
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_module'){ 
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' =>  [$ticket->category->infinity_category_id]
+                    ];
+                }
             }
      
         }     
         
+        \Log::info(json_encode( $infinity_values ));
         $infinity_data = [
             "folder_id" => array_shift($infinity_folder_id)['value'],
             "values" => $infinity_values 
@@ -232,10 +252,10 @@ class InfinityService
                 $_ticket = Ticket::find($ticket->id);
                 $_ticket->infinity_item_id = json_decode($res)->id;
                 $_ticket->save();      
-                \Log::info('Ticket sucessfully sent');
+                // \Log::info(json_encode( $infinity_values ));
                 return true;
             } else {
-                \Log::info('Error sending ticket.');
+                // \Log::info(json_encode($infinity_data));
                 return false;
             }
         } catch (Exception $e) {

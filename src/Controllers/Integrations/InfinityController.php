@@ -92,6 +92,8 @@ class InfinityController extends Controller
             'infinity_ticket_status' => 'Status',
             'infinity_ticket_agent_id' => 'Developer',
             'infinity_ticket_images' => 'Images',
+            'infinity_ticket_category' => 'Ticket Category',
+            'infinity_ticket_module' => 'Module'
         ];
         $selected_fields = [];
         $selected_workspace = TSetting::getBySlug('infinity_workspace_id');
