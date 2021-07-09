@@ -90,7 +90,8 @@ class InfinityController extends Controller
             'infinity_description' => 'Description',
             'infinity_user_name' => 'User Name',
             'infinity_ticket_status' => 'Status',
-            'infinity_ticket_agent_id' => 'Developer'
+            'infinity_ticket_agent_id' => 'Developer',
+            'infinity_ticket_images' => 'Images',
         ];
         $selected_fields = [];
         $selected_workspace = TSetting::getBySlug('infinity_workspace_id');

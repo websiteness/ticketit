@@ -42,7 +42,6 @@
                 </div>
             </div>
         </form>
-   
         @if($token)
         <hr>
         <form id="workspace_form" method="POST" action="{{ route($setting->grab('admin_route').'.infinity.workspaces.store') }}">

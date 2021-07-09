@@ -372,7 +372,7 @@ class TicketsController extends Controller
 
         //send to infinity
         $infinity_service = new InfinityService();
-        $infinity_ticket = $infinity_service->store_ticket_data($ticket);
+        $infinity_ticket = $infinity_service->store_ticket_data($ticket,$content);
     
         if(!$infinity_ticket) {
             \Log::error('Tickets Error: failed to push tickets to Infinity');

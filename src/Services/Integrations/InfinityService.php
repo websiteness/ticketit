@@ -145,7 +145,7 @@ class InfinityService
         session()->flash('status', 'Successfully saved!');
     }
     
-    public function store_ticket_data($ticket)
+    public function store_ticket_data($ticket, $images)
     {
         $client = new Client();
         $asana_service = new AsanaService();
@@ -184,7 +184,7 @@ class InfinityService
                         'data' => Sentinel::findById($ticket->user_id)->getFullNameAttribute(),
                     ];
                 }
-                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_id'){ // Add status to mapping
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_id'){ 
                     $infinity_values[$x++] = [
                         'attribute_id' => $field['value'],
                         'data' => (string)$ticket->id,
@@ -195,12 +195,19 @@ class InfinityService
                     ];
                 }     
                 
-                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_agent_id'){ // Add status to mapping
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_agent_id'){ 
                     $infinity_values[$x++] = [
                         'attribute_id' => $field['value'],
                         'data' => [$ticket->agent->infinity_user_id],
                     ];
                 } 
+
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_images'){ 
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' => $images,
+                    ];
+                }
             }
      
         }     
@@ -279,7 +286,7 @@ class InfinityService
         session()->flash('status', 'Successfully saved!');
     }
 
-    public function updateTicket($ticket)
+    public function updateTicket($ticket, $images)
     {
         $client = new Client();
         $asana_service = new AsanaService();
@@ -329,12 +336,18 @@ class InfinityService
                     ];
                 }     
                 
-                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_agent_id'){ // Add status to mapping
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_agent_id'){ 
                     $infinity_values[$x++] = [
                         'attribute_id' => $field['value'],
                         'data' => [$ticket->agent->infinity_user_id],
                     ];
                 } 
+                //   if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_images'){
+                //     $infinity_values[$x++] = [
+                //         'attribute_id' => $field['value'],
+                //         'data' => $images,
+                //     ];
+                // } 
             }
         }     
         

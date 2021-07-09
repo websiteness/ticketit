@@ -110,7 +110,7 @@ class CommentsController extends Controller
         // update asana task
         $asana_service->update_ticket($ticket->id);
         $infinity_service = new InfinityService();
-        $update_ticket = $infinity_service->updateTicket($ticket);
+        $update_ticket = $infinity_service->updateTicket($ticket, $content);
 
         if(!$update_ticket) {
             \Log::error('Tickets Error: failed to update ticket.');
