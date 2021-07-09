@@ -168,7 +168,7 @@ class InfinityController extends Controller
     {
         $infinity_service = new InfinityService();
         $infinity_categories = $infinity_service->get_categories();
-        $categories = Category::all();
+        $categories = Category::where('parent', null)->get();
         return view('ticketit::admin.infinity.categories_mapping', compact('infinity_categories','categories'));
     }
 
