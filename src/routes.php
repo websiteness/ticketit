@@ -245,13 +245,18 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
             Route::prefix('workspaces')->name('workspaces.')->group(function() {
                 Route::get('list','\Kordy\Ticketit\Controllers\Integrations\InfinityController@get_workspace_list')->name('list');
                 Route::post('store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_workspace')->name('store');
-  
+                
             });
             Route::prefix('categories')->name('categories.')->group(function() {
                 Route::get('/','\Kordy\Ticketit\Controllers\Integrations\InfinityController@categories_mapping_index')->name('index');
                 Route::post('store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_categories')->name('store');
                 Route::get('sub/index','\Kordy\Ticketit\Controllers\Integrations\InfinityController@sub_categories_mapping_index')->name('sub.index');
                 Route::post('sub/store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_sub_categories')->name('sub.store');
+            });
+
+            Route::prefix('versions')->name('versions.')->group(function() {
+                // Route::get('/','\Kordy\Ticketit\Controllers\Integrations\InfinityController@version_mapping_index')->name('index');
+                // Route::post('store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_versions')->name('store');
             });
         });
         

@@ -150,20 +150,21 @@ class InfinityService
         $client = new Client();
         $asana_service = new AsanaService();
         $infinity_slugs =  TSetting::where('slug', 'like', 'infinity%')->get();
-        $fields = collect($infinity_slugs)->whereNotIn('slug',['infinity_token','infinity_workspace_id','infinity_board_id', 'infinity_folder_id'])->toArray();
+        $fields = collect($infinity_slugs)->whereNotIn('slug',['infinity_token','infinity_workspace_id','infinity_board_id', 'infinity_folder_id', 'infinity_version_id' ])->toArray();
         $key_fields =  collect($fields)->pluck('slug')->toArray();
         $infinity_token = collect($infinity_slugs)->where('slug','infinity_token')->toArray();
         $infinity_folder_id = collect($infinity_slugs)->where('slug','infinity_folder_id')->toArray(); 
         $infinity_workspace_id = collect($infinity_slugs)->where('slug','infinity_workspace_id')->toArray();
         $infinity_board_id = collect($infinity_slugs)->where('slug','infinity_board_id')->toArray();
         $infinity_status_id = Status::where('id', $ticket->status_id)->first();
+        $infinity_version_id = collect($infinity_slugs)->where('slug','infinity_version_id')->toArray();
+        $v_id = array_shift($infinity_version_id)['value'];
         $ws_id = array_shift($infinity_workspace_id)['value'];
         $b_id = array_shift($infinity_board_id)['value'];
         $attr = $this->get_attributes($ws_id,$b_id);
         $infinity_status_label_attr_id =  collect($attr)->where('name', 'Dev Stage')->where('type', 'label')->values()->shift()['id'];
-        $modules = $this->get_module();
-        $categories = $this->get_categories();
-
+        
+ 
 
         $infinity_values = [];
         $x = 0;
@@ -227,11 +228,20 @@ class InfinityService
                         'data' =>  [$ticket->category->infinity_category_id]
                     ];
                 }
+
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_version'){ 
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' =>  [$v_id]
+                    ];
+                }
+
+               
             }
      
         }     
         
-        \Log::info(json_encode( $infinity_values ));
+       
         $infinity_data = [
             "folder_id" => array_shift($infinity_folder_id)['value'],
             "values" => $infinity_values 
@@ -268,8 +278,7 @@ class InfinityService
     {
         $workspace_id = TSetting::where('slug','infinity_workspace_id')->first();
         $workspaces = $this->get_workspaces();
-
-            $workspace_users = collect($workspaces)->where('id', $workspace_id->value)->values()->shift()['users'];
+        $workspace_users = collect($workspaces)->where('id', $workspace_id->value)->values()->shift()['users'];
   
         return $workspace_users;
     }
@@ -322,6 +331,8 @@ class InfinityService
         $b_id = array_shift($infinity_board_id)['value'];
         $statuses = $this->get_attributes($ws_id,$b_id);
         $infinity_status_label_attr_id =  collect($statuses)->where('name', 'Dev Stage')->where('type', 'label')->values()->shift()['id'] ;
+        $infinity_version_id = collect($infinity_slugs)->where('slug','infinity_version_id')->toArray();
+        $v_id = array_shift($infinity_version_id)['value'];
         $infinity_values = [];
         $x = 0;
 
@@ -362,6 +373,21 @@ class InfinityService
                         'data' => [$ticket->agent->infinity_user_id],
                     ];
                 } 
+
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_version'){ 
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' =>  [$infinity_version_id]
+                    ];
+                }
+
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_version'){ 
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' =>  [$v_id]
+                    ];
+                }
+
                 //   if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_images'){
                 //     $infinity_values[$x++] = [
                 //         'attribute_id' => $field['value'],

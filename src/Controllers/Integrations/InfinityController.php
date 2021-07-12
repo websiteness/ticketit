@@ -93,7 +93,8 @@ class InfinityController extends Controller
             'infinity_ticket_agent_id' => 'Developer',
             'infinity_ticket_images' => 'Images',
             'infinity_ticket_category' => 'Ticket Category',
-            'infinity_ticket_module' => 'Module'
+            'infinity_ticket_module' => 'Module',
+            'infinity_version' => 'Version'
         ];
         $selected_fields = [];
         $selected_workspace = TSetting::getBySlug('infinity_workspace_id');
@@ -112,8 +113,6 @@ class InfinityController extends Controller
         } else {
             $attributes = false;
         }
-  
-     
 
         return view('ticketit::admin.infinity.tickets_mapping', compact('attributes', 'fields', 'selected_fields', 'selected_fields_slugs' ));
     }
@@ -199,7 +198,6 @@ class InfinityController extends Controller
         $infinity_service->store_mapped_sub_categories($categories);
         return redirect()->back();
     }
-
 
 
 

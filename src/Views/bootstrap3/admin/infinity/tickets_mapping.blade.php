@@ -40,16 +40,13 @@
                                     <option value="">Select Field</option>             
                                     @if($attributes)         
                                         @foreach ($attributes as $attribute)  
-                                            @foreach ($selected_fields as $selected_field)
-                                       
+                                            @foreach ($selected_fields as $selected_field)                                       
                                                 @if($selected_field['slug'] == $key)
                                                     <option value="{{ $attribute['id'] }}" @if ($selected_field['value'] == $attribute['id']) selected @endif >{{ $attribute['name'] }}</option>                                        
                                                 @endif                                                       
                                             @endforeach     
                                         @endforeach    
-
-                                        @endif
-                                                        
+                                    @endif                                   
                                 </select>
                             </td>
                         </tr> 

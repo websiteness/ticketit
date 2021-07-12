@@ -229,8 +229,7 @@
         let selected_workspace_id = $('#selected-workspace').find(":selected").val();
         let ws_id = parseInt(selected_workspace_id);
         let selected_board_id = $('#selected-board').find(":selected").val();
-        console.log(selected_board_id)
-
+        
         if( typeof selected_board_id === 'string') {
             let route = "{{ route($setting->grab('admin_route').'.infinity.versions', ['workspace' => 'ws_id', 'board' => 'board_id']) }}";         
             let new_route = route.replace('ws_id', ws_id).replace('board_id', selected_board_id);
