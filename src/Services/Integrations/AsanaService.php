@@ -467,7 +467,7 @@ class AsanaService
      * Extract Links from content
      * @return Array | array
      */
-    protected function extractLinks($content)
+    public function extractLinks($content)
     {
         //Get the page's HTML source using file_get_contents.
         $htmlDom = new \DomDocument();

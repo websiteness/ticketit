@@ -164,10 +164,18 @@ class InfinityService
         $attr = $this->get_attributes($ws_id,$b_id);
         $infinity_status_label_attr_id =  collect($attr)->where('name', 'Dev Stage')->where('type', 'label')->values()->shift()['id'];
         
- 
-
         $infinity_values = [];
         $x = 0;
+
+        $image_link = $asana_service->extractLinks($images);
+        $image_url = '';
+        if($image_link) {
+      
+            
+            foreach($image_link as $image) {
+                $image_url .= '<a href="' . $image['href'] . '">' . trim($image['text']) . '</a>' . "\n";
+            }
+        }
 
         foreach ($key_fields as $key_field) {
             foreach($fields as $key => $field) {
@@ -210,7 +218,7 @@ class InfinityService
                 if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_images'){ 
                     $infinity_values[$x++] = [
                         'attribute_id' => $field['value'],
-                        'data' => $images,
+                        'data' => $image_url,
                     ];
                 }
 
@@ -247,6 +255,7 @@ class InfinityService
             "values" => $infinity_values 
         ];
 
+
         try {
             $url = "https://app.startinfinity.com/api/v1/".$ws_id."/".$b_id."/items";
             $options = [
@@ -262,15 +271,17 @@ class InfinityService
                 $_ticket = Ticket::find($ticket->id);
                 $_ticket->infinity_item_id = json_decode($res)->id;
                 $_ticket->save();      
-                // \Log::info(json_encode( $infinity_values ));
+                \Log::info('Success sending to infinity.');
+                
                 return true;
             } else {
-                // \Log::info(json_encode($infinity_data));
+                \Log::info('Error sending to infinity');
                 return false;
             }
         } catch (Exception $e) {
+            \Log::info('Error sending to infinity');
             return false;
-            \Log::info($e->getMessage());
+ 
         }
     }
 
