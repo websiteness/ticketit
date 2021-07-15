@@ -169,13 +169,13 @@ class InfinityService
 
         $image_link = $asana_service->extractLinks($images);
         $image_url = '';
-        if($image_link) {
-      
-            
+        if(count($image_link)) {
             foreach($image_link as $image) {
                 $image_url .= '<a href="' . $image['href'] . '">' . trim($image['text']) . '</a>' . "\n";
             }
         }
+
+        \Log::info($image_link);
 
         foreach ($key_fields as $key_field) {
             foreach($fields as $key => $field) {
@@ -215,7 +215,8 @@ class InfinityService
                     ];
                 } 
 
-                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_images'){ 
+                
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_images' && $image_url){ 
                     $infinity_values[$x++] = [
                         'attribute_id' => $field['value'],
                         'data' => $image_url,
@@ -256,7 +257,8 @@ class InfinityService
         ];
 
 
-        try {
+
+      
             $url = "https://app.startinfinity.com/api/v1/".$ws_id."/".$b_id."/items";
             $options = [
                 'headers' => [
@@ -271,18 +273,16 @@ class InfinityService
                 $_ticket = Ticket::find($ticket->id);
                 $_ticket->infinity_item_id = json_decode($res)->id;
                 $_ticket->save();      
+                \Log::info($res);
                 \Log::info('Success sending to infinity.');
                 
                 return true;
             } else {
+                \Log::info($res);
                 \Log::info('Error sending to infinity');
                 return false;
             }
-        } catch (Exception $e) {
-            \Log::info('Error sending to infinity');
-            return false;
- 
-        }
+    
     }
 
     public function get_user_by_workspace()
