@@ -180,7 +180,7 @@ class InfinityController extends Controller
         $infinity_service = new InfinityService();
         $infinity_service->store_mapped_categories($categories);
         return redirect()->back();
-    }
+    }                                                                                                                                                                         
 
     public function sub_categories_mapping_index()
     {

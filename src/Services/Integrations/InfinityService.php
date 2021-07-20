@@ -244,7 +244,6 @@ class InfinityService
                         'data' =>  [$v_id]
                     ];
                 }
-
                
             }
      
@@ -256,32 +255,29 @@ class InfinityService
             "values" => $infinity_values 
         ];
 
-
-
-      
-            $url = "https://app.startinfinity.com/api/v1/".$ws_id."/".$b_id."/items";
-            $options = [
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                    'Authorization' => "Bearer ".array_shift($infinity_token)['value'].""
-                ],
+        $url = "https://app.startinfinity.com/api/v1/".$ws_id."/".$b_id."/items";
+        $options = [
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Authorization' => "Bearer ".array_shift($infinity_token)['value'].""
+            ],
                 'json' => $infinity_data
-            ];
-            $data = $client->post($url, $options);
-            $res = $data->getBody();
-            if (isset(json_decode($res)->id)) {
-                $_ticket = Ticket::find($ticket->id);
-                $_ticket->infinity_item_id = json_decode($res)->id;
-                $_ticket->save();      
-                \Log::info($res);
-                \Log::info('Success sending to infinity.');
+        ];
+        $data = $client->post($url, $options);
+        $res = $data->getBody();
+        if (isset(json_decode($res)->id)) {
+            $_ticket = Ticket::find($ticket->id);
+            $_ticket->infinity_item_id = json_decode($res)->id;
+            $_ticket->save();      
+            \Log::info($res);
+            \Log::info('Success sending to infinity.');
                 
-                return true;
-            } else {
-                \Log::info($res);
-                \Log::info('Error sending to infinity');
-                return false;
-            }
+            return true;
+        } else {
+            \Log::info($res);
+            \Log::info('Error sending to infinity');
+            return false;
+        }
     
     }
 
