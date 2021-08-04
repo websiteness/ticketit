@@ -56,6 +56,9 @@
                                 @endif
 
                                 @if($u->isAdmin())
+                                <button class="btn btn-secondary text-sm" value="@{{EMAIL}}">Email</button>
+                                <button class="btn btn-secondary text-sm" value="@{{FIRST_NAME}}">First Name</button>
+                                <button class="btn btn-secondary text-sm" value="@{{LAST_NAME}}">Last Name</button>
                                 <div class="ticket-info__actions pull-right">
                                     @if(! $ticket->completed_at && $close_perm == 'yes')
                                             {!! link_to_route($setting->grab('main_route').'.complete', 'Close Ticket', $ticket->id,

@@ -176,20 +176,20 @@
     $('#editCommentModal').on('shown.bs.modal', function() {
         $('.edit-comment-summernote-editor').summernote();
     });
-
+    $('.btn-secondary').on('click', function(e) {
+        e.preventDefault(e);
+        let value = $(this).val()
+        $('.summernote-editor').summernote('insertText', value);
+    });
     function editComment(comment_id, content) {
-        // console.log('comment', comment_id);
-        // console.log('content', content);
-
         setTimeout(function() {
             $('.edit-comment-summernote-editor').summernote('destroy');
             $('.edit-comment-summernote-editor').summernote('code', content);
         }, 300);
-
         let form_url = `{{ route($setting->grab('main_route').'-comment.update', 'comment_id') }}`;
         let final_url = form_url.replace('comment_id', comment_id);
-
         document.getElementById('edit_comment_form').setAttribute('action', final_url);
     }
+
 </script>
 @endpush
