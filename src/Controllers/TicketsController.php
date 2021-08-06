@@ -326,13 +326,9 @@ class TicketsController extends Controller
         ]);
 
         $ticket = new Ticket();
-
         $ticket->subject = $request->subject;
         $ticket->html = $request->html;
-
         $content = $this->imagesToLink($request->get('content'));
-
-     
 
         // check if heat map urls is added
         if(isset($request->heat_map_url[0]) && $request->heat_map_url[0]) {
@@ -340,7 +336,6 @@ class TicketsController extends Controller
         }
 
         $ticket->setPurifiedContent($content);
-
         $category = Models\Category::find($request->category_id);
 
         if($category->children->count())
@@ -351,7 +346,6 @@ class TicketsController extends Controller
         }
 
         $ticket->priority_id = $request->priority_id;
-
         $ticket->status_id = TSetting::grab('default_status_id');
 
         if($request->user_id) {
@@ -367,7 +361,6 @@ class TicketsController extends Controller
         } */
 
         $ticket->autoSelectAgent();
-
         $ticket->save();
 
         //send to infinity

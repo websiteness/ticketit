@@ -23,13 +23,15 @@
                     <h2><img src="{{asset('images/ticket-system/new-ticket.png')}}" alt="" /> Create New Ticket</h2>
                     </div><!-- .x_title -->
                     <div class="x_content">
-                        {!! CollectiveForm::open([
+                        <!-- {!! CollectiveForm::open([
                             'route'=>$setting->grab('main_route').'.store',
                             'method' => 'POST',
                             'class' => 'form-horizontal',
                             'id' => 'create_form'
-                        ]) !!}
+                        ]) !!} -->
+                        <form  class="form-horizontal'" id="create_form" method="POST" action="/tickets"> 
                         <div class="new-ticket__form">
+                        {{ csrf_field() }}
                             @if($user->ticketit_admin || $user->ticketit_agent)
                             <div class="new-ticket__form-group">
                                 <label><img src="{{asset('images/ticket-system/ticket-description.png')}}" alt="" /> User:</label>
@@ -95,7 +97,8 @@
                                 <button class="custom-btn submit-btn">Create Ticket</button>
                             </div><!-- .class="new-ticket__form-group -->
                         </div><!-- .new-ticket__form -->
-                    {!! CollectiveForm::close() !!}
+                    <!-- {!! CollectiveForm::close() !!} -->
+                        </form>
                     </div><!-- x_content -->
                 </div><!-- .x_panel -->
             </div><!-- .col-md-12 col-sm-12 col-xs-12 -->
@@ -132,10 +135,23 @@
             }else{
                 $('.subcat').html(default_subcategory);
             }
-
-
+            
         });
-
+        $("#create_form").submit(function(e) {
+            let form = $('#create_form');
+            $.ajax({
+                type: "POST",
+                url: window.location.origin + form.attr('action'),
+                data: form.serialize(),
+                dataType:"json",
+                beforeSend: function() {
+                    $('.submit-btn').prop('disabled', true)
+                },
+                success: function(data) {
+                    window.location.replace(window.location.origin + '/tickets')
+                }
+        });
+                                           
         function selectCategory(ev){
             var subcategories = {!! json_encode($subcategories) !!};
             if(typeof(subcategories[ev]) !== 'undefined' && subcategories[ev] !== '' && subcategories[ev] !== null){
