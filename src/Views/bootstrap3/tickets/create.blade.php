@@ -23,13 +23,12 @@
                     <h2><img src="{{asset('images/ticket-system/new-ticket.png')}}" alt="" /> Create New Ticket</h2>
                     </div><!-- .x_title -->
                     <div class="x_content">
-                        <!-- {!! CollectiveForm::open([
+                        {!! CollectiveForm::open([
                             'route'=>$setting->grab('main_route').'.store',
                             'method' => 'POST',
                             'class' => 'form-horizontal',
                             'id' => 'create_form'
-                        ]) !!} -->
-                        <form  class="form-horizontal'" id="create_form" method="POST" action="/tickets"> 
+                        ]) !!}
                         <div class="new-ticket__form">
                         {{ csrf_field() }}
                             @if($user->ticketit_admin || $user->ticketit_agent)
@@ -135,21 +134,10 @@
             }else{
                 $('.subcat').html(default_subcategory);
             }
-            
-        });
-        $("#create_form").submit(function(e) {
-            let form = $('#create_form');
-            $.ajax({
-                type: "POST",
-                url: window.location.origin + form.attr('action'),
-                data: form.serialize(),
-                dataType:"json",
-                beforeSend: function() {
-                    $('.submit-btn').prop('disabled', true)
-                },
-                success: function(data) {
-                    window.location.replace(window.location.origin + '/tickets')
-                }
+
+            $("#create_form").submit(function(e) {
+                $('.submit-btn').prop('disabled', true);
+            });
         });
                                            
         function selectCategory(ev){
