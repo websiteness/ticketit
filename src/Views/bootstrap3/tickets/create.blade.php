@@ -8,6 +8,7 @@
         .popover {
             max-width: 630px;
         }
+ 
     </style>
 @stop
 
@@ -117,7 +118,7 @@
             });
         })
 
-        let default_subcategory = `<label><img src="{{asset('images/ticket-system/category-subcategory.png')}}" alt="" /> Sub Category:</label>
+        let default_subcategory = `<label><img src="{{asset('images/ticket-system/category-subcategory.png')}}" alt="" /> Module:</label>
                         <select class="new-ticket__form-select" name="subcategory_id" required disabled>
                             <option selected="selected" value="">Please Select</option>
                         </select>`;

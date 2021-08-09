@@ -1,3 +1,15 @@
+@push('header_styles')
+<style>
+    @media only screen and (max-width: 1366px) {
+        .custom-btn {
+            width: 150px !important;
+            padding: 13px 12px !important;
+        }
+        
+    }
+</style>
+@endpush
+
 <div class="ticket-system">
     <div class="ticket-system__tabs" role="tabpanel" data-example-id="togglable-tabs">
         <div class="row">
@@ -70,7 +82,7 @@
                                             </div>
                                 @endif
                             </div>
-
+                       
                         </fieldset>
                         {!! CollectiveForm::close() !!}
                     </div><!-- x_content -->
