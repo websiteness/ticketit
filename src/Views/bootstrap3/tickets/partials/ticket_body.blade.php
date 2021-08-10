@@ -13,10 +13,12 @@
   right: 0;
   padding: 5px;
 }
-
+.mt {
+  margin-top: 2vh;
+}
 </style>
 @endpush
-
+        
 <div class="ticket-system">
     <div class="ticket-system__tabs" role="tabpanel" data-example-id="togglable-tabs">
         <div class="row">
@@ -44,19 +46,10 @@
                           </span>
                         </td>
                         @if($u->isAgent() || $u->isAdmin())
-                        <td width="12%"><h5 class="active-tickets__heading">Responsible:</h5></td>
+                        <td width="12%"><h5 class="active-tickets__heading">Created:</h5></td>
                         <td width="40%">
-                            @if($u->isAdmin())
-                                {!! CollectiveForm::select(
-                                    'agent_id',
-                                    $agent_lists,
-                                    $ticket->agent_id,
-                                    ['class' => 'form-control']) !!}
-                            @else
-                                {{ $ticket->agent_id == $u->id ? $u->name : $ticket->agent->name }}
-                                {!! CollectiveForm::hidden('agent_id', $ticket->agent_id ) !!}
-                            @endif
-                            </span>
+                     
+                       <span class="active-tickets__text">{{ $ticket->created_at->format('m/d/Y') . ' (' . $ticket->created_at->diffForHumans() . ')' }}</span>
                         </td>
                         @else
                         <td width="10%"><h5 class="active-tickets__heading">Category:</h5></td>
@@ -133,21 +126,33 @@
                       <td width="40%"><span class="active-tickets__text">{{ $ticket->created_at->format('m/d/Y') . ' (' . $ticket->created_at->diffForHumans() . ')' }}</span></td>
                         @endif
                     </tr>
-                    @if($u->isAgent() || $u->isAdmin())
-                    <tr>
-                      <td width="10%"><h5 class="active-tickets__heading">Created:</h5></td>
-                      <td width="40%"><span class="active-tickets__text">{{ $ticket->created_at->format('m/d/Y') . ' (' . $ticket->created_at->diffForHumans() . ')' }}</span></td>
-                      <td width="10%"></td>
-                      <td width="40%"></td>
-                    </tr>
-                    @endif
+
                   </tbody>
                 </table>
-
-                    {!! CollectiveForm::submit('Update', ['class' => 'btn btn-success ticket-update-btn']) !!}
+                @if($u->isAdmin())
+                <div class="x_panel mt">
+                      <div class="x_content">
+                        <h5>Internal inputs: </h5>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-3"> {{ CollectiveForm::label('Developer') }} {!! CollectiveForm::select('agent_id',$agent_lists,$ticket->agent_id,['class' => 'form-control']) !!} </div>
+                        <div class="col-md-3"> {{ CollectiveForm::label('Estimated Completion Date') }} {!! CollectiveForm::date('completion_date', $ticket->completion_date, ['class' => 'form-control']) !!} </div>  
+                        <div class="col-md-3"> {{ CollectiveForm::label('# of hours') }} {!! CollectiveForm::select('dev_hours',[1,2,3,4,5,6,7,8,9,10],null,['class' => 'form-control', 'placeholder' => 'Estimated hours']) !!}  </div>           
+                        <div class="col-md-3"> {{ CollectiveForm::label('Developer status') }} {!! CollectiveForm::select('dev_status_id',$dev_statuses,$ticket->dev_status_id,['class' => 'form-control']) !!} </div>                    
+                        
+                        <div class="form-group">
+                          <div class="col-lg-12 mt">
+                              {{ CollectiveForm::label('Developer Notes') }}
+                              {!! CollectiveForm::textarea('dev_notes', null, ['class' => 'form-control add-notes-summernote', 'rows' => "3"]) !!}
+                          </div>
+                      </div>
+                      </div>              
+                  </div>
+                  @endif
+                  </div><!-- x_content -->
+              </div><!-- .x_panel -->
+                {!! CollectiveForm::submit('Update', ['class' => 'btn btn-success ticket-update-btn']) !!}
                 {!! CollectiveForm::close() !!}
-              </div><!-- x_content -->
-            </div><!-- .x_panel -->
           </div><!-- .col-md-12 col-sm-12 col-xs-12 -->
         </div><!-- .col-md-12 col-sm-12 col-xs-12 -->
 

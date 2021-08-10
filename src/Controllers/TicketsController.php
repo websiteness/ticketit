@@ -24,7 +24,8 @@ use App\User;
 use App\Models\Account;
 use AppendIterator;
 use Kordy\Ticketit\Services\Integrations\InfinityService;
-
+use App\Models\TicketsDeveloperStatus;
+                              
 class TicketsController extends Controller
 {
     protected $tickets;
@@ -74,7 +75,8 @@ class TicketsController extends Controller
             } else {
                 $collection = Ticket::userTickets($user->id)->active();
             }
-        }
+        }           
+                                                                                                                                                                                                            
         // dd($collection->get());
         $collection
             ->join('users', 'users.id', '=', 'ticketit.user_id')
@@ -395,7 +397,7 @@ class TicketsController extends Controller
     public function show($id)
     {
         $ticket = $this->tickets->findOrFail($id);
-
+    
         $user = Sentinel::getUser();
  
         if($ticket->user_id == $user->id || Sentinel::getUser()->ticketit_agent || Sentinel::getUser()->ticketit_admin){
@@ -435,10 +437,11 @@ class TicketsController extends Controller
                 $plan_names = '';
                 \Log::info($e->getMessage());
             }
-    
+            
+            $dev_statuses = TicketsDeveloperStatus::all()->pluck('name', 'id')->toArray();
             return view('ticketit::tickets.show',
                 compact('ticket', 'status_lists', 'priority_lists', 'category_lists', 'subcategories', 'selected_category', 'selected_subcategory', 'agent_lists', 'comments',
-                    'close_perm', 'reopen_perm', 'plan_names'));
+                    'close_perm', 'reopen_perm', 'plan_names', 'dev_statuses'));
         } else {
             return redirect()->route(TSetting::grab('main_route').'.index');
         }
@@ -456,6 +459,7 @@ class TicketsController extends Controller
      */
     public function update(Request $request, $id, AsanaService $asana_service)
     {
+
         $user = Sentinel::getUser();
 
         if($user->ticketit_admin || $user->ticketit_agent) {
@@ -520,6 +524,11 @@ class TicketsController extends Controller
         if($request->status_id == 4) {
             $ticket->completed_at = Carbon::now();
         }
+
+        $ticket->completion_date = $request->completion_date;
+        $ticket->dev_hours = $request->dev_hours;
+        $ticket->dev_status_id = $request->dev_status_id;
+        $ticket->dev_notes = $request->dev_notes;
 
         $ticket->save();
 

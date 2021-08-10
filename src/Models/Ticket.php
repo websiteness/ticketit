@@ -15,7 +15,7 @@ class Ticket extends Model
     use Purifiable;
 
     protected $table = 'ticketit';
-    protected $dates = ['completed_at'];
+    protected $dates = ['completed_at', 'completion_date'];
     protected $appends = ['email_content'];
 
     /**
