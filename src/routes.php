@@ -260,6 +260,11 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
                 // Route::get('/','\Kordy\Ticketit\Controllers\Integrations\InfinityController@version_mapping_index')->name('index');
                 // Route::post('store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_versions')->name('store');
             });
+
+            Route::prefix('dev-status')->name('dev-status.')->group(function() {
+                Route::get('/','\Kordy\Ticketit\Controllers\Integrations\InfinityController@dev_status_mapping_index')->name('index');
+                Route::post('store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_dev_status')->name('store');
+            });
         });
         
     });

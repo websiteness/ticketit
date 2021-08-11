@@ -136,8 +136,8 @@
                       </div>
                       <div class="row">
                         <div class="col-md-3"> {{ CollectiveForm::label('Developer') }} {!! CollectiveForm::select('agent_id',$agent_lists,$ticket->agent_id,['class' => 'form-control']) !!} </div>
-                        <div class="col-md-3"> {{ CollectiveForm::label('Estimated Completion Date') }} {!! CollectiveForm::date('completion_date', $ticket->completion_date, ['class' => 'form-control']) !!} </div>  
-                        <div class="col-md-3"> {{ CollectiveForm::label('# of hours') }} {!! CollectiveForm::select('dev_hours',[1,2,3,4,5,6,7,8,9,10],null,['class' => 'form-control', 'placeholder' => 'Estimated hours']) !!}  </div>           
+                        <div class="col-md-4"> {{ CollectiveForm::label('Estimated Completion Date') }} {!! CollectiveForm::date('completion_date', $ticket->completion_date, ['class' => 'form-control']) !!} </div>  
+                        <div class="col-md-2"> {{ CollectiveForm::label('# of hours') }} {!! CollectiveForm::number('dev_hours',$ticket->dev_hours,['class' => 'form-control', 'placeholder' => 'Estimated hours']) !!}  </div>           
                         <div class="col-md-3"> {{ CollectiveForm::label('Developer status') }} {!! CollectiveForm::select('dev_status_id',$dev_statuses,$ticket->dev_status_id,['class' => 'form-control']) !!} </div>                    
                         
                         <div class="form-group">

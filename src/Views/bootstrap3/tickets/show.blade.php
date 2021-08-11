@@ -200,7 +200,7 @@
             $('#comment_form').css('display', 'none');
             $('#comment_reply').css('display', 'block');
         });
-    });
+    });                                                                  
 </script>
 @include('ticketit::tickets.partials.summernote')
 {{-- {!! json_encode($status_lists) !!} --}}

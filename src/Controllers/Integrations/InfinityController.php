@@ -10,6 +10,7 @@ use Kordy\Ticketit\Models\Agent;
 use Kordy\Ticketit\Models\Status;
 use Kordy\Ticketit\Models\Category;
 use Kordy\Ticketit\Repositories\StatusRepository;
+use App\Models\TicketsDeveloperStatus;
 
 
 class InfinityController extends Controller
@@ -94,8 +95,13 @@ class InfinityController extends Controller
             'infinity_ticket_images' => 'Images',
             'infinity_ticket_category' => 'Ticket Category',
             'infinity_ticket_module' => 'Module',
-            'infinity_version' => 'Version'
+            'infinity_version' => 'Version',
+            'infinity_estimated_completion_date' => 'Estimated Completion Date',
+            'infinity_no_of_developer_hours' => '# of Developer Hours',
+            'infinity_developer_notes' => 'Developer Notes',
+            'infinity_developer_status' => 'Developer Status'
         ];
+          
         $selected_fields = [];
         $selected_workspace = TSetting::getBySlug('infinity_workspace_id');
         $selected_board = TSetting::getBySlug('infinity_board_id');
@@ -199,8 +205,26 @@ class InfinityController extends Controller
         return redirect()->back();
     }
 
+    public function dev_status_mapping_index()
+    {
+        $infinity_service = new InfinityService();
+        $infinity_statuses =  $infinity_service->get_dev_statuses();
+        $statuses = TicketsDeveloperStatus::all();
+        return view('ticketit::admin.infinity.dev_status_mapping', compact('statuses', 'infinity_statuses'));
+    }
+    
+    public function store_mapped_dev_status(Request $request)
+    {
+        $statuses = collect($request->only('statuses'))->values()->shift();
+        $infinity_service = new InfinityService();
+        $infinity_service->store_mapped_dev_status($statuses);
+        return redirect()->back();
+    }
 
 
+
+
+                                            
 
     
 }

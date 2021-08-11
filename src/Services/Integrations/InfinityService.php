@@ -15,6 +15,7 @@ use Kordy\Ticketit\Models\Ticket;
 use Kordy\Ticketit\Services\Integrations\AsanaService;
 use Kordy\Ticketit\Models\Status;
 use Kordy\Ticketit\Models\Category;
+use App\Models\TicketsDeveloperStatus;
 
 class InfinityService
 {
@@ -162,7 +163,7 @@ class InfinityService
         $ws_id = array_shift($infinity_workspace_id)['value'];
         $b_id = array_shift($infinity_board_id)['value'];
         $attr = $this->get_attributes($ws_id,$b_id);
-        $infinity_status_label_attr_id =  collect($attr)->where('name', 'Dev Stage')->where('type', 'label')->values()->shift()['id'];
+        $infinity_status_label_attr_id =  collect($attr)->where('name', 'Ticket Status')->where('type', 'label')->values()->shift()['id'];
         
         $infinity_values = [];
         $x = 0;
@@ -244,12 +245,32 @@ class InfinityService
                         'data' =>  [$v_id]
                     ];
                 }
+
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_estimated_completion_date'){ 
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' => $ticket->completion_date
+                    ];
+                }
+
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_no_of_developer_hours'){ 
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' =>  $ticket->dev_hours
+                    ];
+                }
+
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_developer_notes'){ 
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' =>  $ticket->dev_notes
+                    ];
+                }
                
             }
      
         }     
         
-       
         $infinity_data = [
             "folder_id" => array_shift($infinity_folder_id)['value'],
             "values" => $infinity_values 
@@ -306,7 +327,7 @@ class InfinityService
         $selected_board = TSetting::getBySlug('infinity_board_id');
         if(isset($selected_workspace->value) && isset($selected_board)) {
             $statuses = $this->get_attributes($selected_workspace->value, $selected_board->value );
-            return collect($statuses)->where('name', 'Dev Stage')->where('type', 'label')->values()->shift()['settings']['labels'];
+            return collect($statuses)->where('name', 'Ticket Status')->where('type', 'label')->values()->shift()['settings']['labels'];
         } else {
             return false;;
         }  
@@ -337,7 +358,7 @@ class InfinityService
         $ws_id = array_shift($infinity_workspace_id)['value'];
         $b_id = array_shift($infinity_board_id)['value'];
         $statuses = $this->get_attributes($ws_id,$b_id);
-        $infinity_status_label_attr_id =  collect($statuses)->where('name', 'Dev Stage')->where('type', 'label')->values()->shift()['id'] ;
+        $infinity_status_label_attr_id =  collect($statuses)->where('name', 'Ticket Status')->where('type', 'label')->values()->shift()['id'] ;
         $infinity_version_id = collect($infinity_slugs)->where('slug','infinity_version_id')->toArray();
         $v_id = array_shift($infinity_version_id)['value'];
         $infinity_values = [];
@@ -395,12 +416,26 @@ class InfinityService
                     ];
                 }
 
-                //   if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_images'){
-                //     $infinity_values[$x++] = [
-                //         'attribute_id' => $field['value'],
-                //         'data' => $images,
-                //     ];
-                // } 
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_estimated_completion_date'){ 
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' => $ticket->completion_date
+                    ];
+                }
+
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_no_of_developer_hours'){ 
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' =>  $ticket->dev_hours
+                    ];
+                }
+
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_developer_notes'){ 
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' =>  $ticket->dev_notes
+                    ];
+                }
             }
         }     
         
@@ -447,7 +482,7 @@ class InfinityService
         $ws_id = array_shift($infinity_workspace_id)['value'];
         $b_id = array_shift($infinity_board_id)['value'];
         $statuses = $this->get_attributes($ws_id,$b_id);
-        $infinity_status_label_attr_id =  collect($statuses)->where('name', 'Dev Stage')->where('type', 'label')->values()->shift()['id'] ;
+        $infinity_status_label_attr_id =  collect($statuses)->where('name', 'Ticket Status')->where('type', 'label')->values()->shift()['id'] ;
         $infinity_values = [];
 
         $infinity_values = [
@@ -536,7 +571,7 @@ class InfinityService
             return false;;
         }  
     }
-
+                                     
         
     public function store_mapped_sub_categories($categories)
     {
@@ -548,7 +583,25 @@ class InfinityService
         session()->flash('status', 'Successfully saved!');
     }
 
+    public function get_dev_statuses()
+    {
+        $selected_workspace = TSetting::getBySlug('infinity_workspace_id');
+        $selected_board = TSetting::getBySlug('infinity_board_id');
+        if(isset($selected_workspace->value) && isset($selected_board)) {
+            $statuses = $this->get_attributes($selected_workspace->value, $selected_board->value );
+            return collect($statuses)->where('name', 'Developer Status')->where('type', 'label')->values()->shift()['settings']['labels'];
+        } else {
+            return false;;
+        }  
+    }
 
-
-    
-}
+    public function store_mapped_dev_status($statuses)
+    {
+        foreach($statuses as $key => $value) {
+            $status = TicketsDeveloperStatus::find($key);
+            $status->infinity_item_id = $value;
+            $status->save();
+        }
+        session()->flash('status', 'Successfully saved!');
+    }
+}                     

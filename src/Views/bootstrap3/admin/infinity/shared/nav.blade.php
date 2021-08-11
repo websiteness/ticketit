@@ -24,9 +24,12 @@
             <li role="presentation" @if(Route::currentRouteName() == $setting->grab('admin_route').'.infinity.categories.sub.index') class="active" @endif>
                 <a href="{{ route($setting->grab('admin_route').'.infinity.categories.sub.index') }}">Sub Category Mapping</a>
             </li>
+
             
-       
-<!-- 
+            <li role="presentation" @if(Route::currentRouteName() == $setting->grab('admin_route').'.infinity.dev-status.index') class="active" @endif>
+                <a href="{{ route($setting->grab('admin_route').'.infinity.dev-status.index') }}">Developer Status Mapping</a>
+            </li>
+            <!-- 
             <li role="presentation" @if(Route::currentRouteName() == $setting->grab('admin_route').'.asana.categories.index') class="active" @endif>
                 <a href="{{ route($setting->grab('admin_route').'.asana.categories.index') }}">Category Mapping</a>
             </li>
