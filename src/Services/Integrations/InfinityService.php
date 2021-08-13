@@ -373,7 +373,7 @@ class InfinityService
         $x = 0;
         $image_url = '';
         if($images != '') {
-            $image_link = $asana_service->extractLinks($images) != null ? $asana_service->extractLinks($images) : ''  ;
+            $image_link = $asana_service->extractLinks($images) != null ? $asana_service->extractLinks($images) : []  ;
             if(count($image_link)) {
                 foreach($image_link as $image) {
                     $image_url .= '<a href="' . $image['href'] . '">' . trim($image['text']) . '</a>' . "\n";
@@ -468,7 +468,7 @@ class InfinityService
             "folder_id" => array_shift($infinity_folder_id)['value'],
             "values" => $infinity_values 
         ];
-     
+                               
         try {
             $url = "https://app.startinfinity.com/api/v2/workspaces/".$ws_id."/boards/".$b_id."/items/".$ticket->infinity_item_id;
             $options = [
