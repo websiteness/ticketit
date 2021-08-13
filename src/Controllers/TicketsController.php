@@ -482,7 +482,7 @@ class TicketsController extends Controller
         if($request->subject) {
             $ticket->subject = $request->subject;
         }
-
+        $content = '';
         if($request->content) {
             $content = $this->imagesToLink($request->get('content'));
             $ticket->setPurifiedContent($content);
@@ -529,12 +529,13 @@ class TicketsController extends Controller
         $ticket->dev_hours = $request->dev_hours;
         $ticket->dev_status_id = $request->dev_status_id;
         $ticket->dev_notes = $request->dev_notes;
-
         $ticket->save();
-
+        
         if($request->status_id) {
-
+            $infinity_service = new InfinityService();
+            $infinity_service->updateTicket($ticket, $content);
             $asana_service->update_task_status_tag($ticket);
+
 
             // complete asana task
             if($request->status_id == 4) {

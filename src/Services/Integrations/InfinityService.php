@@ -164,7 +164,6 @@ class InfinityService
         $b_id = array_shift($infinity_board_id)['value'];
         $attr = $this->get_attributes($ws_id,$b_id);
         $infinity_status_label_attr_id =  collect($attr)->where('name', 'Ticket Status')->where('type', 'label')->values()->shift()['id'];
-        $infinity_developer_status_id = collect($attr)->where('name', 'Developer Status')->where('type', 'label')->values()->shift()['id'];
         $infinity_values = [];
         $x = 0;
 
@@ -249,7 +248,7 @@ class InfinityService
                 if($key_field == $field['slug'] && $field['slug'] == 'infinity_estimated_completion_date' && $ticket->completion_date != null){ 
                     $infinity_values[$x++] = [
                         'attribute_id' => $field['value'],
-                        'data' => $ticket->completion_date
+                        'data' =>  date($ticket->completion_date)
                     ];     
                 }
 
@@ -352,7 +351,7 @@ class InfinityService
         session()->flash('status', 'Successfully saved!');
     }
 
-    public function updateTicket($ticket, $images)
+    public function updateTicket($ticket, $images = '')
     {
         $client = new Client();
         $asana_service = new AsanaService();
@@ -372,6 +371,15 @@ class InfinityService
         $v_id = array_shift($infinity_version_id)['value'];
         $infinity_values = [];
         $x = 0;
+        $image_url = '';
+        if($images != '') {
+            $image_link = $asana_service->extractLinks($images) != null ? $asana_service->extractLinks($images) : ''  ;
+            if(count($image_link)) {
+                foreach($image_link as $image) {
+                    $image_url .= '<a href="' . $image['href'] . '">' . trim($image['text']) . '</a>' . "\n";
+                }
+            }
+        }
 
         foreach ($key_fields as $key_field) {
             foreach($fields as $key => $field) {
@@ -411,12 +419,13 @@ class InfinityService
                     ];
                 } 
 
-                if($key_field == $field['slug'] && $field['slug'] == 'infinity_version'){ 
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_images' && $image_url){ 
                     $infinity_values[$x++] = [
                         'attribute_id' => $field['value'],
-                        'data' =>  [$infinity_version_id]
+                        'data' => $image_url,
                     ];
                 }
+
 
                 if($key_field == $field['slug'] && $field['slug'] == 'infinity_version'){ 
                     $infinity_values[$x++] = [
@@ -427,7 +436,7 @@ class InfinityService
                 if($key_field == $field['slug'] && $field['slug'] == 'infinity_estimated_completion_date' && $ticket->completion_date != null){ 
                     $infinity_values[$x++] = [
                         'attribute_id' => $field['value'],
-                        'data' => $ticket->completion_date
+                        'data' => date($ticket->completion_date)
                     ];     
                 }
 
@@ -444,7 +453,6 @@ class InfinityService
                         'data' =>  $ticket->dev_notes
                     ];
                 }
-
                
                 if($key_field == $field['slug'] && $field['slug'] == 'infinity_developer_status' && $ticket->dev_status_id){ 
                     $infinity_dev_status_id = TicketsDeveloperStatus::where('id', $ticket->dev_status_id)->first();
@@ -455,7 +463,7 @@ class InfinityService
                 }
             }
         }     
-        
+
         $infinity_data = [
             "folder_id" => array_shift($infinity_folder_id)['value'],
             "values" => $infinity_values 
