@@ -164,7 +164,7 @@ class InfinityService
         $b_id = array_shift($infinity_board_id)['value'];
         $attr = $this->get_attributes($ws_id,$b_id);
         $infinity_status_label_attr_id =  collect($attr)->where('name', 'Ticket Status')->where('type', 'label')->values()->shift()['id'];
-        
+        $infinity_developer_status_id = collect($attr)->where('name', 'Developer Status')->where('type', 'label')->values()->shift()['id'];
         $infinity_values = [];
         $x = 0;
 
@@ -246,24 +246,33 @@ class InfinityService
                     ];
                 }
 
-                if($key_field == $field['slug'] && $field['slug'] == 'infinity_estimated_completion_date'){ 
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_estimated_completion_date' && $ticket->completion_date != null){ 
                     $infinity_values[$x++] = [
                         'attribute_id' => $field['value'],
                         'data' => $ticket->completion_date
-                    ];
+                    ];     
                 }
 
-                if($key_field == $field['slug'] && $field['slug'] == 'infinity_no_of_developer_hours'){ 
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_no_of_developer_hours' && $ticket->dev_hours != null){                 
                     $infinity_values[$x++] = [
                         'attribute_id' => $field['value'],
                         'data' =>  $ticket->dev_hours
                     ];
                 }
 
-                if($key_field == $field['slug'] && $field['slug'] == 'infinity_developer_notes'){ 
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_developer_notes' && $ticket->dev_notes){ 
                     $infinity_values[$x++] = [
                         'attribute_id' => $field['value'],
                         'data' =>  $ticket->dev_notes
+                    ];
+                }
+
+               
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_developer_status' && $ticket->dev_status_id){ 
+                    $infinity_dev_status_id = TicketsDeveloperStatus::where('id', $ticket->dev_status_id)->first();
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' =>  [$infinity_dev_status_id->infinity_item_id]
                     ];
                 }
                
@@ -415,25 +424,33 @@ class InfinityService
                         'data' =>  [$v_id]
                     ];
                 }
-
-                if($key_field == $field['slug'] && $field['slug'] == 'infinity_estimated_completion_date'){ 
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_estimated_completion_date' && $ticket->completion_date != null){ 
                     $infinity_values[$x++] = [
                         'attribute_id' => $field['value'],
                         'data' => $ticket->completion_date
-                    ];
+                    ];     
                 }
 
-                if($key_field == $field['slug'] && $field['slug'] == 'infinity_no_of_developer_hours'){ 
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_no_of_developer_hours' && $ticket->dev_hours != null){                 
                     $infinity_values[$x++] = [
                         'attribute_id' => $field['value'],
                         'data' =>  $ticket->dev_hours
                     ];
                 }
 
-                if($key_field == $field['slug'] && $field['slug'] == 'infinity_developer_notes'){ 
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_developer_notes' && $ticket->dev_notes){ 
                     $infinity_values[$x++] = [
                         'attribute_id' => $field['value'],
                         'data' =>  $ticket->dev_notes
+                    ];
+                }
+
+               
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_developer_status' && $ticket->dev_status_id){ 
+                    $infinity_dev_status_id = TicketsDeveloperStatus::where('id', $ticket->dev_status_id)->first();
+                    $infinity_values[$x++] = [
+                        'attribute_id' => $field['value'],
+                        'data' =>  [$infinity_dev_status_id->infinity_item_id]
                     ];
                 }
             }
