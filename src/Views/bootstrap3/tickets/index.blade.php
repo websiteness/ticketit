@@ -745,6 +745,11 @@
     .btn-primary{
         margin-left: 45px;
     }
+    #company-search-active-labels {
+        
+        
+        
+    }
 </style>
 
 
@@ -762,8 +767,8 @@
         <div class="pull-left">
             <h2>{{ trans('ticketit::lang.index-my-tickets') }}</h2>
         </div>
-        <div class="col-md-6 pull-right" style="margin-top:10px; display:flex;">
-                        <div id="companies-search-active-labels" style="margin-left: 100px;">
+        <div class="col-md-6 pull-right" style="margin-top:10px; display:flex; inline-size: fit-content;">
+                        <div id="companies-search-active-labels">
                             <div style="display: flex;" data-search-id="#companies-search" data-dropdown-id="#companiesDropdown" data-list-id="#companies-list">
                                 <input type="text" class="form-control" id="companies-search" name="" placeholder="Toggle Columns" autocomplete="off" style="height: 40px;" readonly>
                                 <div class="input-group-btn position_unset" id="companiesDropdown">

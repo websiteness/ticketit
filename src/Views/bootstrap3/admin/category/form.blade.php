@@ -5,6 +5,12 @@
     </div>
 </div>
 <div class="form-group">
+    {!! CollectiveForm::label('parent', 'Parent', ['class' => 'col-lg-2 control-label']) !!}
+    <div class="col-lg-10">
+    {!! CollectiveForm::select('parent',$categories,isset($category->parent) ? $category->parent : null,['class' => 'form-control']) !!} 
+    </div>
+</div>
+<div class="form-group">
     {!! CollectiveForm::label('color', trans('ticketit::admin.category-create-color') . trans('ticketit::admin.colon'), ['class' => 'col-lg-2 control-label']) !!}
     <div class="col-lg-10">
         {!! CollectiveForm::custom('color', 'color', isset($category->color) ? $category->color : "#000000", ['class' => 'form-control']) !!}

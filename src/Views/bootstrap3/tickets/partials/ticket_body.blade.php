@@ -78,7 +78,7 @@
                       <td width="10%"><h5 class="active-tickets__heading">Category:</h5></td>
                       <td width="40%"><span class="active-tickets__text">{{ isset($ticket->category->parent_category->name) ? $ticket->category->parent_category->name : $ticket->category->name }}</span></td>
                         @else
-                        <td width="10%"><h5 class="active-tickets__heading">Sub Category:</h5></td>
+                        <td width="10%"><h5 class="active-tickets__heading">Module:</h5></td>
                         <td width="40%"><span class="active-tickets__text">
                             @if($ticket->category->parent_category)
                                 {{ $ticket->category->name }}
@@ -104,7 +104,7 @@
                         </div>
                       </td>
                       @if($u->isAgent() || $u->isAdmin())
-                      <td width="10%"><h5 class="active-tickets__heading">Sub Category:</h5></td>
+                      <td width="10%"><h5 class="active-tickets__heading">Module:</h5></td>
                       <td width="40%"><span class="active-tickets__text">
                         @if($ticket->category->parent_category)
                             {{ $ticket->category->name }}

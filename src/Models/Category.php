@@ -8,7 +8,7 @@ class Category extends Model
 {
     protected $table = 'ticketit_categories';
 
-    protected $fillable = ['name', 'color'];
+    protected $fillable = ['name', 'color', 'parent'];
 
     protected $appends = ['label'];
 
@@ -68,8 +68,7 @@ class Category extends Model
         }else{
             return $this->name;
         }
-
     }
     
-    
+
 }

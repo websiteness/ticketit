@@ -28,6 +28,7 @@
                     <tr>
                         <td>{{ trans('ticketit::admin.table-id') }}</td>
                         <td>{{ trans('ticketit::admin.table-name') }}</td>
+                        <td>{{ trans('Parent') }}</td>
                         <td>{{ trans('ticketit::admin.table-action') }}</td>
                     </tr>
                 </thead>
@@ -39,6 +40,9 @@
                         </td>
                         <td style="color: {{ $category->color }}; vertical-align: middle">
                             {{ $category->name }}
+                        </td>
+                        <td style="color: {{ $category->color }}; vertical-align: middle">
+                            {{ $category->getLabelAttribute()}}
                         </td>
                         <td>
                             {!! link_to_route(

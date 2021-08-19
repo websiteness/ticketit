@@ -8,7 +8,10 @@
         .popover {
             max-width: 630px;
         }
- 
+        
+        .zones {
+            display: none;
+        }
     </style>
 @stop
 
@@ -51,14 +54,15 @@
                                 <label><img src="{{asset('images/ticket-system/category-subcategory.png')}}" alt="" /> Category:</label>
                                 {!! CollectiveForm::select('category_id', $categories, null, ['class' => 'new-ticket__form-select cat', 'placeholder' => 'Please Select','required' => 'required', 'onchange' => 'selectCategory(this.value)']) !!}
                             </div><!-- .new-ticket__form-group -->
-                            <div class="new-ticket__form-group subcat"></div>
+                            <div class="new-ticket__form-group subcat "></div>
+                            <div class="new-ticket__form-group zones">                 
+                            </div>
                             <div class="new-ticket__form-group" id="heatmap_url_wrapper" style="display:none;">
                             <!-- <div class="new-ticket__form-group" id="heatmap_url_wrapper"> -->
                                 <label>
                                     Shared Heat Map URL:&nbsp;
                                     <i class="fa fa-info-circle" data-toggle="tooltip" data-placement="right" title="If you are having issues with the results from a heat map it is very helpful for our support team if you can provide the URL from the share link within the Heat Map."></i>
-                                </label>
-                                
+                                </label>                                
                             </div>
                             <div class="new-ticket__form-group" id="add_heatmap_url" style="display:none;margin-top:-10px;">
                             <!-- <div class="new-ticket__form-group" id="add_heatmap_url"> -->
@@ -119,7 +123,7 @@
         })
 
         let default_subcategory = `<label><img src="{{asset('images/ticket-system/category-subcategory.png')}}" alt="" /> Module:</label>
-                        <select class="new-ticket__form-select" name="subcategory_id" required disabled>
+                        <select class="new-ticket__form-select" name="subcategory_id" required disabled  ">
                             <option selected="selected" value="">Please Select</option>
                         </select>`;
 
@@ -149,6 +153,7 @@
                 $('.subcat').html(default_subcategory);
             }
         }
+ 
         // generate Dropdown Element HTML
         function generateDropdown(id,subcategories)
         {
@@ -157,7 +162,7 @@
                 options += '<option value="'+item.id+'">'+item.name+'</option>'
             });
 
-            let el = `<label><img src="{{asset('images/ticket-system/category-subcategory.png')}}" alt="" /> Sub Category:</label>
+            let el = `<label><img src="{{asset('images/ticket-system/category-subcategory.png')}}" alt="" /> Module:</label>
                         <select class="new-ticket__form-select" name="subcategory_id" id="subcategory_id" onchange="showHeatMapField(this)" required>
                             <option selected="selected" value="">Please Select</option>
                             ${options}
@@ -169,13 +174,31 @@
             document.getElementById("create_form").reset();
             $("textarea.summernote-editor").summernote('code', '');
         }
-
+     
         function showHeatMapField(self) {
-            console.log('subcat', self.id);
-            console.log('subcat', document.getElementById(self.id).selectedOptions[0].text);
+            let id = document.getElementById(self.id).selectedOptions[0].value;
+            let route = "{{ route($setting->grab('admin_route').'.categories.zones', ['id' => 'id']) }}";         
+            let new_route = route.replace('id', id);         
+            let content = '';
+            fetch(new_route).then((res) => {
+                res.json().then((data) => {
+                    var options = ''
+                    data.forEach(function(item, index){
+                        options += '<option value="'+item.id+'">'+item.name+'</option>'
+                    });
+                    let el = `<label><img src="{{asset('images/ticket-system/category-subcategory.png')}}" alt="" /> Zones:</label>
+                                <select class="new-ticket__form-select" name="zone_id" id="zone_id" required>
+                                    <option selected="selected" value="">Please Select</option>
+                                    ${options}
+                                </select>`;
+                    $('.zones').html(el);            
+                    $('.zones').show();
 
+                });
+            }).catch((err) => {
+                console.log('Error', err);
+            });
             let sub_category = document.getElementById(self.id).selectedOptions[0].text;
-
             if(sub_category == 'Heat Map') {
                 addHeatMapField();
 

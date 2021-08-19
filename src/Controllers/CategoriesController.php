@@ -33,7 +33,8 @@ class CategoriesController extends Controller
      */
     public function create()
     {
-        return view('ticketit::admin.category.create');
+        $categories = Category::all()->pluck( 'name', 'id'); 
+        return view('ticketit::admin.category.create', compact('categories'));
     }
 
     /**
@@ -48,10 +49,11 @@ class CategoriesController extends Controller
         $this->validate($request, [
             'name'      => 'required',
             'color'     => 'required',
+            'parent'    => 'required'
         ]);
 
         $category = new Category();
-        $category->create(['name' => $request->name, 'color' => $request->color]);
+        $category->create(['name' => $request->name, 'color' => $request->color, 'parent' => $request->parent]);
 
         Session::flash('status', trans('ticketit::lang.category-name-has-been-created', ['name' => $request->name]));
 
@@ -82,8 +84,8 @@ class CategoriesController extends Controller
     public function edit($id)
     {
         $category = Category::findOrFail($id);
-
-        return view('ticketit::admin.category.edit', compact('category'));
+        $categories = Category::all()->pluck( 'name', 'id'); 
+        return view('ticketit::admin.category.edit', compact('category', 'categories'));
     }
 
     /**
@@ -145,4 +147,12 @@ class CategoriesController extends Controller
 
         return redirect()->back();
     }
+
+    public function getZones($id, CategoriesService $category_service)
+    {
+       $category = $category_service->getZones($id);
+       return response($category, 200);
+    }
+
+
 }

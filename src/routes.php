@@ -189,6 +189,16 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
                 Route::get('/', '\Kordy\Ticketit\Controllers\CategoriesController@viewCategoryOwners')->name('index');
                 Route::post('/store', '\Kordy\Ticketit\Controllers\CategoriesController@storeCategoryOwners')->name('store');
             });
+
+            Route::get('/zones/{id}', '\Kordy\Ticketit\Controllers\CategoriesController@getZones')->name('zones');
+            
+        });
+
+        Route::prefix('support-notes')->name('support-notes.')->group(function() {
+            Route::post('store/note', '\Kordy\Ticketit\Controllers\TicketsController@storeSupportNotes')->name('store.note');
+            Route::get('notes/{ticketid}', '\Kordy\Ticketit\Controllers\TicketsController@getSupportNotesByTicketId')->name('notes');
+            Route::post('update','\Kordy\Ticketit\Controllers\TicketsController@updateSupportNote')->name('update');
+            Route::post('delete','\Kordy\Ticketit\Controllers\TicketsController@deleteSupportNote')->name('delete');
         });
 
         # Asana

@@ -27,4 +27,11 @@ class CategoriesService {
             $category->agents()->sync([$owner]);
         }
     }
+
+    public function getZones($id)
+    {
+        $category_service = new CategoriesRepository;
+        $category = $category_service->getById($id);
+        return $category_service->getZones($category->id);
+    }
 }

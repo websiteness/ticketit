@@ -25,7 +25,8 @@ use App\Models\Account;
 use AppendIterator;
 use Kordy\Ticketit\Services\Integrations\InfinityService;
 use App\Models\TicketsDeveloperStatus;
-                              
+use Kordy\Ticketit\Models\SupportNote;
+
 class TicketsController extends Controller
 {
     protected $tickets;
@@ -852,6 +853,51 @@ class TicketsController extends Controller
 
         return $html;
     }
+
+    public function storeSupportNotes(Request $request)
+    {
+       $user_id = Sentinel::getUser()->id;
+       $note = new SupportNote();
+       $note->notes = $request->note;
+       $note->ticket_id = $request->ticket_id;
+       $note->user_id = $user_id;
+       if($note->save()) {
+            return response()->json(['success' => true, 'message' => 'Note added successfully.']);
+       } else {
+            return response()->json(['success' => false, 'message' => 'There was a problem adding the note.']);
+       }
+    }
+
+    public function getSupportNotesByTicketId($ticketid)
+    {
+        $support_notes = SupportNote::where('ticket_id', $ticketid)->with('user')->get();
+        return response()->json(['data' => $support_notes],200);
+    }
+
+    public function updateSupportNote(Request $request)
+    {
+        $note = SupportNote::find($request->id);
+        $note->notes = $request->note;
+        if($note->save()) {
+            return response()->json(['success' => true, 'message' => 'Note updated successfully.']);
+       } else {
+            return response()->json(['success' => false, 'message' => 'There was a problem updating the note.']);
+       }
+    }
     
+    public function deleteSupportNote(Request $request)
+    {
+        $note = SupportNote::find($request->id);
+        if($note) {
+           if($note->delete()){
+            return response()->json(['success' => true, 'message' => 'Note deleted successfully.']);
+           } else {
+            return response()->json(['success' => false, 'message' => 'There was a problem deleting the note.']);
+           }
+        } else {
+            return response()->json(['success' => false, 'message' => 'There was a problem deleting the note.']);
+        }
+        
+    }
     
 }

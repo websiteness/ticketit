@@ -90,6 +90,10 @@
     .mt-5{
         margin-top: 5px;
     }
+
+    .thumbnail-padding {
+        padding: 20px;
+    }
 </style>
 @stop
 @section('content')
@@ -123,6 +127,7 @@
                             <span><img src="{{asset('images/icon-user.png')}}" alt="" width="20px" height="20px"><h3>Contact Info</h3></span>
                             <hr>
                         </div>
+                        <input type="hidden" class="t-id" value="{{ $ticket->id }}">
                         <div class="text-light">
                             <h4>  {{ $ticket->user->name }}</h4>
                             <p class="fw-600 contact-info-details align-center"> <span class="contact-info-span-main"> <img src="{{asset('images/email-result.png')}}" alt="" width="20px" height="20px"> </span> <span class="contact-info-span" > Email: {{ $ticket->user->email }} </span> </p>  
@@ -159,10 +164,56 @@
                         </table>
                     </div>
                 </div>
+
+                <div class="thumbnail thumbnail-padding">
+                    <h4>Support Notes</h4>
+                    <hr>
+                    <div class="row">       
+                        <div class="form-group">
+                          <div class="col">
+                              {{ CollectiveForm::label('Note:') }}
+                              {!! CollectiveForm::textarea('dev_notes', null, ['class' => 'form-control add-note', 'rows' => "3"]) !!}
+                              <button class="btn btn-success mt-5 pull-right btn-submit-note"> Submit</button>  
+                        </div>
+                        </div>
+                    </div> 
+
+                    <hr>
+                    <div class="support-notes-items">
+
+                    </div>
+       
+                </div>
             </div>
             @endif
         </div>
     </div>
+</div>
+
+<div class="modal fade" id="editSupportNoteModal" tabindex="-1" role="dialog" aria-labelledby="editSupportNoteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Edit Note</h5>
+            </div>
+            <div class="modal-body">
+                {{ csrf_field() }}
+                {{ method_field('PUT') }}
+                <fieldset>
+                    <div class="form-group">
+                        <div class="col-lg-12">
+                            {!! CollectiveForm::textarea('content', null, ['class' => 'form-control edit-support-note-editor', 'rows' => "3"]) !!}
+                            <input name="sn_id" class="update-note-id" type="hidden" value="">
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button class="btn btn-primary btn-update-supp-note">Update</button>
+            </div>
+    </div>
+  </div>
 </div>
 @endsection
 
@@ -200,20 +251,57 @@
             $('#comment_form').css('display', 'none');
             $('#comment_reply').css('display', 'block');
         });
+
+        $('.btn-submit-note').click(function () {
+            let note = $('.add-note').val();
+            let route = "{{ route($setting->grab('admin_route').'.support-notes.store.note') }}"; 
+            let ticket_id = $('.t-id').val();
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            $.post(route, {note: note, ticket_id : ticket_id}, function(data){
+                $('.add-note').val('');
+                $('.support-notes-items').empty();
+                getSupportNotes();
+            });
+        });
+
+        $('.btn-update-supp-note').click( function() {
+            let note = $('.edit-support-note-editor').val();
+            let id = $('.update-note-id').val();
+            let route = "{{ route($setting->grab('admin_route').'.support-notes.update') }}"; 
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            $.post(route, {note: note, id : id}, function(data){
+                if(data.success) {
+                    $('#editSupportNoteModal').modal('hide')
+                    alert(data.message)
+                } else {
+                    alert(data.message)
+                }
+                $('.support-notes-items').empty();
+                getSupportNotes();
+            });
+        })
     });                                                                  
 </script>
 @include('ticketit::tickets.partials.summernote')
 {{-- {!! json_encode($status_lists) !!} --}}
 <script>
     $('document').ready(function() {
-
+        getSupportNotes();
         var subcategories = {!! json_encode($subcategories) !!};
         let val = $('.cat option:selected').val();
 
         if (typeof(subcategories[val]) !== 'undefined' && subcategories[val] !== '' && subcategories[val] !== null) {
             $('.subcat').html(generateDropdown(val, subcategories));
         } else {
-            $('.subcat').html('');
+            $('.subcat').empty();
         }
 
         // Form Submit Handling
@@ -257,7 +345,7 @@
             $('.subcat').html('');
         }
     }
-
+            
     // generate Dropdown Element HTML
     function generateDropdown(id, subcategories) {
         var seleted_ = "{{ $selected_subcategory }}"
@@ -295,6 +383,60 @@
         el += '</div>';
         return el;
     }
-    // Reply Submit if user is agent or Super Admin
+
+    function getSupportNotes() {     
+        let ticket_id = $('.t-id').val();
+        let route = "{{ route($setting->grab('admin_route').'.support-notes.notes', ['ticketid' => 'ticketid'] ) }}";         
+        let new_route = route.replace('ticketid', ticket_id);         
+        let content = '';
+        const formatter = new Intl.RelativeTimeFormat();
+        $.get(new_route, (res) => {
+            res.data.forEach((e) => {
+              let d = new Date(e.created_at);
+              let deltaDays = (d.getTime() - Date.now()) / (1000 * 3600 * 24);
+              let result = formatter.format(Math.round(deltaDays), 'days')
+              content +=  `<div class="ticket-comment__item ">
+                                <div class="ticket-comment__message">
+                                    <div class="ticket-comment__message-content">
+                                        <h5>Name: `+ e.user.full_name +` </h5> ` + e.notes + `                       
+                                        <div class="comment-comment__actions">
+                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editSupportNoteModal" onclick="editComment(`+ e.id + `,'`+ e.notes +`')" ><i class="fa fa-pencil"></i></button>                       
+                                            <button onclick="deleteNote(`+ e.id +`)" class="btn btn-sm btn-delete-note"><i class="fa fa-trash"></i></button>         
+                                        </div>
+                                </div>
+                                <span class="ticket-comment__time-delivered">
+                                    <span class="ticket-comment__date"> ` + d.toLocaleDateString() +` </span> ` + result + `   
+                                </span>
+                            </div></div>`;
+            }); 
+            $('.support-notes-items').append(content);                    
+        })           
+    }
+
+    function editComment(id, content) {
+        setTimeout(function() {
+            $('.edit-support-note-editor').val(content);
+            $('.update-note-id').val(id);
+        }, 300);
+    }
+
+    function deleteNote(id) {
+        let route = "{{ route($setting->grab('admin_route').'.support-notes.delete') }}"; 
+        $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+        });
+        $.post(route, { id : id}, function(data){
+            if(data.success) {
+                alert(data.message)
+            } else {
+                alert(data.message)
+            }
+            $('.support-notes-items').empty();
+            getSupportNotes();
+        });
+    }
+                                         
 </script>
 @append
