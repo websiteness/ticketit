@@ -94,6 +94,16 @@
     .thumbnail-padding {
         padding: 20px;
     }
+    .ticket-comment__message-content {
+        background-color: #eee;
+    }
+
+    .note-user-name {
+        color:  black !important;
+    }
+    .note-notes {
+        color: black  !important;
+    }
 </style>
 @stop
 @section('content')
@@ -396,9 +406,9 @@
               let deltaDays = (d.getTime() - Date.now()) / (1000 * 3600 * 24);
               let result = formatter.format(Math.round(deltaDays), 'days')
               content +=  `<div class="ticket-comment__item ">
-                                <div class="ticket-comment__message">
+                                <div class="ticket-comment__message ">
                                     <div class="ticket-comment__message-content">
-                                        <h5>Name: `+ e.user.full_name +` </h5> ` + e.notes + `                       
+                                        <h5 class="note-user-name">Name: `+ e.user.full_name +` </h5> <p class="note-notes"> ` + e.notes + ` </p>                    
                                         <div class="comment-comment__actions">
                                             <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editSupportNoteModal" onclick="editComment(`+ e.id + `,'`+ e.notes +`')" ><i class="fa fa-pencil"></i></button>                       
                                             <button onclick="deleteNote(`+ e.id +`)" class="btn btn-sm btn-delete-note"><i class="fa fa-trash"></i></button>         

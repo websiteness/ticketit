@@ -84,7 +84,6 @@ class TicketsController extends Controller
             ->join('ticketit_statuses', 'ticketit_statuses.id', '=', 'ticketit.status_id')
             ->join('ticketit_priorities', 'ticketit_priorities.id', '=', 'ticketit.priority_id')
             ->join('ticketit_categories', 'ticketit_categories.id', '=', 'ticketit.category_id')
-            ->leftjoin('tickets_developer_status', 'tickets_developer_status.id', '=', 'ticketit.dev_status_id')
             ->select([
                 'ticketit.id',
                 'ticketit.user_id',
@@ -101,7 +100,6 @@ class TicketsController extends Controller
                 DB::raw('CONCAT(users.first_name ," ", users.last_name) as owner'),
                 'ticketit.agent_id',
                 'ticketit_categories.name AS category',
-                'tickets_developer_status.name AS dev_status'
             ]);
 
         // check if filters are applied
@@ -151,8 +149,6 @@ class TicketsController extends Controller
                 });
             }
         }
-
-        $collection->orderBy('ticketit.id', 'asc');
 
         $collection = $datatables->of($collection);
 

@@ -94,19 +94,17 @@
 					},
 				},
 				columns: [
-					@if( $u->isAgent() || $u->isAdmin() )
-					{ data: 'owner', name: 'users.name' },
-					@endif
+					{ data: 'id', name: 'ticketit.id' },
 					{ data: 'subject', name: 'subject' },
 					{ data: 'status', name: 'ticketit_statuses.name' },
 					@if( $u->isAgent() || $u->isAdmin() )
-					{ data: 'dev_status', name: 'tickets_developer_status.name' },
 					{ data: 'last_reply', name: 'ticketit.last_reply' },
 					@endif
 					{ data: 'updated_at', name: 'ticketit.updated_at' },
 					@if( $u->isAgent() || $u->isAdmin() )
 					{ data: 'agent', name: 'users.name' },
 					{ data: 'priority', name: 'ticketit_priorities.name' },
+					{ data: 'owner', name: 'users.name' },
 					{ data: 'category', name: 'ticketit_categories.name' },
 					@endif
 					{ data: 'resolved', name: 'resolved' },
