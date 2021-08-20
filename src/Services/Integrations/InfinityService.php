@@ -629,4 +629,4 @@ class InfinityService
         }
         session()->flash('status', 'Successfully saved!');
     }
-}                     
+}                                                         

@@ -193,12 +193,10 @@
 
 		});
 		
-
-
 		function filterTickets() {
 			let user = document.getElementById('filter_owner').value;
 			let status = document.getElementById('filter_status').value;
-			let message = document.getElementById('filter_message').value;
+			let message = document.getElementById('filter_m essage').value;
 			let sub_category = document.getElementById('filter_sub_category').value;
 			let last_reply = document.getElementById('filter_last_reply').value;
 
@@ -206,13 +204,13 @@
 
 			initDatatable(query_string);
 		}
-
+             
 		function clearFilters() {
 			$('#filter_owner').val('').trigger('change');
 			document.getElementById('filter_status').value = '';
 			document.getElementById('filter_message').value = '';
 			
 			initDatatable();
-		}
+		}                              
 	</script>
 @append

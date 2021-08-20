@@ -86,6 +86,7 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
             ],
         ]);
 
+
         //Ticket priorities admin routes (ex. http://url/tickets-admin/priority)
         Route::resource("$admin_route_path/priority", 'Kordy\Ticketit\Controllers\PrioritiesController', [
             'names' => [
@@ -151,6 +152,7 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
             ],
         ]);
 
+        // Route::get('status', 'Kordy\Ticketit\Controllers\TicketsController@get');
         //Tickets demo data route (ex. http://url/tickets-admin/demo-seeds/)
         // Route::get("$admin_route/demo-seeds", 'Kordy\Ticketit\Controllers\InstallController@demoDataSeeder');
     });
@@ -166,6 +168,8 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
                 Route::post('save', 'Kordy\Ticketit\Controllers\SettingsController@saveOverdueHours')->name('save');
             });
         });
+
+ 
     });
 
     # Agent and Admin Routes
@@ -287,5 +291,8 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
         // Route::get('status', 'Kordy\Ticketit\Controllers\StatsController@getStatus')->name('status');
     });
 
+    Route::prefix("$admin_route/status")->name($admin_route.'.status.')->group(function() {
+        Route::get("name/{name}", 'Kordy\Ticketit\Controllers\StatusesController@getByName')->name('name');
+    });
 
 });

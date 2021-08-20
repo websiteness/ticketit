@@ -127,4 +127,16 @@ class StatusesController extends Controller
 
         return redirect()->action('\Kordy\Ticketit\Controllers\StatusesController@index');
     }
+
+    /**
+     *  Get ticket by Id
+     *  
+     *  @param int $id
+     */
+    public function getByName($name)
+    {
+        $status =   Status::where('name', 'LIKE', "$name%")->first();
+        return response()->json(['success' => true, 'data' => $status], 200);
+    }
 }
+             
