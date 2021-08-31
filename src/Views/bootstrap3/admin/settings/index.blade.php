@@ -28,6 +28,14 @@
                                     <label for="exampleInputEmail1">Hours until ticket is overdue</label>
                                     <input type="number" name="overdue_hours" class="form-control" min="0" value="{{ $setting->getBySlug('overdue_hours')->value ?? '' }}" required>
                                 </div>
+                                <div class="form-group">
+                                    <label for="status_id">Ticket status to check for closing </label>
+                                    {!! CollectiveForm::select('t_setting_ticket_status_to_check', $statuses , $status_id->value, ['class' => 'form-control']) !!}
+                                </div>
+                                <div class="form-group">
+                                    <label for="time">Automatically closed in (days) </label>
+                                    <input type="number" name="closed_days" class="form-control" min="0" value="{{ $setting->getBySlug('closed_days')->value ?? '' }}" required>
+                                </div>
                                 <button type="submit" class="btn btn-success">Save</button>
                             </div>
                         </div>
