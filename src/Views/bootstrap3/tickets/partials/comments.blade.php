@@ -19,7 +19,7 @@
     .ticket-comment__message-content h5 {
         color: #4c6578 !important;
     }
-    .ticket-comment__message-content p {
+    .ticket-comment__message-content h5 {
         color: #4c6578 !important;
     }
 </style>

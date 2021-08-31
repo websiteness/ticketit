@@ -104,7 +104,7 @@ class CategoriesController extends Controller
         ]);
 
         $category = Category::findOrFail($id);
-        $category->update(['name' => $request->name, 'color' => $request->color]);
+        $category->update(['name' => $request->name, 'color' => $request->color, 'parent' => $request->parent]);
 
         Session::flash('status', trans('ticketit::lang.category-name-has-been-modified', ['name' => $request->name]));
 

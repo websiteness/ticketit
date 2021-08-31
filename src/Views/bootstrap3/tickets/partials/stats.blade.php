@@ -1,8 +1,7 @@
-
 @push('header_styles')
 <style>
 .count:hover{
-  cursor: grab;
+  cursor: grab !important;
 }
 </style>
 @endpush
