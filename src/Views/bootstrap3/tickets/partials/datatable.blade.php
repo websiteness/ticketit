@@ -1,10 +1,8 @@
 <table class="ticketit-table table table-striped table-bordered dt-responsive nowrap" style="width:100%">
     <thead>
         <tr>
-            @if( $u->isAgent() || $u->isAdmin() )
+            <td>{{ trans('ticketit::lang.table-id') }}</td>
             <td>User</td>
-            @endif
-            <!-- <td>{{ trans('ticketit::lang.table-id') }}</td> -->
             <td>{{ trans('ticketit::lang.table-subject') }}</td>
             <td>Ticket Status</td>
           @if( $u->isAgent() || $u->isAdmin() )
@@ -21,4 +19,4 @@
             <td>Actions</td>
         </tr>
     </thead>
-</table>
+</table>                                                                                                                      

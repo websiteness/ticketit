@@ -2,6 +2,7 @@
 <style>
     .ticket-comment__message-content {
         word-wrap: break-word;
+
     }
     .comment-comment__actions {
         margin-top: 20px;
@@ -11,6 +12,15 @@
     }
     .rm-border-bot {
         border: none !important;
+    }
+    .ticket-comment__message{
+        color: #73879C !important;
+    }
+    .ticket-comment__message-content h5 {
+        color: #4c6578 !important;
+    }
+    .ticket-comment__message-content p {
+        color: #4c6578 !important;
     }
 </style>
 @endpush

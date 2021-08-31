@@ -177,12 +177,16 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
 
         # Agent
         Route::prefix('agent/{id}')->name('agent.')->group(function () {
-
+          
             # Notfications
             Route::prefix('notifications')->name('notifications.')->group(function () {
                 Route::get('settings', 'Kordy\Ticketit\Controllers\AgentsController@viewNotifications')->name('settings');
                 Route::post('settings', 'Kordy\Ticketit\Controllers\AgentsController@saveNotificationSettings')->name('settings.store');
             });
+        });
+
+        Route::prefix('agent')->name('agent.')->group(function () {
+            Route::post('update/settings','\Kordy\Ticketit\Controllers\AgentsController@updateAgentSettings')->name('update.settings');
         });
 
         # Categories
@@ -192,6 +196,7 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
             Route::prefix('owners')->name('owners.')->group(function() {
                 Route::get('/', '\Kordy\Ticketit\Controllers\CategoriesController@viewCategoryOwners')->name('index');
                 Route::post('/store', '\Kordy\Ticketit\Controllers\CategoriesController@storeCategoryOwners')->name('store');
+
             });
 
             Route::get('/zones/{id}', '\Kordy\Ticketit\Controllers\CategoriesController@getZones')->name('zones');

@@ -94,10 +94,8 @@
 					},
 				},
 				columns: [
-                    @if( $u->isAgent() || $u->isAdmin() )
-					{ data: 'owner', name: 'users.name' },
-					@endif
-					// { data: 'id', name: 'ticketit.id' },
+					{ data: 'id', name: 'ticketit.id' },
+					{ data: 'owner', name: 'users.name' },			
 					{ data: 'subject', name: 'subject' },
 					{ data: 'status', name: 'ticketit_statuses.name' },
 					@if( $u->isAgent() || $u->isAdmin() )
@@ -114,7 +112,7 @@
 					{ data: 'resolved', name: 'resolved' },
 				],
                 columnDefs: [
-                    {'searchable': false, 'targets': 3}
+                    {'searchable': false, 'targets': 5}
                 ]
             });
 			

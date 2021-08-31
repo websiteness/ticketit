@@ -1,3 +1,11 @@
+
+@push('header_styles')
+<style>
+.count:hover{
+  cursor: grab;
+}
+</style>
+@endpush
 <div class="row">
     <div class="col-md-2">
         <select class="form-control" id="show_stats">
@@ -15,7 +23,7 @@
         </div> -->
     </div>
 </div>
-
+                                                    
 @push('footer_scripts')
 <script>
     renderStats();
@@ -32,7 +40,7 @@
 
         getCategoriesStats();
     }
-
+                                                      
     function getStatusStats() {
         let url = `{{ route($setting->grab('admin_route') . '.stats.status_count') }}`;
         let content = '';
@@ -56,7 +64,7 @@
             console.log('Error', err);
         });
     }
-
+                                                                                
     function getCategoriesStats() {
         let url = `{{ route($setting->grab('admin_route') . '.stats.categories_count') }}`;
         let content = '';

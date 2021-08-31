@@ -65,20 +65,20 @@
                         <li role="presentation" class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\Integrations\InfinityController@index').'*') ? "active" : "" !!}">
                             <a href="{{ action('\Kordy\Ticketit\Controllers\Integrations\InfinityController@index') }}">Infinity</a>
                         </li>
+                        <li role="presentation"  class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\CategoriesController@index').'*') ? "active" : "" !!}">
+                            <a href="{{ action('\Kordy\Ticketit\Controllers\CategoriesController@index') }}">{{ trans('ticketit::admin.nav-categories') }}</a>
+                        </li> 
                         <li role="presentation" class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\CategoriesController@viewCategoryOwners').'*') ? "active" : "" !!}">
                             <a href="{{ action('\Kordy\Ticketit\Controllers\CategoriesController@viewCategoryOwners') }}">Category Owners</a>
                         </li>
                         <li role="presentation"  class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\SettingsController@index').'*') ? "active" : "" !!}">
                             <a href="{{ action('\Kordy\Ticketit\Controllers\SettingsController@index') }}">Ticket Settings</a>
-                        </li>
+                        </li>                        
                         {{-- <li role="presentation" class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\StatusesController@index').'*') ? "active" : "" !!}">
                             <a href="{{ action('\Kordy\Ticketit\Controllers\StatusesController@index') }}">{{ trans('ticketit::admin.nav-statuses') }}</a>
                         </li>
                         <li role="presentation"  class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\PrioritiesController@index').'*') ? "active" : "" !!}">
                             <a href="{{ action('\Kordy\Ticketit\Controllers\PrioritiesController@index') }}">{{ trans('ticketit::admin.nav-priorities') }}</a>
-                        </li> --}}
-                       {{--  <li role="presentation"  class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\CategoriesController@index').'*') ? "active" : "" !!}">
-                            <a href="{{ action('\Kordy\Ticketit\Controllers\CategoriesController@index') }}">{{ trans('ticketit::admin.nav-categories') }}</a>
                         </li> --}}
                         {{-- <li role="presentation"  class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\ConfigurationsController@index').'*') ? "active" : "" !!}">
                             <a href="{{ action('\Kordy\Ticketit\Controllers\ConfigurationsController@index') }}">{{ trans('ticketit::admin.nav-configuration') }}</a>

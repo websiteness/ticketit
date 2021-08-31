@@ -24,8 +24,10 @@ use App\User;
 use App\Models\Account;
 use AppendIterator;
 use Kordy\Ticketit\Services\Integrations\InfinityService;
+use Kordy\Ticketit\Services\Integrations\SlackService;
 use App\Models\TicketsDeveloperStatus;
 use Kordy\Ticketit\Models\SupportNote;
+use App\Jobs\ProcessTicketsToChannels;
 
 class TicketsController extends Controller
 {
@@ -330,6 +332,7 @@ class TicketsController extends Controller
             'content'     => 'required|min:6',
             'priority_id' => 'required|exists:ticketit_priorities,id',
             'category_id' => 'required|exists:ticketit_categories,id',
+            'zone_id' => 'required'
         ]);
 
         $ticket = new Ticket();
@@ -354,6 +357,7 @@ class TicketsController extends Controller
 
         $ticket->priority_id = $request->priority_id;
         $ticket->status_id = TSetting::grab('default_status_id');
+        $ticket->zone_id = $request->zone_id; 
 
         if($request->user_id) {
             $ticket->user_id = $request->user_id;
@@ -366,32 +370,25 @@ class TicketsController extends Controller
         }else{
             $ticket->autoSelectAgent();
         } */
-
+                  
         $ticket->autoSelectAgent();
         $ticket->save();
 
-        //send to infinity
-        $infinity_service = new InfinityService();
-        $infinity_ticket = $infinity_service->store_ticket_data($ticket,$content);
-    
-        if(!$infinity_ticket) {
-            \Log::error('Tickets Error: failed to push tickets to Infinity');
-        }
-      
+        ProcessTicketsToChannels::dispatch($ticket,$content);
 
         // push ticket to asana
-        try {
-            $asana_service->push_ticket($ticket->id);
-        } catch(\Exception $e) {
-            \Log::error('Tickets Error: failed to push tickets to Asana');
-            \Log::error($e->getMessage());
-        }
+        // try {
+        //     $asana_service->push_ticket($ticket->id);
+        // } catch(\Exception $e) {
+        //     \Log::error('Tickets Error: failed to push tickets to Asana');
+        //     \Log::error($e->getMessage());
+        // }
 
         session()->flash('status', trans('ticketit::lang.the-ticket-has-been-created'));
 
         return redirect()->action('\Kordy\Ticketit\Controllers\TicketsController@index');
     }
-
+                                               
     /**
      * Display the specified resource.
      *
@@ -401,8 +398,7 @@ class TicketsController extends Controller
      */
     public function show($id)
     {
-        $ticket = $this->tickets->findOrFail($id);
-    
+        $ticket = $this->tickets->findOrFail($id);   
         $user = Sentinel::getUser();
  
         if($ticket->user_id == $user->id || Sentinel::getUser()->ticketit_agent || Sentinel::getUser()->ticketit_admin){
@@ -410,7 +406,7 @@ class TicketsController extends Controller
 
             $close_perm = $this->permToClose($id);
             $reopen_perm = $this->permToReopen($id);
-    
+            
             if(Sentinel::inRole('client')){
                 $first_admin = Sentinel::getUser()->admin_user;
             }elseif (Sentinel::inRole('admin')) {

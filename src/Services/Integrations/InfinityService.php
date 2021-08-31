@@ -298,18 +298,18 @@ class InfinityService
             $_ticket = Ticket::find($ticket->id);
             $_ticket->infinity_item_id = json_decode($res)->id;
             $_ticket->save();      
-            \Log::info($res);
-            \Log::info('Success sending to infinity.');
+            // \Log::info($res);
+            // \Log::info('Success sending to infinity.');
                 
             return true;
         } else {
-            \Log::info($res);
-            \Log::info('Error sending to infinity');
+            // \Log::info($res);
+            // \Log::info('Error sending to infinity');
             return false;
         }
     
     }
-
+                       
     public function get_user_by_workspace()
     {
         $workspace_id = TSetting::where('slug','infinity_workspace_id')->first();
