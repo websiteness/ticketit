@@ -99,10 +99,10 @@
     }
 
     .note-user-name {
-        color:  black !important;
+        color:  #4c6578 !important;
     }
     .note-notes {
-        color: black  !important;
+        color: #4c6578  !important;
     }
 </style>
 @stop

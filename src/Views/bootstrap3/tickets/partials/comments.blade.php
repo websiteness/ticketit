@@ -13,15 +13,7 @@
     .rm-border-bot {
         border: none !important;
     }
-    .ticket-comment__message{
-        color: #73879C !important;
-    }
-    .ticket-comment__message-content h5 {
-        color: #4c6578 !important;
-    }
-    .ticket-comment__message-content h5 {
-        color: #4c6578 !important;
-    }
+
 </style>
 @endpush
 
