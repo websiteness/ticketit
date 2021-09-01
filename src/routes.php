@@ -198,8 +198,6 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
                 Route::post('/store', '\Kordy\Ticketit\Controllers\CategoriesController@storeCategoryOwners')->name('store');
 
             });
-
-            Route::get('/zones/{id}', '\Kordy\Ticketit\Controllers\CategoriesController@getZones')->name('zones');
             
         });
 
@@ -299,5 +297,9 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
     Route::prefix("$admin_route/status")->name($admin_route.'.status.')->group(function() {
         Route::get("name/{name}", 'Kordy\Ticketit\Controllers\StatusesController@getByName')->name('name');
     });
+    
+
+    // Get zones
+    Route::get($main_route_path.'category/{id}/zones', '\Kordy\Ticketit\Controllers\CategoriesController@getZones')->name($main_route_path.'.category.zones');
 
 });

@@ -95,7 +95,9 @@
 				},
 				columns: [
 					{ data: 'id', name: 'ticketit.id' },
-					{ data: 'owner', name: 'users.name' },			
+					@if( $u->isAgent() || $u->isAdmin() )
+					{ data: 'owner', name: 'users.name' },
+					@endif			
 					{ data: 'subject', name: 'subject' },
 					{ data: 'status', name: 'ticketit_statuses.name' },
 					@if( $u->isAgent() || $u->isAdmin() )
@@ -111,9 +113,11 @@
 					@endif
 					{ data: 'resolved', name: 'resolved' },
 				],
+				@if( $u->isAgent() || $u->isAdmin() )
                 columnDefs: [
                     {'searchable': false, 'targets': 5}
                 ]
+				@endif	
             });
 			
 			if(localStorage.getItem('ticket_column_visible')) {

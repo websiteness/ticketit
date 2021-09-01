@@ -332,7 +332,7 @@ class TicketsController extends Controller
             'content'     => 'required|min:6',
             'priority_id' => 'required|exists:ticketit_priorities,id',
             'category_id' => 'required|exists:ticketit_categories,id',
-            'zone_id' => 'required'
+            // 'zone_id' => 'required'
         ]);
 
         $ticket = new Ticket();

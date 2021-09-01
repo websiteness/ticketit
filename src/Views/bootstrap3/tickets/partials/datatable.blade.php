@@ -2,7 +2,9 @@
     <thead>
         <tr>
             <td>{{ trans('ticketit::lang.table-id') }}</td>
+          @if( $u->isAgent() || $u->isAdmin() )
             <td>User</td>
+          @endif
             <td>{{ trans('ticketit::lang.table-subject') }}</td>
             <td>Ticket Status</td>
           @if( $u->isAgent() || $u->isAdmin() )

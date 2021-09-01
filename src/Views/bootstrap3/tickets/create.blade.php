@@ -177,7 +177,7 @@
      
         function showHeatMapField(self) {
             let id = document.getElementById(self.id).selectedOptions[0].value;
-            let route = "{{ route($setting->grab('admin_route').'.categories.zones', ['id' => 'id']) }}";         
+            let route = "{{ route($setting->grab('main_route_path').'.category.zones', ['id' => 'id']) }}";         
             let new_route = route.replace('id', id);         
             let content = '';
             fetch(new_route).then((res) => {
@@ -187,7 +187,7 @@
                         options += '<option value="'+item.id+'">'+item.name+'</option>'
                     });
                     let el = `<label><img src="{{asset('images/ticket-system/category-subcategory.png')}}" alt="" /> Zones:</label>
-                                <select class="new-ticket__form-select" name="zone_id" id="zone_id" required>
+                                <select class="new-ticket__form-select" name="zone_id" id="zone_id">
                                     <option selected="selected" value="">Please Select</option>
                                     ${options}
                                 </select>`;
