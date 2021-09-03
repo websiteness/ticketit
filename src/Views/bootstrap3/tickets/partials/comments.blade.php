@@ -1,4 +1,6 @@
 @push('header_styles')
+<link href="{{asset('libs/jasny-bootstrap/css/jasny-bootstrap.min.css')}}" rel="stylesheet">
+<link href="{{asset('libs/select2/dist/css/select2.min.css')}}" rel="stylesheet">
 <style>
     .ticket-comment__message-content {
         word-wrap: break-word;

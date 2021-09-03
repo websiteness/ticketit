@@ -182,13 +182,10 @@
 
 		
 
-		$('.ticket_dropdown_option').click(function (e) {
-			
-			let data = $(this).attr('data-column');
-			// console.log(data)
-			
-			
+		$('.ticket_dropdown_option').click(function (e) {			
+			let data = $(this).attr('data-column');	
 			let tickets_table = $('.table').DataTable();
+			
 			if(data == "*") {
 				tickets_table.columns().visible(true);
 				let result = tickets_table.columns().visible().reduce((a, v, i) => v ? [...a, i] : a, [])
@@ -205,7 +202,7 @@
 		function filterTickets() {
 			let user = document.getElementById('filter_owner').value;
 			let status = document.getElementById('filter_status').value;
-			let message = document.getElementById('filter_m essage').value;
+			let message = document.getElementById('filter_message').value;
 			let sub_category = document.getElementById('filter_sub_category').value;
 			let last_reply = document.getElementById('filter_last_reply').value;
 

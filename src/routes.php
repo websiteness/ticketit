@@ -56,6 +56,13 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
             ->name("$main_route.reopen");
     //});
 
+    
+    Route::prefix("$main_route_path/tags")->name("$main_route.tags.")->group(function() {
+        Route::post('store', '\Kordy\Ticketit\Controllers\TagsController@store')->name('store');
+        Route::get('all', '\Kordy\Ticketit\Controllers\TagsController@all')->name('all');
+        Route::get('ticket/{id}', '\Kordy\Ticketit\Controllers\TagsController@getSelectedTagsByTicketId')->name('ticket-tags');
+    });
+
     Route::group(['middleware' => 'Kordy\Ticketit\Middleware\IsAgentMiddleware'], function () use ($main_route, $main_route_path) {
 
         //API return list of agents in particular category

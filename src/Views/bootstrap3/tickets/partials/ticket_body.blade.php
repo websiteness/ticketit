@@ -139,20 +139,29 @@
                         <div class="col-md-4"> {{ CollectiveForm::label('Estimated Completion Date') }} {!! CollectiveForm::date('completion_date', $ticket->completion_date, ['class' => 'form-control']) !!} </div>  
                         <div class="col-md-2"> {{ CollectiveForm::label('# of hours') }} {!! CollectiveForm::number('dev_hours',$ticket->dev_hours,['class' => 'form-control', 'placeholder' => 'Estimated hours']) !!}  </div>           
                         <div class="col-md-3"> {{ CollectiveForm::label('Developer status') }} {!! CollectiveForm::select('dev_status_id',$dev_statuses,$ticket->dev_status_id,['class' => 'form-control']) !!} </div>                    
-                        
+                        <div class="col-md-3 mt">
+                          {{ CollectiveForm::label('Tags') }}
+                          <select id="ticketit_tags" class="form-control" name="tags[]">
+
+                          </select>
+                        </div>
                         <div class="form-group">
                           <div class="col-lg-12 mt">
                               {{ CollectiveForm::label('Developer Notes') }}
                               {!! CollectiveForm::textarea('dev_notes', null, ['class' => 'form-control add-notes-summernote', 'rows' => "3"]) !!}
                           </div>
                       </div>
-                      </div>              
+                      </div>         
+          
                   </div>
                   @endif
+                  {!! CollectiveForm::submit('Update', ['class' => 'btn btn-success ticket-update-btn']) !!}
+                  {!! CollectiveForm::close() !!}     
+                  <input id="t-id" type="hidden" value="{{ $ticket->id }}">
                   </div><!-- x_content -->
               </div><!-- .x_panel -->
-                {!! CollectiveForm::submit('Update', ['class' => 'btn btn-success ticket-update-btn']) !!}
-                {!! CollectiveForm::close() !!}
+
+   
           </div><!-- .col-md-12 col-sm-12 col-xs-12 -->
         </div><!-- .col-md-12 col-sm-12 col-xs-12 -->
 
@@ -161,7 +170,50 @@
 </div>
 
 @push('footer_scripts')
+<script src="{{asset('libs/parsleyjs/dist/parsley.min.js')}}"></script>
+<script src="{{asset('libs/jasny-bootstrap/js/jasny-bootstrap.js')}}"></script>
+<script src="{{asset('libs/select2/dist/js/select2.full.min.js')}}"></script>
 <script>
+  $(document).ready(function(){
+      $.ajaxSetup({
+        headers: {
+          'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+      });
+      //fetchSelectedTags();
+      $('#ticketit_tags').select2({
+        placeholder: '  Select Tags',    
+        language: {
+            noResults: function() {
+              return `<button style="width: 100%" type="button"
+              class="btn btn-primary" 
+              onClick='addTag()'>+ Add New Tag</button>
+              </li>`;
+            }
+         },
+        escapeMarkup: function (markup) {
+            return markup;
+        },
+        multiple: true,
+        
+    });
+
+    fetchTags();
+
+  });
+
+  function addTag() {
+    let input = $('.select2-search__field').val();
+    let route = "{{ route($setting->grab('main_route').'.tags.store') }}"; 
+    $.post(route, { name : input  }, function(data){
+      if(data.success) {
+          alert(data.message)
+      } else {
+          alert(data.message)
+      }
+    });
+    
+  }
   function copyEmail(email)
   {
     console.log('email', email);
@@ -173,5 +225,38 @@
     document.execCommand('copy');
     document.body.removeChild(input);
   }
+
+  function fetchTags() {
+    let url = "{{ route($setting->grab('main_route').'.tags.all') }}";  
+    fetch(url).then((res) => {
+      res.json().then((data) => {
+        let values = new Array(); 
+        $.each(data.data, function (i, item) {
+          values.push({ id: item.id, text: item.name});
+        });
+        console.log(data)
+        $('#ticketit_tags').select2({data : values})
+      });
+    }).catch((err) => {
+      console.log('Error', err);
+    });
+  }
+
+  function fetchSelectedTags(){
+    let id = $('#t-id').val();
+    let route = "{{ route($setting->grab('main_route').'.tags.ticket-tags', ['id' => 'id']) }}";         
+    let new_route = route.replace('id', id);       
+    let selected = new Array();
+    $.get(new_route, (res) => {
+      if(res.data) {
+        $.each(res.data,(i,item) => {
+          selected.push({ id : item.id, name : item.name});
+        });
+      }
+      console.log(selected)
+     // $('#ticketit_tags').select2('val', selected)
+    })  
+
+  }
 </script>
-@endpush
+@endpush                                                                         
