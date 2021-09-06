@@ -180,7 +180,7 @@
           'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
       });
-      //fetchSelectedTags();
+
       $('#ticketit_tags').select2({
         placeholder: '  Select Tags',    
         language: {
@@ -199,7 +199,6 @@
     });
 
     fetchTags();
-
   });
 
   function addTag() {
@@ -208,6 +207,7 @@
     $.post(route, { name : input  }, function(data){
       if(data.success) {
           alert(data.message)
+          window.location.reload( )
       } else {
           alert(data.message)
       }
@@ -234,8 +234,8 @@
         $.each(data.data, function (i, item) {
           values.push({ id: item.id, text: item.name});
         });
-        console.log(data)
         $('#ticketit_tags').select2({data : values})
+        fetchSelectedTags();
       });
     }).catch((err) => {
       console.log('Error', err);
@@ -250,13 +250,11 @@
     $.get(new_route, (res) => {
       if(res.data) {
         $.each(res.data,(i,item) => {
-          selected.push({ id : item.id, name : item.name});
+          selected.push(item.id);
         });
+        $("#ticketit_tags").val(selected).trigger("change");
       }
-      console.log(selected)
-     // $('#ticketit_tags').select2('val', selected)
-    })  
-
+    })                                  
   }
 </script>
 @endpush                                                                         

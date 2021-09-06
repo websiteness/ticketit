@@ -28,6 +28,7 @@ use Kordy\Ticketit\Services\Integrations\SlackService;
 use App\Models\TicketsDeveloperStatus;
 use Kordy\Ticketit\Models\SupportNote;
 use App\Jobs\ProcessTicketsToChannels;
+use Kordy\Ticketit\Models\TicketTags;
 
 class TicketsController extends Controller
 {
@@ -460,7 +461,7 @@ class TicketsController extends Controller
      */
     public function update(Request $request, $id, AsanaService $asana_service)
     {
-
+      
         $user = Sentinel::getUser();
 
         if($user->ticketit_admin || $user->ticketit_agent) {
@@ -548,6 +549,23 @@ class TicketsController extends Controller
                 }
             }
         }
+ 
+        if(isset($request->tags)) {
+            $curr_ticket = Ticket::where('id', $id)->first();
+            $curr_ticket->tags()->detach();
+
+            $data = array();
+            //Insert tags 
+            foreach($request->tags as $value) {
+                array_push($data,[
+                    'ticket_id' => $id,
+                    'ticketit_tags_id' => $value
+                ]);
+            }
+
+            TicketTags::insert($data);
+        }
+  
 
         session()->flash('status', trans('ticketit::lang.the-ticket-has-been-modified'));
 

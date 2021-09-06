@@ -15,7 +15,6 @@
             <h2>Ticket Settings
             </h2>
         </div>
-
         <div class="panel-body">
             <div class="panel panel-default">
                 <div class="panel-heading">Overdue</div>
@@ -26,15 +25,15 @@
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label for="exampleInputEmail1">Hours until ticket is overdue</label>
-                                    <input type="number" name="overdue_hours" class="form-control" min="0" value="{{ $setting->getBySlug('overdue_hours')->value ?? '' }}" required>
+                                    <input type="number" name="overdue_hours" class="form-control" min="0" value="{{ isset($setting->getBySlug('overdue_hours')->value) ? $setting->getBySlug('overdue_hours')->value : ''  }}" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="status_id">Ticket status to check for closing </label>
-                                    {!! CollectiveForm::select('t_setting_ticket_status_to_check', $statuses , $status_id->value, ['class' => 'form-control']) !!}
+                                    {!! CollectiveForm::select('t_setting_ticket_status_to_check', $statuses , isset($status_id->value) ? $status_id->value : null , ['class' => 'form-control']) !!}
                                 </div>
                                 <div class="form-group">
                                     <label for="time">Automatically closed in (days) </label>
-                                    <input type="number" name="closed_days" class="form-control" min="0" value="{{ $setting->getBySlug('closed_days')->value ?? '' }}" required>
+                                    <input type="number" name="closed_days" class="form-control" min="0" value="{{ isset($setting->getBySlug('closed_days')->value) ? $setting->getBySlug('closed_days')->value : '' }}" required>
                                 </div>
                                 <button type="submit" class="btn btn-success">Save</button>
                             </div>
