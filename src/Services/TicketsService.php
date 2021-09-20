@@ -3,11 +3,11 @@ namespace Kordy\Ticketit\Services;
 
 use Kordy\Ticketit\Models\Ticket;
 use Kordy\Ticketit\Models\TSetting;
+use Carbon\Carbon;
 use Kordy\Ticketit\Models\Status;
 use Cartalyst\Sentinel\Laravel\Facades\Sentinel;
 use App\User;
 use Kordy\Ticketit\Mail\SendClosedTickets;
-use Illuminate\Support\Facades\Mail;
 
 class TicketsService {
 
@@ -21,8 +21,8 @@ class TicketsService {
         $closed_ticket_status_id = Status::where('name', 'like', '%Ticket Closed%')->first();
         foreach ($tickets as $ticket) {
             $ticket->status_id = $closed_ticket_status_id->id;
-            $ticket->save();
-            $this->sendMailToTicketOwners($ticket->user_id, $ticket);
+            $updated_ticket = $ticket->save();
+            $this->sendMailToTicketOwners($ticket->user_id, $updated_ticket);
         }
     }
 

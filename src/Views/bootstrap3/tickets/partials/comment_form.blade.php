@@ -34,7 +34,7 @@
                     @endif
                     <div class="x_content" id="comment_form" {{ $u->isAdmin() ? '' : 'style=display:none;' }}>
                         @if(!$u->isAdmin() && !$u->isAgent())
-                            {!! CollectiveForm::open(['method' => 'POST', 'route' => $setting->grab('main_route').'-comment.store', 'class' => 'form-horizontal']) !!}
+                            {!! CollectiveForm::open(['method' => 'POST', 'route' => $setting->grab('main_route').'-comment.store', 'class' => 'form-horizontal comment-form']) !!}
                         @else
                             {!! CollectiveForm::open(['method' => 'POST', 'route' => $setting->grab('main_route').'-comment.store', 'class' => 'form-horizontal comment-form']) !!}
                         @endif
@@ -59,7 +59,7 @@
                                 @else
                                         <!-- {!! CollectiveForm::submit( trans('ticketit::lang.btn-submit'), ['class' => 'custom-btn submit-btn']) !!} -->
                                         @if($u->isAdmin())
-                                        <button class="custom-btn submit-btn pull-right">Reply to user</button>
+                                        <button class="custom-btn submit-btn pull-right" onclick="disable()">Reply to user</button>
                                         @else
                                         <button type="button" class="custom-btn cancel-btn pull-left" id="cancel_reply">Cancel</button>
                                         <button class="custom-btn submit-btn pull-left">Send Reply</button>
@@ -91,3 +91,10 @@
         </div>
     </div>
 </div>
+<script>
+function disable() {
+    $('.submit-btn').prop('disabled', true);
+    $('form.comment-form').submit();
+}
+</script>
+         

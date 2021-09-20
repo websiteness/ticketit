@@ -182,20 +182,17 @@
       });
 
       $('#ticketit_tags').select2({
-        placeholder: '  Select Tags',    
+        placeholder: ' Select Tags',    
         language: {
             noResults: function() {
-              return `<button style="width: 100%" type="button"
-              class="btn btn-primary" 
-              onClick='addTag()'>+ Add New Tag</button>
-              </li>`;
+              return `<button style="width: 100%" type="button" class="btn btn-primary" onClick='addTag()'>+ Add New Tag</button> </li>`;
             }
          },
         escapeMarkup: function (markup) {
             return markup;
         },
         multiple: true,
-        
+
     });
 
     fetchTags();
