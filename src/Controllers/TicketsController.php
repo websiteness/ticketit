@@ -155,7 +155,7 @@ class TicketsController extends Controller
             }
         }
         
-        $collection->orderBy('ticketit.id', 'asc');
+        // $collection->orderBy('ticketit.id', 'asc');
         
         $collection = $datatables->of($collection);
 
