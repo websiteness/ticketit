@@ -88,6 +88,7 @@ class TicketsController extends Controller
             ->join('ticketit_priorities', 'ticketit_priorities.id', '=', 'ticketit.priority_id')
             ->join('ticketit_categories', 'ticketit_categories.id', '=', 'ticketit.category_id')
             ->leftjoin('tickets_developer_status', 'tickets_developer_status.id', '=', 'ticketit.dev_status_id')
+            ->leftjoin('ticketit_categories AS ticketit_zone', 'ticketit_zone.id', '=', 'ticketit.zone_id')
             ->select([
                 'ticketit.id',
                 'ticketit.user_id',
@@ -100,6 +101,7 @@ class TicketsController extends Controller
                 'ticketit.id AS agent',
                 'ticketit.updated_at AS updated_at',
                 'ticketit_priorities.name AS priority',
+                'ticketit_zone.name AS zone',
                 // 'users.name AS owner',
                 DB::raw('CONCAT(users.first_name ," ", users.last_name) as owner'),
                 'ticketit.agent_id',
@@ -166,7 +168,7 @@ class TicketsController extends Controller
         // method rawColumns was introduced in laravel-datatables 7, which is only compatible with >L5.4
         // in previous laravel-datatables versions escaping columns wasn't defaut
         if (LaravelVersion::min('5.4')) {
-            $collection->rawColumns(['subject', 'status', 'priority', 'category', 'agent']);
+            $collection->rawColumns(['subject', 'status', 'priority', 'category', 'agent', 'zone']);
         }
 
         return $collection->make(true);
@@ -432,9 +434,9 @@ class TicketsController extends Controller
             $selected_subcategory = ($ticket->category->parent_category) ? $ticket->category->id : null;
     
             $comments = $ticket->comments()->paginate(TSetting::grab('paginate_items'));
-
+            $plan_names = '';
             try {
-                $plan_names = implode(', ', $ticket->user->account->get_plan_names());
+               // $plan_names = $ticket->user->account->get_plan_names() ? implode(', ', $ticket->user->account->get_plan_names()) : '';
             } catch (\Exception $e) {
                 $plan_names = '';
                 \Log::info($e->getMessage());

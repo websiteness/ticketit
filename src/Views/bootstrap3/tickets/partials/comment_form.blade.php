@@ -9,7 +9,7 @@
     }
 </style>
 @endpush
-
+           
 <div class="ticket-system">
     <div class="ticket-system__tabs" role="tabpanel" data-example-id="togglable-tabs">
         <div class="row">
@@ -97,4 +97,5 @@ function disable() {
     $('form.comment-form').submit();
 }
 </script>
-         
+                                           
+                                              

@@ -302,5 +302,10 @@ class Ticket extends Model
         return $this->belongsToMany('Kordy\Ticketit\Models\Tags', 'ticketit_ticket_tags', 'ticket_id', 'ticketit_tags_id');
     }
     
+    public function zone()
+    {
+        return $this->belongsTo('Kordy\Ticketit\Models\Category', 'zone_id');
+    }
+    
 }
                                                    

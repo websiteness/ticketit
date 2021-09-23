@@ -18,6 +18,7 @@
             <!-- <td>{{ trans('ticketit::lang.table-owner') }}</td> -->
             <td>{{ trans('ticketit::lang.table-category') }}</td>
           @endif
+            <td>Zone</td>
             <td>Actions</td>
         </tr>
     </thead>

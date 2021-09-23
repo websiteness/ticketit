@@ -55,6 +55,7 @@
                         <td width="10%"><h5 class="active-tickets__heading">Category:</h5></td>
                         <td width="40%"><span class="active-tickets__text">{{ isset($ticket->category->parent_category->name) ? $ticket->category->parent_category->name : $ticket->category->name }}</span></td>
                         @endif
+                        
                     </tr>
                     <tr>
                       <td width="10%"><h5 class="active-tickets__heading">Status:</h5></td>
@@ -77,7 +78,8 @@
                       @if($u->isAgent() || $u->isAdmin())
                       <td width="10%"><h5 class="active-tickets__heading">Category:</h5></td>
                       <td width="40%"><span class="active-tickets__text">{{ isset($ticket->category->parent_category->name) ? $ticket->category->parent_category->name : $ticket->category->name }}</span></td>
-                        @else
+                        
+                      @else
                         <td width="10%"><h5 class="active-tickets__heading">Module:</h5></td>
                         <td width="40%"><span class="active-tickets__text">
                             @if($ticket->category->parent_category)
@@ -87,7 +89,7 @@
                         @endif
                     </tr>
                     <tr>
-                      <td width="10%"><h5 class="active-tickets__heading">Priority:</h5></td>
+                    <td width="10%"><h5 class="active-tickets__heading">Priority:</h5></td>
                       <td width="40%" class="priority-status priority-status__moderate">
                         <div class="active-tickets__editable">
                             @if($u->isAgent() || $u->isAdmin())
@@ -104,6 +106,23 @@
                         </div>
                       </td>
                       @if($u->isAgent() || $u->isAdmin())
+                      <td width="10%"><h5 class="active-tickets__heading">Zone:</h5></td>
+                      <td width="40%"><span class="active-tickets__text">
+                          @if($ticket->zone)
+                              {{ $ticket->zone->name }}
+                          @endif
+                        </span></td>
+                        @else
+                        <td width="10%"><h5 class="active-tickets__heading">Last Update:</h5></td>
+                        <td width="40%"><span class="active-tickets__text">{{ $ticket->updated_at->diffForHumans() }}</span></td>
+                        @endif
+                        
+                    </tr>
+        
+                    <tr>
+                    <td width="10%"><h5 class="active-tickets__heading">Ticket #:</h5></td>
+                        <td width="40%"><span class="active-tickets__text">{{ $ticket->id }}</span></td>
+                      @if($u->isAgent() || $u->isAdmin())
                       <td width="10%"><h5 class="active-tickets__heading">Module:</h5></td>
                       <td width="40%"><span class="active-tickets__text">
                         @if($ticket->category->parent_category)
@@ -115,9 +134,9 @@
                         <td width="40%"><span class="active-tickets__text">{{ $ticket->updated_at->diffForHumans() }}</span></td>
                         @endif
                     </tr>
+
                     <tr>
-                        <td width="10%"><h5 class="active-tickets__heading">Ticket #:</h5></td>
-                        <td width="40%"><span class="active-tickets__text">{{ $ticket->id }}</span></td>
+                   
                         @if($u->isAgent() || $u->isAdmin())
                         <td width="10%"><h5 class="active-tickets__heading">Last Update:</h5></td>
                         <td width="40%"><span class="active-tickets__text">{{ $ticket->updated_at->diffForHumans() }}</span></td>
@@ -126,6 +145,7 @@
                       <td width="40%"><span class="active-tickets__text">{{ $ticket->created_at->format('m/d/Y') . ' (' . $ticket->created_at->diffForHumans() . ')' }}</span></td>
                         @endif
                     </tr>
+
 
                   </tbody>
                 </table>

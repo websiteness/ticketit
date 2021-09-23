@@ -111,6 +111,7 @@
 					// { data: 'owner', name: 'users.name' },
 					{ data: 'category', name: 'ticketit_categories.name' },
 					@endif
+					{ data: 'zone', name: 'zone' },
 					{ data: 'resolved', name: 'resolved' },
 				],
 				@if( $u->isAgent() || $u->isAdmin() )
