@@ -56,8 +56,8 @@
                 <thead>
                     <tr>
                         <td>{{ trans('ticketit::admin.table-name') }}</td>
-                        <td> Slack Webhook URL</td>
-                        <td>Actions</td>
+                        {{-- <td> Slack Webhook URL</td>
+                        <td>Actions</td> --}}
                     </tr>
                 </thead>
                 <tbody>
@@ -67,8 +67,8 @@
                 
                             {{ $agent->name . ' - ' . $agent->email . ' (' . $agent->roles()->first()->name . ')' }}
                         </td>
-                        <td> 
-                        {{ $agent->agentSlackUrl->data }}
+                        {{-- <td> 
+                        {{ $agent->agentSlackUrl->data ??  }}
                         </td>
                         <td>
                         <a onclick='getWebhookUrl("{{ $agent->id }}", "{{ $agent->name."-".$agent->email}}", "{{ $agent->agentSlackUrl->id }}", "{{ $agent->agentSlackUrl->data }}")' class="btn btn-success">Edit</a>
@@ -85,7 +85,7 @@
                             {!! CollectiveForm::close() !!}
 
                             <a href="{{ route($setting->grab('admin_route').'.agent.notifications.settings', $agent->id) }}" class="btn btn-primary">Notifications</a>
-                        </td>
+                        </td> --}}
                     </tr>
                 @endforeach
                 </tbody>
