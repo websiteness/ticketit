@@ -116,7 +116,7 @@
 				],
 				@if( $u->isAgent() || $u->isAdmin() )
                 columnDefs: [
-                    {'searchable': false, 'targets': 5}
+                    {'searchable': false, 'targets': [5,10]}
                 ]
 				@endif	
             });
