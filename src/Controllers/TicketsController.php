@@ -436,7 +436,7 @@ class TicketsController extends Controller
             $comments = $ticket->comments()->paginate(TSetting::grab('paginate_items'));
             $plan_names = '';
             try {
-               // $plan_names = $ticket->user->account->get_plan_names() ? implode(', ', $ticket->user->account->get_plan_names()) : '';
+               $plan_names = $ticket->user->account->get_plan_names() ? implode(', ', $ticket->user->account->get_plan_names()) : '';
             } catch (\Exception $e) {
                 $plan_names = '';
                 \Log::info($e->getMessage());
