@@ -159,12 +159,17 @@
                         <div class="col-md-4"> {{ CollectiveForm::label('Estimated Completion Date') }} {!! CollectiveForm::date('completion_date', $ticket->completion_date, ['class' => 'form-control']) !!} </div>  
                         <div class="col-md-2"> {{ CollectiveForm::label('# of hours') }} {!! CollectiveForm::number('dev_hours',$ticket->dev_hours,['class' => 'form-control', 'placeholder' => 'Estimated hours']) !!}  </div>           
                         <div class="col-md-3"> {{ CollectiveForm::label('Developer status') }} {!! CollectiveForm::select('dev_status_id',$dev_statuses,$ticket->dev_status_id,['class' => 'form-control']) !!} </div>                    
-                        <div class="col-md-3 mt">
+                        
+                        <div class="form-group">
+                                 
+                        <div class="col-lg-12 col-md-12 col-sm-12 mt">
                           {{ CollectiveForm::label('Tags') }}
                           <select id="ticketit_tags" class="form-control" name="tags[]">
 
                           </select>
                         </div>
+                        </div>
+               
                         <div class="form-group">
                           <div class="col-lg-12 mt">
                               {{ CollectiveForm::label('Developer Notes') }}
@@ -180,11 +185,11 @@
                   <input id="t-id" type="hidden" value="{{ $ticket->id }}">
                   </div><!-- x_content -->
               </div><!-- .x_panel -->
-
+       
    
           </div><!-- .col-md-12 col-sm-12 col-xs-12 -->
         </div><!-- .col-md-12 col-sm-12 col-xs-12 -->
-
+ 
  
     </div>
 </div>
