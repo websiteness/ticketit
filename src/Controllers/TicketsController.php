@@ -481,6 +481,8 @@ class TicketsController extends Controller
      */
     public function update(Request $request, $id, AsanaService $asana_service)
     {
+
+
       
         $user = Sentinel::getUser();
 
@@ -569,24 +571,24 @@ class TicketsController extends Controller
                 }
             }
         }
- 
-        if(isset($request->tags)) {
+
+        if(!isset($request->tags)) {
             $curr_ticket = Ticket::where('id', $id)->first();
             $curr_ticket->tags()->detach();
-
-            $data = array();
+        }else if(isset($request->tags)) {
             //Insert tags 
+            $data = array();
+
             foreach($request->tags as $value) {
                 array_push($data,[
                     'ticket_id' => $id,
                     'ticketit_tags_id' => $value
                 ]);
             }
-
+            
             TicketTags::insert($data);
         }
   
-
         session()->flash('status', trans('ticketit::lang.the-ticket-has-been-modified'));
 
         return redirect()->route(TSetting::grab('main_route').'.show', $id);

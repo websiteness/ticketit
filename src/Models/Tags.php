@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Tags extends Model
 {
-    // use SoftDeletes;
+    //use SoftDeletes;
 
     protected $table = 'ticketit_tags';
 
     protected $fillable = ['name'];
 
-    // protected $dates = ['deleted_at'];
+    //protected $dates = ['deleted_at'];
 
     /**
      * Get related tickets.
