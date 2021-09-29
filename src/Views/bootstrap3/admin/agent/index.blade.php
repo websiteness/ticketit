@@ -56,7 +56,6 @@
                 <thead>
                     <tr>
                         <td>{{ trans('ticketit::admin.table-name') }}</td>
-                        <td> Slack Webhook URL</td>
                         <td>Actions</td>
                     </tr>
                 </thead>
@@ -66,9 +65,6 @@
                         <td>
                 
                             {{ $agent->name . ' - ' . $agent->email . ' (' . $agent->roles()->first()->name . ')' }}
-                        </td>
-                        <td> 
-                        {{ $agent->agentSlackUrl->data }}
                         </td>
                         <td>
                         <a onclick='getWebhookUrl("{{ $agent->id }}", "{{ $agent->name."-".$agent->email}}", "{{ $agent->agentSlackUrl->id }}", "{{ $agent->agentSlackUrl->data }}")' class="btn btn-success">Edit</a>

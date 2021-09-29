@@ -29,6 +29,7 @@ use App\Models\TicketsDeveloperStatus;
 use Kordy\Ticketit\Models\SupportNote;
 use App\Jobs\ProcessTicketsToChannels;
 use Kordy\Ticketit\Models\TicketTags;
+use Kordy\Ticketit\Models\Tags;
 
 class TicketsController extends Controller
 {
@@ -50,6 +51,7 @@ class TicketsController extends Controller
 
     public function data(Request $request, $complete = false)
     {
+
         if (LaravelVersion::min('5.4')) {
             $datatables = app(\Yajra\DataTables\DataTables::class);
         } else {
@@ -80,7 +82,7 @@ class TicketsController extends Controller
                 $collection = Ticket::userTickets($user->id)->active();
             }
         }           
-                                                                                                                                                                                                            
+                                                                                                                                                                                                               
         // dd($collection->get());
         $collection
             ->join('users', 'users.id', '=', 'ticketit.user_id')
@@ -89,6 +91,8 @@ class TicketsController extends Controller
             ->join('ticketit_categories', 'ticketit_categories.id', '=', 'ticketit.category_id')
             ->leftjoin('tickets_developer_status', 'tickets_developer_status.id', '=', 'ticketit.dev_status_id')
             ->leftjoin('ticketit_categories AS ticketit_zone', 'ticketit_zone.id', '=', 'ticketit.zone_id')
+            ->leftjoin('ticketit_ticket_tags as ttt','ttt.ticket_id','=', 'ticketit.id')
+            ->leftjoin('ticketit_tags as tt','ttt.ticketit_tags_id','=', 'tt.id')
             ->select([
                 'ticketit.id',
                 'ticketit.user_id',
@@ -107,8 +111,9 @@ class TicketsController extends Controller
                 'ticketit.agent_id',
                 'ticketit_categories.name AS category',
                 'tickets_developer_status.name AS dev_status'
-            ]);
-
+            ])->distinct();
+            
+                                                                     
         // check if filters are applied
         if($request->user) {
             $collection->where('ticketit.user_id', $request->user);
@@ -156,7 +161,12 @@ class TicketsController extends Controller
                 });
             }
         }
-        
+   
+        if($request->tags){
+            $tag_ids = explode(',', $request->tags);
+            $collection->whereIn('tt.id', $tag_ids);
+        }
+       
         // $collection->orderBy('ticketit.id', 'asc');
         
         $collection = $datatables->of($collection);
@@ -164,13 +174,21 @@ class TicketsController extends Controller
         $this->renderTicketTable($collection);
 
         $collection->editColumn('updated_at', '{!! \Carbon\Carbon::parse($updated_at)->format("m/d/Y") . " (" . \Carbon\Carbon::createFromFormat("Y-m-d H:i:s", $updated_at)->diffForHumans("", true, false, 2) . " ago)" !!}');
-
+       
+        $collection->addColumn('tags', function($ticket) {
+            $tickets = Ticket::where('id', $ticket->id)->first();
+            $tags = $tickets->tags;
+            $new_tags = [];
+            foreach($tags as $tag) {
+                array_push($new_tags, "<span class='label label-primary ml-3'>{$tag->name}</span>" );
+            }
+            return implode("", $new_tags);
+        });
         // method rawColumns was introduced in laravel-datatables 7, which is only compatible with >L5.4
         // in previous laravel-datatables versions escaping columns wasn't defaut
         if (LaravelVersion::min('5.4')) {
-            $collection->rawColumns(['subject', 'status', 'priority', 'category', 'agent', 'zone']);
+            $collection->rawColumns(['subject', 'status', 'priority', 'category', 'agent', 'zone', 'tags']);
         }
-
         return $collection->make(true);
     }
 
@@ -248,10 +266,10 @@ class TicketsController extends Controller
         $users = Agent::all();
         $statuses = Status::all();
         $sub_categories = $cr->getSubCategories();
-
+        $tags = Tags::all();
         $complete = false;
 
-        return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories'));
+        return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories', 'tags'));
     }
 
     /**

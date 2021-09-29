@@ -56,7 +56,7 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
             ->name("$main_route.reopen");
     //});
     
-    Route::prefix("$main_route_path/tags")->name("$main_route.tags.")->group(function() {
+    Route::prefix("$main_route_path/tags")->name("$main_route.tags.")->middleware('Kordy\Ticketit\Middleware\IsAgentMiddleware')->group(function() {
         Route::get('index', '\Kordy\Ticketit\Controllers\TagsController@index')->name('index');
         Route::post('store', '\Kordy\Ticketit\Controllers\TagsController@store')->name('store');
         Route::get('all', '\Kordy\Ticketit\Controllers\TagsController@all')->name('all');

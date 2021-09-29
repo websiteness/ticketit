@@ -19,6 +19,7 @@
             <td>{{ trans('ticketit::lang.table-category') }}</td>
           @endif
             <td>Zone</td>
+            <td>Tags</td>
             <td>Actions</td>
         </tr>
     </thead>

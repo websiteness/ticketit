@@ -13,7 +13,7 @@ class AdministratorsController extends Controller
     public function index()
     {
         $administrators = Agent::admins();
-
+  
         return view('ticketit::admin.administrator.index', compact('administrators'));
     }
 

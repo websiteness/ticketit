@@ -12,6 +12,7 @@ class DashboardController extends Controller
 {
     public function index($indicator_period = 2)
     {
+ 
         $tickets_count = Ticket::adminUserTickets(Sentinel::getUser()->id)->count();
         $open_tickets_count = Ticket::adminUserTickets(Sentinel::getUser()->id)->whereNull('completed_at')->count();
         $closed_tickets_count = $tickets_count - $open_tickets_count;

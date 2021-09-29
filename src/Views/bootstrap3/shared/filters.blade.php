@@ -111,6 +111,16 @@
             <label>Message</label>
             <input type="text" class="form-control" id="filter_message" placeholder="Search messages"/>
         </div>
+
+
+        <div class="form-group">
+            <label>Tag</label>
+            <select class="form-control select2-tag" id="filter_tags" name="tags[]" multiple="multiple">
+                @foreach($tags as $tag)
+                <option value="{{ $tag->id }}">{{ $tag->name }}</option>
+                @endforeach 
+            </select>
+        </div>
         <div class="form-group">
             <label for="filter_hide_closed_tickets">
             <input type="checkbox" id="filter_hide_closed_tickets" onclick="filterTickets()" style="margin-top:30px;" checked/> Hide closed tickets
@@ -131,15 +141,21 @@
     /* Set the width of the side navigation to 250px */
     function openNav() {
 		$('.select2').select2();
+        $('.select2-tag').select2({
+            placeholder: 'Select Tag',
+            multiple: true,
+        });
         document.getElementById("mySidenav").style.width = "370px";
     }
-
+                                          
     /* Set the width of the side navigation to 0 */
     function closeNav() {
         document.getElementById("mySidenav").style.width = "0";
     }
 
     $(document).ready(function() {
+
+
         $(window).click(function() {
             document.getElementById("mySidenav").style.width = "0";
         });
