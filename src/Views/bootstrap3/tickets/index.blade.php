@@ -890,6 +890,14 @@
                                                             </label>
                                                         </div>
                                                     </li>
+                                                    <li class="main_sub_alphabet search_term search_term_companies  " data-search-term="test company" data-name="Test Company">
+                                                        <div class="checkbox">
+                                                            <label>
+                                                                <input type="checkbox" data-column="12" value="1"  class="ticket_dropdown_option company-checkboxes company-checkboxes_132">
+                                                                Actions
+                                                            </label>
+                                                        </div>
+                                                    </li>
                                                 </ul>
                                             </li>
                                         </ul>

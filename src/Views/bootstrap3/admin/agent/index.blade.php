@@ -67,7 +67,6 @@
                             {{ $agent->name . ' - ' . $agent->email . ' (' . $agent->roles()->first()->name . ')' }}
                         </td>
                         <td>
-                        <a onclick='getWebhookUrl("{{ $agent->id }}", "{{ $agent->name."-".$agent->email}}", "{{ $agent->agentSlackUrl->id }}", "{{ $agent->agentSlackUrl->data }}")' class="btn btn-success">Edit</a>
                             {!! CollectiveForm::open([
                             'method' => 'DELETE',
                             'route' => [
