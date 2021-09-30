@@ -324,12 +324,15 @@ class NotificationsController extends Controller
                     Mail::to($to)->queue($mail);
                 } else {
                     Mail::to($to)->send($mail);
-                    
-                    // try to get zapier email parser and send an email
-                    $zapier_email_parser = TSetting::where('slug', 'zapier_email_parser')->first();
-                    if($zapier_email_parser)
+
+                    if($type == 'new-ticket')
                     {
-                        Mail::to($zapier_email_parser->value)->send($mail);
+                        // try to get zapier email parser and send an email
+                        $zapier_email_parser = TSetting::where('slug', 'zapier_email_parser')->first();
+                        if($zapier_email_parser)
+                        {
+                            Mail::to($zapier_email_parser->value)->send($mail);
+                        }
                     }
                 }
 
