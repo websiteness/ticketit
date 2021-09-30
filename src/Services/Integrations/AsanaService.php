@@ -279,7 +279,7 @@ class AsanaService
         }
 
         // add this task to it's section/category
-        $this->assign_task_section($response['gid'], $ticket->category_id);
+        $this->assign_task_section($response['gid'] ?? '', $ticket->category_id);
     }
 
     public function update_ticket($ticket_id)
