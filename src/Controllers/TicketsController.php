@@ -162,28 +162,29 @@ class TicketsController extends Controller
             }
         }
    
-        if($request->tags){
+        if(!is_null($request->tags) && !empty($request->tags) && $request->tags != "null"){
             $tag_ids = explode(',', $request->tags);
             $collection->whereIn('tt.id', $tag_ids);
-        }
-       
+        } 
+
         // $collection->orderBy('ticketit.id', 'asc');
-        
         $collection = $datatables->of($collection);
+    
 
         $this->renderTicketTable($collection);
 
         $collection->editColumn('updated_at', '{!! \Carbon\Carbon::parse($updated_at)->format("m/d/Y") . " (" . \Carbon\Carbon::createFromFormat("Y-m-d H:i:s", $updated_at)->diffForHumans("", true, false, 2) . " ago)" !!}');
        
-        $collection->addColumn('tags', function($ticket) {
-            $tickets = Ticket::where('id', $ticket->id)->first();
-            $tags = $tickets->tags;
-            $new_tags = [];
-            foreach($tags as $tag) {
-                array_push($new_tags, "<span class='label label-primary ml-3'>{$tag->name}</span>" );
-            }
-            return implode("", $new_tags);
-        });
+            $collection->addColumn('tags', function($ticket) {
+                $tickets = Ticket::where('id', $ticket->id)->first();
+                $tags = $tickets->tags;
+                $new_tags = [];
+                foreach($tags as $tag) {
+                    array_push($new_tags, "<span class='label label-primary ml-3'>{$tag->name}</span>" );
+                }
+                return implode("", $new_tags);
+            });
+  
         // method rawColumns was introduced in laravel-datatables 7, which is only compatible with >L5.4
         // in previous laravel-datatables versions escaping columns wasn't defaut
         if (LaravelVersion::min('5.4')) {

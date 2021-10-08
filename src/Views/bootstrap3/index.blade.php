@@ -230,9 +230,11 @@
 			let sub_category = document.getElementById('filter_sub_category').value;
 			let last_reply = document.getElementById('filter_last_reply').value;
 			let tags = $(".select2-tag").val();
-			// let filter_hide_closed_tickets = $('#filter_hide_closed_tickets').is(':checked'); 
+
+			console.log(tags)
+			let filter_hide_closed_tickets = $('#filter_hide_closed_tickets').is(':checked'); 
 	
-			let query_string = `?user=${user}&status=${status}&message=${message}&sub_category=${sub_category}&last_reply=${last_reply}&tags=${tags}`;
+			let query_string = `?user=${user}&status=${status}&message=${message}&sub_category=${sub_category}&last_reply=${last_reply}&tags=${tags}&filter_hide_closed_tickets=${filter_hide_closed_tickets}`;
 			
 			initDatatable(query_string);
 		}
