@@ -51,7 +51,7 @@ class TicketsController extends Controller
 
     public function data(Request $request, $complete = false)
     {
-
+   
         if (LaravelVersion::min('5.4')) {
             $datatables = app(\Yajra\DataTables\DataTables::class);
         } else {
@@ -111,7 +111,7 @@ class TicketsController extends Controller
                 'ticketit.agent_id',
                 'ticketit_categories.name AS category',
                 'tickets_developer_status.name AS dev_status'
-            ])->distinct();
+            ]);
             
                                                                      
         // check if filters are applied

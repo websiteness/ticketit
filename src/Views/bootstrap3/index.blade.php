@@ -49,9 +49,9 @@
 	<script>
 		$(document).ready(function() {
 			$('.select2').select2();
-		
+			initDatatable();
 		});
-		initDatatable();
+	
 
 		 function initDatatable(filter = null) {
 
@@ -62,7 +62,7 @@
                 document.getElementById('btn_search_filter').innerText = "Searching...";
             }
 
-			let url = '{!! route($setting->grab('main_route').'.data', $complete) !!}';
+			let url = `{!! route($setting->grab('main_route').'.data', $complete) !!}`;
 
 			if(filter) {
 				url = url + filter;
@@ -223,12 +223,14 @@
 		});
 		
 		function filterTickets() {
+		
 			let user = document.getElementById('filter_owner').value;
 			let status = document.getElementById('filter_status').value;
 			let message = document.getElementById('filter_message').value;
 			let sub_category = document.getElementById('filter_sub_category').value;
 			let last_reply = document.getElementById('filter_last_reply').value;
 			let tags = $(".select2-tag").val();
+			// let filter_hide_closed_tickets = $('#filter_hide_closed_tickets').is(':checked'); 
 	
 			let query_string = `?user=${user}&status=${status}&message=${message}&sub_category=${sub_category}&last_reply=${last_reply}&tags=${tags}`;
 			

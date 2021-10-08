@@ -72,7 +72,7 @@
 
                                         @if($u->isAdmin() || $u->isAgent())
                                         <div class="comment-comment__actions">
-                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editCommentModal" onclick="editComment('{{ $comment->id }}', '{{ addslashes(trim($comment->html)) }}')" ><i class="fa fa-pencil"></i></button>
+                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editCommentModal" onclick="commentEdit('{{ $comment->id }}', '{{ addslashes(trim($comment->html)) }}')" ><i class="fa fa-pencil"></i></button>
                                             
                                             <form method="POST" action="{{ route($setting->grab('main_route').'-comment.destroy', $comment->id) }}" onsubmit="return confirm('Delete this comment?')">
                                             {{ csrf_field() }}
@@ -109,8 +109,8 @@
 
                                         @if($u->isAdmin() || $u->isAgent())
                                         <div class="comment-comment__actions">
-                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editCommentModal" onclick="editComment('{{ $comment->id }}', '{{ addslashes(trim($comment->html)) }}')" ><i class="fa fa-pencil"></i></button>
-                                            
+                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editCommentModal" onclick="commentEdit('{{ $comment->id }}', '{{ addslashes(trim($comment->html)) }}')" ><i class="fa fa-pencil"></i></button>
+                                            <!-- data-toggle="modal" data-target="#editCommentModal"  -->
                                             <form method="POST" action="{{ route($setting->grab('main_route').'-comment.destroy', $comment->id) }}" onsubmit="return confirm('Delete this comment?')">
                                             {{ csrf_field() }}
                                             {{ method_field('DELETE') }}
@@ -178,7 +178,7 @@
 
 @push('footer_scripts')
 <script src="//unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-<script>
+<script>    
     $('#btn-reply').click(function(e){
         if ($('.summernote-editor').summernote('isEmpty')) {
             e.preventDefault();
@@ -193,7 +193,7 @@
         let value = $(this).val()
         $('.summernote-editor').summernote('insertText', value);
     });
-    function editComment(comment_id, content) {
+    function commentEdit(comment_id, content) {
         setTimeout(function() {
             $('.edit-comment-summernote-editor').summernote('destroy');
             $('.edit-comment-summernote-editor').summernote('code', content);
