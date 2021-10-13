@@ -194,6 +194,18 @@
                     </div>
        
                 </div>
+
+                <div class="thumbnail thumbnail-padding">
+                    <h4>Scripts</h4>
+                    <hr>
+                    <div class="col-sm">
+                        @if($scripts)
+                            @foreach ($scripts as $script)
+                                <button class="btn btn-secondary text-sm" value="{{ $script->content }}">{{ $script->title }} </button>
+                            @endforeach
+                        @endif
+                    </div>      
+                </div>
             </div>
             @endif
         </div>
@@ -343,6 +355,12 @@
             console.log('Submit clicked!!!!!!');
             $(".comment-form").off().submit();
             Swal.close();
+        });
+
+        $('.btn-secondary').on('click', function(e) {
+            e.preventDefault(e);
+            let value = $(this).val()
+            $('.summernote-editor').summernote('code', value);
         });
 
     });

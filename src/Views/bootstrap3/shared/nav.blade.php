@@ -76,6 +76,9 @@
                         </li>    
                         <li role="presentation"  class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\TagsController@index').'*') ? "active" : "" !!}">
                             <a href="{{ action('\Kordy\Ticketit\Controllers\TagsController@index') }}">Tags</a>
+                        </li>    
+                        <li role="presentation"  class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\ScriptsController@index').'*') ? "active" : "" !!}">
+                            <a href="{{ action('\Kordy\Ticketit\Controllers\ScriptsController@index') }}">Scripts</a>
                         </li>                       
                         {{-- <li role="presentation" class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\StatusesController@index').'*') ? "active" : "" !!}">
                             <a href="{{ action('\Kordy\Ticketit\Controllers\StatusesController@index') }}">{{ trans('ticketit::admin.nav-statuses') }}</a>

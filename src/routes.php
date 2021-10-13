@@ -68,6 +68,18 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
         Route::delete('delete/{id}', '\Kordy\Ticketit\Controllers\TagsController@delete')->name('delete');
     });
 
+    Route::prefix("$main_route_path/scripts")->name("$main_route.scripts.")->middleware('Kordy\Ticketit\Middleware\IsAgentMiddleware')->group(function() {
+        Route::get('index', '\Kordy\Ticketit\Controllers\ScriptsController@index')->name('index');
+        Route::post('store', '\Kordy\Ticketit\Controllers\ScriptsController@store')->name('store');
+        Route::get('all', '\Kordy\Ticketit\Controllers\ScriptsController@all')->name('all');
+        Route::get('ticket/{id}', '\Kordy\Ticketit\Controllers\ScriptsController@getSelectedTagsByTicketId')->name('ticket-tags');
+        Route::get('create', '\Kordy\Ticketit\Controllers\ScriptsController@create')->name('create');
+        Route::post('save', '\Kordy\Ticketit\Controllers\ScriptsController@save')->name('save');
+        Route::get('show/{id}', '\Kordy\Ticketit\Controllers\ScriptsController@show')->name('show');
+        Route::patch('update/{id?}', '\Kordy\Ticketit\Controllers\ScriptsController@update')->name('update');
+        Route::delete('delete/{id}', '\Kordy\Ticketit\Controllers\ScriptsController@delete')->name('delete');
+    });
+
     Route::group(['middleware' => 'Kordy\Ticketit\Middleware\IsAgentMiddleware'], function () use ($main_route, $main_route_path) {
 
         //API return list of agents in particular category
@@ -181,7 +193,6 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
             });
         });
 
- 
     });
 
     # Agent and Admin Routes

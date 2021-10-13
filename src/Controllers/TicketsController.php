@@ -28,6 +28,7 @@ use Kordy\Ticketit\Services\Integrations\SlackService;
 use App\Models\TicketsDeveloperStatus;
 use Kordy\Ticketit\Models\SupportNote;
 use App\Jobs\ProcessTicketsToChannels;
+use Kordy\Ticketit\Models\Scripts;
 use Kordy\Ticketit\Models\TicketTags;
 use Kordy\Ticketit\Models\Tags;
 
@@ -192,7 +193,7 @@ class TicketsController extends Controller
         }
         return $collection->make(true);
     }
-
+                                  
     public function renderTicketTable($collection)
     {
         $collection->editColumn('subject', function ($ticket) {
@@ -462,9 +463,10 @@ class TicketsController extends Controller
             }
             
             $dev_statuses = TicketsDeveloperStatus::all()->pluck('name', 'id')->toArray();
-            return view('ticketit::tickets.show',
-                compact('ticket', 'status_lists', 'priority_lists', 'category_lists', 'subcategories', 'selected_category', 'selected_subcategory', 'agent_lists', 'comments',
-                    'close_perm', 'reopen_perm', 'plan_names', 'dev_statuses'));
+            $scripts = Scripts::all();
+
+            return view('ticketit::tickets.show', compact('ticket', 'status_lists', 'priority_lists', 'category_lists', 'subcategories', 'selected_category', 'selected_subcategory', 'agent_lists', 'comments',
+                    'close_perm', 'reopen_perm', 'plan_names', 'dev_statuses', 'scripts'));
         } else {
             return redirect()->route(TSetting::grab('main_route').'.index');
         }

@@ -37,7 +37,7 @@
     @include('ticketit::shared.header')
     @include('ticketit::tickets.index')
 @stop
-                                                          
+                                                                                    
 @section('footer')
 	<script src="//cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
 	<script src="//cdn.datatables.net/v/bs/dt-{{ Kordy\Ticketit\Helpers\Cdn::DataTables }}/r-{{ Kordy\Ticketit\Helpers\Cdn::DataTablesResponsive }}/datatables.min.js"></script>
@@ -76,7 +76,7 @@
                     url = url + '?filter_hide_closed_tickets=1'
                 }
             }
-                                 
+                                                                                                                
 			$('.table').DataTable({
 				processing: false,
 				serverSide: true,
@@ -158,14 +158,14 @@
                 });
 
 			}
-
+                                                               
             if(btn_search_filter)
             {
                 closeNav();
                 document.getElementById('btn_search_filter').innerText = "Search";
             }
 		}
-
+                                                           
 		// $('select#tickets_show').change( function (e) {
 		// 	let data = $(this).children(":selected").attr('data-column');
 		// 	console.log(data)
@@ -201,7 +201,7 @@
 
 		// 	dropdownvalue = data;
 		// });
-
+                      
 
 		
 

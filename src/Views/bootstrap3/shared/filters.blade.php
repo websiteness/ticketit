@@ -120,7 +120,7 @@
 
         <div class="form-group">
             <label>Tag</label>
-            <select class="form-control select2-tag" id="filter_tags" name="tags[]" multiple="multiple">
+            <select class="form-control select2-tag" id=" " name="tags[]" multiple="multiple">
                 <option value="">Select Tag</option>
                 @if(isset($tags))
                     @foreach($tags as $tag)
