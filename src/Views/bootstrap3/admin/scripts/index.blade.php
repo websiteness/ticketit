@@ -84,7 +84,7 @@
                     <td>{{ $script->title }}</td>
                     <td>{{ substr($script->content, 0, 100) }}</td>
                     <td> 
-                        <a onclick="editScript('{{ $script->id }}', '{{ $script->title }}', '{{ $script->content }}')" class="btn btn-xs btn-info"> <span> <i class="fa fa-eye" aria-hidden="true"></i> </span> </a>
+                        <a onclick="editScript('{{ $script->id }}', `{{ $script->title }}`, `{{ $script->content }}`)" class="btn btn-xs btn-info"> <span> <i class="fa fa-eye" aria-hidden="true"></i> </span> </a>
                         <button  class="btn btn-xs btn-danger" onclick='deleteScript("{{ $script->id }}")'> <span> <i class="fa fa-trash" aria-hidden="true"></i> </span> </button>
                     </td>
                 </tr>
@@ -97,7 +97,7 @@
     </div>
   </div>
 </div>
-
+                        
   <!-- createScriptModal -->
   <div class="modal fade" id="createScriptModal" role="dialog">
     <div class="modal-dialog modal-lg">
@@ -151,11 +151,12 @@
 <script type="text/javascript">
     $( document ).ready(function() {
 
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
+      $.ajaxSetup({
+          headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+          }
+      });
+      
       var options = $.extend(true, {lang: '' , codemirror: {theme: 'monokai', mode: 'text/html', htmlMode: true, lineWrapping: true} } , {
         "height": 150,
         "toolbar": [

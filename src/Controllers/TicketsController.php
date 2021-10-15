@@ -31,6 +31,8 @@ use App\Jobs\ProcessTicketsToChannels;
 use Kordy\Ticketit\Models\Scripts;
 use Kordy\Ticketit\Models\TicketTags;
 use Kordy\Ticketit\Models\Tags;
+use Kordy\Ticketit\Models\Priority;
+use Illuminate\Support\Facades\Validator;
 
 class TicketsController extends Controller
 {
@@ -940,7 +942,33 @@ class TicketsController extends Controller
         } else {
             return response()->json(['success' => false, 'message' => 'There was a problem deleting the note.']);
         }
-        
     }
-    
-}
+
+    public function apiStoreTicket(Request $request)
+    {
+
+        $user = User::where('email', $request->email)->first();
+        $priority = Priority::where('name', 'LIKE', '%'.$request->priority.'%')->first();
+        $sub_category = Category::where('name', 'LIKE', '%'.$request->module.'%')->first();
+
+        $ticket = new Ticket();
+        $ticket->user_id = $user->id; 
+        $ticket->priority_id = $priority->id;
+        $ticket->category_id = $sub_category->id;   
+        $ticket->subject = $request->subject;
+        $ticket->content = $request->content;
+        $ticket->status_id = TSetting::grab('default_status_id');
+        $ticket->autoSelectAgent();
+        if($ticket->save()) {
+            //ProcessTicketsToChannels::dispatch($ticket,$request->content);
+            return response()->json(['success' => true, 'message' => 'Ticket successfully created.'], 200);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Error creating ticket.'], 400);
+        }
+
+        //Todo                                            
+        //Token validation
+    }
+                                    
+}                             
+                        
