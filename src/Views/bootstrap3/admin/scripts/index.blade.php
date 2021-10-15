@@ -205,7 +205,12 @@
             }
         })
 
-
+        
+        $('#createScriptModal').on('hidden.bs.modal', function () {
+          $('.modal-title').text('Add Script');
+          $('#summernote').summernote('code', '');
+          $('#scriptForm')[0].reset();
+        }); 
     });
 
     let tags_delete_url = `{{ route($setting->grab('main_route_path').'.scripts.delete',  'id' ) }}`;
