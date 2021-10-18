@@ -104,6 +104,16 @@
     .note-notes {
         color: #4c6578  !important;
     }
+    .thumbnail-scripts {
+        height: 100vh !important;
+    }
+
+    @media screen and (max-width: 1366px) {
+     .thumbnail-scripts {
+        height: 114.5vh !important;
+        overflow-y: scroll;
+        }
+    }
 </style>
 @stop
 @section('content')
@@ -195,7 +205,7 @@
        
                 </div>
 
-                <div class="thumbnail thumbnail-padding">
+                <div class="thumbnail thumbnail-padding thumbnail-scripts">
                     <h4>Scripts</h4>
                     <hr>
                     <div class="col-sm">

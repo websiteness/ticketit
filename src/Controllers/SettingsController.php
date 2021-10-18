@@ -44,4 +44,16 @@ class SettingsController extends Controller
 
         return redirect()->back();
     }
+
+    public function storeToken(Request $request)    
+    {
+        TSetting::updateOrCreate(
+            ['slug' => 'api_token'],
+            ['slug' => 'api_token', 'value' => $request->api_token, 'default' => $request->api_token]
+        );
+
+        session()->flash('status', 'Token successfully added!');
+
+        return redirect()->back();
+    }
 }

@@ -92,12 +92,12 @@
             @endif
           </tbody>
         </table>
-  
+               
       </div>
     </div>
   </div>
 </div>
-                        
+                                                     
   <!-- createScriptModal -->
   <div class="modal fade" id="createScriptModal" role="dialog">
     <div class="modal-dialog modal-lg">
@@ -156,7 +156,7 @@
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
           }
       });
-      
+
       var options = $.extend(true, {lang: '' , codemirror: {theme: 'monokai', mode: 'text/html', htmlMode: true, lineWrapping: true} } , {
         "height": 150,
         "toolbar": [
@@ -166,8 +166,8 @@
           ["insert", ["link", "picture", "video"]],
           ["view", ["fullscreen", "codeview", "help"]]
 	    ]});
-
-
+                                                                                                                          
+                                                                                                                                                     
         $("#summernote").summernote(options);
 
         $('#scripts-table').DataTable();
@@ -195,7 +195,7 @@
                     },
                     success: function(response) {
                         $('#scriptForm')[0].reset();
-                        $('#uploadFileModal').modal('toggle');
+                        $('#createScriptModal').modal('toggle');
                         swal(response.success ? "Success" : "Error", response.message, response.success ? "success" : "error");
                         setTimeout(function() {
                             window.location.reload();
@@ -204,15 +204,15 @@
                 });
             }
         })
-
-        
+                                            
         $('#createScriptModal').on('hidden.bs.modal', function () {
           $('.modal-title').text('Add Script');
           $('#summernote').summernote('code', '');
           $('#scriptForm')[0].reset();
         }); 
-    });
 
+    });
+                                                        
     let tags_delete_url = `{{ route($setting->grab('main_route_path').'.scripts.delete',  'id' ) }}`;
 
     const deleteScript = (id) => {

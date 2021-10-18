@@ -187,7 +187,7 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
         # Settings
         Route::prefix($admin_route.'/settings')->name($admin_route.'.settings.')->group(function() {
             Route::get('/', 'Kordy\Ticketit\Controllers\SettingsController@index')->name('index');
-
+            Route::post('store-token', 'Kordy\Ticketit\Controllers\SettingsController@storeToken')->name('store-token');
             Route::prefix('overdue')->name('overdue.')->group(function() {
                 Route::post('save', 'Kordy\Ticketit\Controllers\SettingsController@saveOverdueHours')->name('save');
             });
