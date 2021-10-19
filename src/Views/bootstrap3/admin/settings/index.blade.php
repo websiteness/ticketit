@@ -89,13 +89,13 @@
 		    $('.select2').select2();
             let input_api_token = $('#input-api-token').val();
 
-            if(input_api_token != "" && input_api_token) {
-                $('#input-api-token').prop('disabled', true)
-                $('.btn-generate-token').prop('disabled', true)
-            } else {
-                $('#input-api-token').prop('disabled', false)
-                $('.btn-generate-token').prop('disabled', false)
-            }
+            // if(input_api_token != "" && input_api_token) {
+            //     $('#input-api-token').prop('disabled', true)
+            //     $('.btn-generate-token').prop('disabled', true)
+            // } else {
+            //     $('#input-api-token').prop('disabled', false)
+            //     $('.btn-generate-token').prop('disabled', false)
+            // }
 
             $('.btn-generate-token').click((e) => {
                 let url = `{{ route($setting->grab('admin_route').'.settings.store-token' ) }}`;    
@@ -119,7 +119,9 @@
                             },
                             success: function (response)
                             {
-                                window.location.reload();
+                                swal("Success!", "Token successfully generated!", "success");
+                                
+                                setTimeout(function(){ window.location.reload(); }, 1500);
                          
                             },
                         });

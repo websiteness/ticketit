@@ -8,6 +8,8 @@ use Kordy\Ticketit\Models\Status;
 use Cartalyst\Sentinel\Laravel\Facades\Sentinel;
 use App\User;
 use Kordy\Ticketit\Mail\SendClosedTickets;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class TicketsService {
 
@@ -35,7 +37,12 @@ class TicketsService {
             $mail = new SendClosedTickets($template, $user, $ticket);
             Mail::to($user->email)->queue($mail);
         } catch(\Exception $e) {
-            \Log::info($e->getMessage());    
+            Log::info($e->getMessage());    
         }
+    }
+
+    public function updateInProgressTicketsToWaitingOnSupport()
+    {
+        Ticket::where('created_at', '>=', Carbon::now()->subDay())->where('status_id', 3)->where('completed_at',null)->update(['status_id' => 1]);
     }
 }

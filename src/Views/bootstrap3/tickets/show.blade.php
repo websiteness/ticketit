@@ -104,28 +104,26 @@
     .note-notes {
         color: #4c6578  !important;
     }
+
     .thumbnail-scripts {
-        height: 100vh !important;
+        overflow-y: scroll;
+        height: 100%;
     }
 
-    @media screen and (max-width: 1366px) {
-     .thumbnail-scripts {
-        height: 114.5vh !important;
-        overflow-y: scroll;
-        }
-    }
+
+
 </style>
 @stop
 @section('content')
 @include('ticketit::shared.header')
 <div class="container">
-    <div class="row">
+    <div class="row ticket-cont">
         @if(Sentinel::inRole('super-admin'))
-            <div class="col-lg-8 col-md-8 col-sm-8">
+            <div class="col-lg-8 col-md-8 col-sm-8 col-1">
         @elseif(Sentinel::inRole('ticket-agent'))
-            <div class="col-lg-8 col-md-8 col-sm-8">
+            <div class="col-lg-8 col-md-8 col-sm-8 col-1">
         @else
-            <div class="col-lg-12 col-md-12 col-sm-12">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-1">
         @endif
                 @include('ticketit::tickets.partials.ticket_body')
                 <br>
@@ -137,8 +135,8 @@
             </div>
 
             @if(Sentinel::inRole('super-admin') || Sentinel::inRole('ticket-agent'))
-            <div class="col-sm-4 ticket-sidenavbar-mt-20 h-100 ticket-sidenav">
-                <div class="thumbnail">
+            <div class="col-sm-4 ticket-sidenavbar-mt-20 h-100 ticket-sidenav col-2">
+                <div class="thumbnail thumbnail-contact">
                     <div class="caption">
                         <div class="row ticket-profile-pic">
                             <img src="{{asset('images/user-big.png')}}" class="img-circle" alt="" width="100" height="88">                
@@ -185,7 +183,7 @@
                     </div>
                 </div>
 
-                <div class="thumbnail thumbnail-padding">
+                <div class="thumbnail thumbnail-padding thumbnail-notes">
                     <h4>Support Notes</h4>
                     <hr>
                     <div class="row">       
@@ -252,6 +250,19 @@
 @section('footer')
 <script>
     $(document).ready(function() {
+
+                let col_1 = $('.col-1').height();
+
+        $('.col-2').css('height', col_1);
+
+        let thumbnail_contact = $('.thumbnail-contact').height();
+        let thumbnail_notes = $('.thumbnail-notes').height();
+        let total_height = col_1 - thumbnail_contact - thumbnail_notes + 33;
+        
+        $('.thumbnail-scripts').css('height', total_height);
+
+
+    
         $(".deleteit").click(function(event) {
             event.preventDefault();
             if (confirm("{!! trans('ticketit::lang.show-ticket-js-delete') !!}" + $(this).attr("node") + " ?")) {
@@ -450,7 +461,7 @@
             $('.support-notes-items').append(content);                    
         })           
     }
-
+                         
     function editComment(id, content) {
         setTimeout(function() {
             $('.edit-support-note-editor').val(content);

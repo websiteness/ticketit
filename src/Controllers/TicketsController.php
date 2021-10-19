@@ -267,6 +267,8 @@ class TicketsController extends Controller
      */
     public function index(CategoriesRepository $cr)
     {
+
+    
         $users = Agent::all();
         $statuses = Status::all();
         $sub_categories = $cr->getSubCategories();
