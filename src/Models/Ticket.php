@@ -306,6 +306,13 @@ class Ticket extends Model
     {
         return $this->belongsTo('Kordy\Ticketit\Models\Category', 'zone_id');
     }
+
+    public function comment()
+    {
+        return $this->comments()->orderBy('created_at', 'ASC')->take(1)->first();
+    }
+
+
     
 }
                                                    

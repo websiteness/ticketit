@@ -5,6 +5,7 @@ namespace Kordy\Ticketit\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class SendClosedTickets extends Mailable
 {
@@ -33,9 +34,14 @@ class SendClosedTickets extends Mailable
      */
     public function build()
     {
-        return $this->subject("Ticket {$this->ticket->id} closed.")
+        try {
+            return $this->subject("Ticket {$this->ticket->id} closed.")
             ->replyTo($this->user->email, $this->user->name)
             ->view($this->template)
             ->with($this->user);
+        } catch(\Exception $e) {
+            Log::info($e->getMessage());    
+        }
+
     }
 }

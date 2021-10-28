@@ -33,6 +33,7 @@ use Kordy\Ticketit\Models\TicketTags;
 use Kordy\Ticketit\Models\Tags;
 use Kordy\Ticketit\Models\Priority;
 use Illuminate\Support\Facades\Validator;
+use Kordy\Ticketit\Services\TicketsService;
 
 class TicketsController extends Controller
 {
@@ -268,7 +269,7 @@ class TicketsController extends Controller
     public function index(CategoriesRepository $cr)
     {
 
-    
+  
         $users = Agent::all();
         $statuses = Status::all();
         $sub_categories = $cr->getSubCategories();
@@ -944,22 +945,21 @@ class TicketsController extends Controller
         } else {
             return response()->json(['success' => false, 'message' => 'There was a problem deleting the note.']);
         }
-    }
+    }         
 
     public function apiStoreTicket(Request $request)
     {
-
         $user = User::where('email', $request->email)->first();
         $priority = Priority::where('name', 'LIKE', '%'.$request->priority.'%')->first();
         $sub_category = Category::where('name', 'LIKE', '%'.$request->module.'%')->first();
 
         $ticket = new Ticket();
         $ticket->user_id = $user->id; 
-        $ticket->priority_id = $priority->id;
-        $ticket->category_id = $sub_category->id;   
-        $ticket->subject = $request->subject;
-        $ticket->content = $request->content;
-        $ticket->status_id = TSetting::grab('default_status_id');
+        $ticket->priority_id = $priority->id; //not yet confirmed, default?
+        $ticket->category_id = $sub_category->id;   //not yet confirmed
+        $ticket->subject = $request->subject; //not yet confirmed
+        $ticket->content = $request->content; //not yet confirmed
+        $ticket->status_id = TSetting::grab('default_status_id'); 
         $ticket->autoSelectAgent();
         if($ticket->save()) {
             //ProcessTicketsToChannels::dispatch($ticket,$request->content);
@@ -967,10 +967,16 @@ class TicketsController extends Controller
         } else {
             return response()->json(['success' => false, 'message' => 'Error creating ticket.'], 400);
         }
+    } 
+    
+    public function averageResponseTime()
+    {
+        $ticketService = new TicketsService();
+        $average_thirty_total = $ticketService->getTotalAverageResponseThirtyDays();
+        $average_seven_total = $ticketService->getTotalAverageResponseSevenDays();
 
-        //Todo                                            
-        //Token validation
+        return response()->json([ 'thirty_days' => $average_thirty_total, 'seven_days' =>  $average_seven_total],200);
     }
-                                    
+                                                                       
 }                             
-                        
+                                                                                  

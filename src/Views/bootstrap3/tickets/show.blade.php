@@ -110,8 +110,28 @@
         height: 100%;
     }
 
+    .thumbnail-notes .note-font {
+        visibility: hidden !important;
+    }
 
+    .thumbnail-notes  .note-para {
+        visibility: hidden !important;
+    }
 
+    .thumbnail-notes  .note-table {
+        visibility: hidden !important;
+    }
+
+    .thumbnail-notes  .note-view {
+        visibility: hidden !important;
+    }
+    
+    .thumbnail-notes  .note-insert {
+        float: left !important;
+    }
+
+ 
+        
 </style>
 @stop
 @section('content')
@@ -195,14 +215,10 @@
                         </div>
                         </div>
                     </div> 
-
                     <hr>
                     <div class="support-notes-items">
-
-                    </div>
-       
+                    </div>      
                 </div>
-
                 <div class="thumbnail thumbnail-padding thumbnail-scripts">
                     <h4>Scripts</h4>
                     <hr>
@@ -251,18 +267,30 @@
 <script>
     $(document).ready(function() {
 
-                let col_1 = $('.col-1').height();
+        var options = $.extend(true, {lang: '' , codemirror: {theme: 'monokai', mode: 'text/html', htmlMode: true, lineWrapping: true} } , {
+        "height": 50,
+        "toolbar": [
+          ["font", ["bold", "underline", "italic"]],
+          ["para", ["ul", "ol", "paragraph"]],
+          ["table", ["table"]],
+          ["insert", ["link"]],
+          ["view", ["fullscreen", "codeview", "help"]]
+	    ]});
 
-        $('.col-2').css('height', col_1);
+        $(".add-note").summernote(options);
 
+        let col_1 = $('.col-1').height();
+        // $('.col-2').css('height', col_1);
         let thumbnail_contact = $('.thumbnail-contact').height();
         let thumbnail_notes = $('.thumbnail-notes').height();
         let total_height = col_1 - thumbnail_contact - thumbnail_notes + 33;
-        
+                    
         $('.thumbnail-scripts').css('height', total_height);
+        if($('.thumbnail-scripts').height() < 50) {
+            $('.thumbnail-scripts').css('height', 500) ;
+           // $('.col-2').css('height', col_1 + 560);
+        }
 
-
-    
         $(".deleteit").click(function(event) {
             event.preventDefault();
             if (confirm("{!! trans('ticketit::lang.show-ticket-js-delete') !!}" + $(this).attr("node") + " ?")) {
@@ -270,10 +298,12 @@
                 $("#" + form).submit();
             }
         });
+             
         $('#category_id').change(function() {
             var loadpage = "{!! route($setting->grab('main_route').'agentselectlist') !!}/" + $(this).val() + "/{{ $ticket->id }}";
             $('#agent_id').load(loadpage);
         });
+
         $('#confirmDelete').on('show.bs.modal', function(e) {
             $message = $(e.relatedTarget).attr('data-message');
             $(this).find('.modal-body p').text($message);
@@ -283,20 +313,23 @@
             var form = $(e.relatedTarget).closest('form');
             $(this).find('.modal-footer #confirm').data('form', form);
         });
+
         $('#confirmDelete').find('.modal-footer #confirm').on('click', function() {
             $(this).data('form').submit();
         });
+
         $('#comment_reply').click(function() {
             $('#comment_form').css('display', 'block');
             $('#comment_reply').css('display', 'none');
         });
+
         $('#cancel_reply').click(function() {
             $('#comment_form').css('display', 'none');
             $('#comment_reply').css('display', 'block');
         });
 
         $('.btn-submit-note').click(function () {
-            let note = $('.add-note').val();
+            let note = $(".add-note").summernote("code");
             let route = "{{ route($setting->grab('admin_route').'.support-notes.store.note') }}"; 
             let ticket_id = $('.t-id').val();
             $.ajaxSetup({
@@ -305,7 +338,7 @@
                 }
             });
             $.post(route, {note: note, ticket_id : ticket_id}, function(data){
-                $('.add-note').val('');
+                $(".add-note").summernote("code", "");
                 $('.support-notes-items').empty();
                 getSupportNotes();
             });
@@ -444,12 +477,13 @@
               let d = new Date(e.created_at);
               let deltaDays = (d.getTime() - Date.now()) / (1000 * 3600 * 24);
               let result = formatter.format(Math.round(deltaDays), 'days')
+                let notes =  e.notes;
               content +=  `<div class="ticket-comment__item ">
                                 <div class="ticket-comment__message ">
                                     <div class="ticket-comment__message-content">
                                         <h5 class="note-user-name">Name: `+ e.user.full_name +` </h5> <p class="note-notes"> ` + e.notes + ` </p>                    
                                         <div class="comment-comment__actions">
-                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editSupportNoteModal" onclick="editComment(`+ e.id + `,'`+ e.notes +`')" ><i class="fa fa-pencil"></i></button>                       
+                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editSupportNoteModal" onclick="editComment(`+ e.id + `,`+ escape(notes)  +`)" ><i class="fa fa-pencil"></i></button>                       
                                             <button onclick="deleteNote(`+ e.id +`)" class="btn btn-sm btn-delete-note"><i class="fa fa-trash"></i></button>         
                                         </div>
                                 </div>

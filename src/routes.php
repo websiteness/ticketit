@@ -325,4 +325,6 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
     // Get zones
     Route::get($main_route_path.'category/{id}/zones', '\Kordy\Ticketit\Controllers\CategoriesController@getZones')->name($main_route_path.'.category.zones');
 
+    Route::get($admin_route.'/average-ticket-response', '\Kordy\Ticketit\Controllers\TicketsController@averageResponseTime')->name($admin_route.'.average-ticket-response');
+
 });
