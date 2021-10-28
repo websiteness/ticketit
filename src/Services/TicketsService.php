@@ -49,46 +49,44 @@ class TicketsService {
 
     public function getOpenTicketCount() //active tickets
     {
-        $closed_ticket_status_id = Status::where('name', 'like', '%Ticket Closed%')->first();
-        $count = Ticket::where('status_id', '!=', $closed_ticket_status_id)->whereNull('completed_at')->count();
+        $closed_ticket_status = Status::where('name', 'like', '%Ticket Closed%')->first();
+        $count = Ticket::where('status_id', '!=', $closed_ticket_status->id)->whereNull('completed_at')->count();
 
         return $count;
     }
 
     public function getNoResponseTicketCount() //active tickets
     {
-        $closed_ticket_status_id = Status::where('name', 'like', '%Ticket Closed%')->first();
+        $closed_ticket_status = Status::where('name', 'like', '%Ticket Closed%')->first();
         $count = Ticket::whereDoesntHave('comments', function($query) {
             $query->where('ticketit_comments.user_id', '!=', 'ticketit.user_id');
-        })->where('status_id', '!=', $closed_ticket_status_id)->whereNull('completed_at')->count();
+        })->where('status_id', '!=', $closed_ticket_status->id)->whereNull('completed_at')->count();
 
         return $count;
     }
 
     public function getInProgressTicketCount() //active tickets
     {
-        $closed_ticket_status_id = Status::where('name', 'like', '%Ticket Closed%')->first();
-        $in_progress_ticket_status_id = Status::where('name', 'like', '%In Progress%')->first();
-        $count = Ticket::where('status_id', $in_progress_ticket_status_id)->where('status_id', '!=', $closed_ticket_status_id)->whereNull('completed_at')->count();
+        $in_progress_ticket_status = Status::where('name', 'like', '%In Progress%')->first();
+        $count = Ticket::where('status_id', $in_progress_ticket_status->id)->whereNull('completed_at')->count();
 
         return $count;
     }
 
     public function getWaitingOnFeedbackCount() //active tickets
     {
-        $closed_ticket_status_id = Status::where('name', 'like', '%Ticket Closed%')->first();
-        $waiting_feedback_ticket_status_id = Status::where('name', 'like', '%Need Feedback%')->first();
-        $count = Ticket::where('status_id', $waiting_feedback_ticket_status_id)->where('status_id', '!=', $closed_ticket_status_id)->whereNull('completed_at')->count();
+        $waiting_feedback_ticket_status = Status::where('name', 'like', '%Need Feedback%')->first();
+        $count = Ticket::where('status_id', $waiting_feedback_ticket_status->id)->whereNull('completed_at')->count();
 
         return $count;
     }
 
     public function getTicketsWhereUserHasResponse()  //active tickets
     {
-        $closed_ticket_status_id = Status::where('name', 'like', '%Ticket Closed%')->first();
+        $closed_ticket_status = Status::where('name', 'like', '%Ticket Closed%')->first();
         $has_response = Ticket::where('ticketit.user_id', function($query) {
             return $query->from('ticketit_comments')->select('ticketit_comments.user_id')->whereColumn('ticketit_comments.ticket_id', 'ticketit.id')->orderBy('ticketit_comments.id', 'desc')->limit(1);
-        })->where('status_id', '!=', $closed_ticket_status_id)->whereNull('completed_at')->count();
+        })->where('status_id', '!=', $closed_ticket_status->id)->whereNull('completed_at')->count();
 
         return $has_response;
     }
@@ -164,4 +162,4 @@ class TicketsService {
         return $data;
     }
 
-}           
+}
