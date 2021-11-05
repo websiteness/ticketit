@@ -61,7 +61,7 @@ class TicketsService
     public function getNoResponseTicketCount() //active tickets
     {
         $closed_ticket_status = Status::where('name', 'like', '%Ticket Closed%')->first();
-        $count = Ticket::whereDoesntHave('comments', function ($query) {
+        $count = Ticket::whereDoesntHave('comments', function($query) {
             $query->where('ticketit_comments.user_id', '!=', 'ticketit.user_id');
         })->where('status_id', '!=', $closed_ticket_status->id)->whereNull('completed_at')->count();
 
@@ -87,7 +87,7 @@ class TicketsService
     public function getTicketsWhereUserHasResponse()  //active tickets
     {
         $closed_ticket_status = Status::where('name', 'like', '%Ticket Closed%')->first();
-        $has_response = Ticket::where('ticketit.user_id', function ($query) {
+        $has_response = Ticket::where('ticketit.user_id', function($query) {
             return $query->from('ticketit_comments')->select('ticketit_comments.user_id')->whereColumn('ticketit_comments.ticket_id', 'ticketit.id')->orderBy('ticketit_comments.id', 'desc')->limit(1);
         })->where('status_id', '!=', $closed_ticket_status->id)->whereNull('completed_at')->count();
 
@@ -226,3 +226,4 @@ class TicketsService
     }
 }
                                            
+
