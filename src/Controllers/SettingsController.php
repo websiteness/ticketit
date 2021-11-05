@@ -3,12 +3,13 @@
 namespace Kordy\Ticketit\Controllers;
 
 use App\Http\Controllers\Controller;
+
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Kordy\Ticketit\Models\TSetting;
 use Sentinel;
-use DB;
 use Kordy\Ticketit\Models\Status;
+use Kordy\Ticketit\Services\TicketsService;
 
 class SettingsController extends Controller
 {
@@ -55,5 +56,34 @@ class SettingsController extends Controller
         session()->flash('status', 'Token successfully added!');
 
         return redirect()->back();
+    }
+
+    public function storeEmailReportSettings(Request $request)
+    {
+
+
+     
+        TSetting::updateOrCreate(
+            ['slug' => 'email_report_email'],
+            ['slug' => 'email_report_email', 'value' => $request->email_report_email, 'default' => $request->email_report_email]
+        );
+        
+        TSetting::updateOrCreate(
+            ['slug' => 'email_report_frequency'],
+            ['slug' => 'email_report_frequency', 'value' => $request->email_report_frequency, 'default' => $request->email_report_frequency]
+        );
+    
+
+        TSetting::updateOrCreate(
+            ['slug' => 'email_report_time'],
+            ['slug' => 'email_report_time', 'value' => $request->email_report_time, 'default' => $request->email_report_time]
+        );
+
+
+
+
+        session()->flash('status', 'Email report settings updated successfully!');
+
+        return redirect()->back();             
     }
 }

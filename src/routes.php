@@ -191,6 +191,12 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
             Route::prefix('overdue')->name('overdue.')->group(function() {
                 Route::post('save', 'Kordy\Ticketit\Controllers\SettingsController@saveOverdueHours')->name('save');
             });
+
+            Route::prefix('email-reports')->name('email-reports.')->group(function() {
+                Route::get('index', 'Kordy\Ticketit\Controllers\TicketsController@emailReportsSettingsIndex')->name('index');
+                Route::post('store', 'Kordy\Ticketit\Controllers\SettingsController@storeEmailReportSettings')->name('store');
+            });
+           
         });
 
     });

@@ -977,6 +977,12 @@ class TicketsController extends Controller
 
         return response()->json([ 'thirty_days' => $average_thirty_total, 'seven_days' =>  $average_seven_total],200);
     }
+
+    public function emailReportsSettingsIndex()
+    {
+        $frequencies = ['Daily' => 'Daily', 'Weekly'  => 'Weekly', 'Fortnight'  => 'Fortnight' , 'Monthly' => 'Monthly'];
+        return view('ticketit::admin.email_reports.index')->with('frequencies', $frequencies);
+    }
                                                                        
 }                             
                                                                                   

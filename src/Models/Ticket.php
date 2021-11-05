@@ -50,7 +50,7 @@ class Ticket extends Model
      */
     public function scopeActive($query)
     {
-        return $query->whereHas('user')->whereNull('completed_at');
+        return $query->whereNull('completed_at');
     }
 
     /**
