@@ -175,8 +175,6 @@ class InfinityService
             }
         }
 
-        \Log::info($image_link);
-
         foreach ($key_fields as $key_field) {
             foreach($fields as $key => $field) {
                 if($key_field == $field['slug'] && $field['slug'] == 'infinity_description'){

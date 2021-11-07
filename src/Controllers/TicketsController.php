@@ -564,10 +564,16 @@ class TicketsController extends Controller
         $ticket->save();
         
         if($request->status_id) {
-            $infinity_service = new InfinityService();
-            $infinity_service->updateTicket($ticket, $content);
-            $asana_service->update_task_status_tag($ticket);
 
+            try {
+                $infinity_service = new InfinityService();
+                $infinity_service->updateTicket($ticket, $content);
+            } catch(\Exception $e) {
+                \Log::error('Tickets Error: failed to update ticket on Infinity');
+                \Log::error($e->getMessage());
+            }
+
+            /* $asana_service->update_task_status_tag($ticket);
 
             // complete asana task
             if($request->status_id == 4) {
@@ -577,7 +583,7 @@ class TicketsController extends Controller
                     \Log::error('Tickets Error: failed to mark ticket as complete on Asana');
                     \Log::error($e->getMessage());
                 }
-            }
+            } */
         }
 
         if(!isset($request->tags)) {
@@ -980,8 +986,13 @@ class TicketsController extends Controller
 
     public function emailReportsSettingsIndex()
     {
-        $frequencies = ['Daily' => 'Daily', 'Weekly'  => 'Weekly', 'Fortnight'  => 'Fortnight' , 'Monthly' => 'Monthly'];
-        return view('ticketit::admin.email_reports.index')->with('frequencies', $frequencies);
+        $frequencies = ['Daily' => 'Daily', 'Weekly'  => 'Weekly', 'Monthly' => 'Monthly'];
+
+        $current_user_email = Sentinel::getUser()->email;
+
+        return view('ticketit::admin.email_reports.index')
+                ->with('frequencies', $frequencies)
+                ->with('current_user_email', $current_user_email);
     }
                                                                        
 }                             

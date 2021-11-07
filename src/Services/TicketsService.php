@@ -195,17 +195,13 @@ class TicketsService
             $date_today = Carbon::now();
             $today = $date_today->format('Y-m-d');
 
-            $user = User::where('ticketit_admin', 1)->first();
-            Sentinel::login($user);
-
             if($frequency == "Daily"){
-                //ProcessEmailReport::dispatch($user->email)->delay(now()->addMinutes($time_in_minutes));
-                ProcessEmailReport::dispatch($emails);
+                ProcessEmailReport::dispatch($emails)->delay(now()->addMinutes($time_in_minutes));
             }
 
             if($frequency == "Weekly") {
                 //check if current day is first day of the week
-                $first_day_of_week = $date_today->startOfWeek->format('Y-m-d');
+                $first_day_of_week = $date_today->startOfWeek()->format('Y-m-d');
 
                 if($today == $first_day_of_week) {
                     ProcessEmailReport::dispatch($emails)->delay(now()->addMinutes($time_in_minutes));
@@ -221,6 +217,7 @@ class TicketsService
             }
 
         } catch (\Exception $e) {
+            \Log::info('Tickets Error: Failed to dispatch email report');
             \Log::info($e->getMessage());
         }
     }

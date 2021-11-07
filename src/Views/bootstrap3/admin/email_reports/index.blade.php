@@ -39,7 +39,7 @@
                 <div class="col-sm-6 col-md-6 col-md-offset-3">
                     <div class="form-group">
                         <label for="exampleInputEmail1">Email</label>
-                        <input type="text" required name="email_report_email" class="form-control" min="0" value="{{ isset($setting->getBySlug('email_report_email')->value) ? $setting->getBySlug('email_report_email')->value : ''  }}" required>
+                        <input type="text" required name="email_report_email" class="form-control" min="0" value="{{ isset($setting->getBySlug('email_report_email')->value) ? $setting->getBySlug('email_report_email')->value : $current_user_email  }}" required>
                     </div>
                     <div class="form-group">
                     <label for="frequency"> Frequency</label>
@@ -47,7 +47,7 @@
                     </div>
                     <div class="form-group">
                         <label for="time_of_day"> Time of Day</label>
-                        <input type="time" id="time" name="email_report_time" value="{{ isset($setting->getBySlug('email_report_time')->value) ? $setting->getBySlug('email_report_time')->value : ''  }}" class="form-control">
+                        <input type="time" id="time" name="email_report_time" value="{{ isset($setting->getBySlug('email_report_time')->value) ? $setting->getBySlug('email_report_time')->value : ''  }}" class="form-control" required>
                     </div>
           
        
