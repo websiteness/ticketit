@@ -160,14 +160,18 @@
                         <div class="col-md-2"> {{ CollectiveForm::label('# of hours') }} {!! CollectiveForm::number('dev_hours',$ticket->dev_hours,['class' => 'form-control', 'placeholder' => 'Estimated hours']) !!}  </div>           
                         <div class="col-md-3"> {{ CollectiveForm::label('Developer status') }} {!! CollectiveForm::select('dev_status_id',$dev_statuses,$ticket->dev_status_id,['class' => 'form-control']) !!} </div>                    
                         
-                        <div class="form-group">
-                                 
-                        <div class="col-lg-12 col-md-12 col-sm-12 mt">
-                          {{ CollectiveForm::label('Tags') }}
-                          <select id="ticketit_tags" class="form-control" name="tags[]">
-
-                          </select>
+                        <div class="form-group">       
+                          <div class="col-lg-12 col-md-12 col-sm-12 mt">
+                            {{ CollectiveForm::label('Tags') }}
+                            <select id="ticketit_tags" class="form-control" name="tags[]"></select>
+                          </div>
                         </div>
+
+                        <div class="form-group">
+                          <div class="col-lg-12 col-md-12 col-sm-12 mt">
+                          {{ CollectiveForm::label('Slack Conversation Link') }}
+                          {!! CollectiveForm::text('slack_conversation_link',$ticket->slack_conversation_link,['class' => 'form-control', 'placeholder' => 'Slack Conversation Link']) !!}
+                          </div>
                         </div>
                
                         <div class="form-group">

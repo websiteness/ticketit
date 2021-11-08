@@ -561,6 +561,7 @@ class TicketsController extends Controller
         $ticket->dev_hours = $request->dev_hours;
         $ticket->dev_status_id = $request->dev_status_id;
         $ticket->dev_notes = $request->dev_notes;
+        $ticket->slack_conversation_link = $request->slack_conversation_link;
         $ticket->save();
         
         if($request->status_id) {
