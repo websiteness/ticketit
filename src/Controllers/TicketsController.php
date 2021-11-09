@@ -608,7 +608,7 @@ class TicketsController extends Controller
 
         return redirect()->route(TSetting::grab('main_route').'.show', $id);
     }
-
+                                          
     /**
      * Remove the specified resource from storage.
      *
@@ -626,7 +626,7 @@ class TicketsController extends Controller
 
         return redirect()->route(TSetting::grab('main_route').'.index');
     }
-
+                                                                   
     /**
      * Mark ticket as complete.
      *
@@ -995,6 +995,16 @@ class TicketsController extends Controller
                 ->with('frequencies', $frequencies)
                 ->with('current_user_email', $current_user_email);
     }
+
+    public function getAverageByDateRange(Request $request)
+    {
+        $date_to = $request->date_to;
+        $date_from = $request->date_from;
+
+        $ticketService = new TicketsService();
+        $average_response_by_date_rage = $ticketService->getAverageByDateRange($date_to,$date_from);
+        return response()->json(['average_response_by_date_rage' => $average_response_by_date_rage],200);
+    }
                                                                        
 }                             
-                                                                                  
+                                                                                                                

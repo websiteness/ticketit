@@ -4,6 +4,15 @@
     {{ trans('ticketit::admin.index-title') }}
 @stop
 
+@section('header_styles')
+  
+    <style>
+        .mt-response-time {
+            margin-top: 50px;
+        }
+    </style>
+@stop
+
 @section('content')
     @include('ticketit::shared.header')
     @if($tickets_count)
@@ -88,34 +97,53 @@
             </div>
         </div>
         <div class="row">
-
             
         <div class="col-md-4 col-md-offset-4">
             <h2> Average Ticket Response Time</h2>
             </div>
         </div>
         <div class="row">
-        <!-- <div class="col-lg-4 col-md-4">
-                <div class="panel panel-info">
-                    <div class="panel-heading">
-                        <div class="row">
-                    
-                            <div class="col-xs-9">
-                                <h1>{{ $ticket_average_time_total }} hours</h1>
-                                <span>Total</span>
-                            </div>
+        <br>
+ 
+        <div class="col-lg-12">
+            <div class="pull-right">
+                <div class="form-group">
+                    <div class="form-inline">
+                        <div class="form-group">
+                            <label for="date_from">From: </label>
+                            <input class="form-control" type="date" name="date_from" id="date_from" value="{{ date('Y-m-d') }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="date_to">To: </label>
+                            <input class="form-control" type="date" name="date_to" id="date_to" value="{{ date('Y-m-d') }}">
                         </div>
                     </div>
                 </div>
-            </div> -->
-
-            <div class="col-lg-6 col-md-6">
+            </div>
+        </div>
+    
+        <div class="row mt-response-time">
+        <div class="col-lg-6 col-md-6 ">
                 <div class="panel panel-info">
                     <div class="panel-heading">
                         <div class="row">
                             <div class="col-xs-9">
                                 <h1 class="thirty-days-response">  </h1>
                                 <span>Last 30 Days</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="col-lg-6 col-md-6">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <div class="row">
+                 
+                            <div class="col-xs-9 ">
+                                <h1 class="date-range-response"> </h1>
+                                <span>Average By Date Range: </span>
                             </div>
                         </div>
                     </div>
@@ -136,8 +164,8 @@
                 </div>
             </div>
         </div>
-                                                              
-                                        
+
+        </div>                               
     @else
         <div class="well text-center">
             {{ trans('ticketit::admin.index-empty-records') }}
@@ -160,7 +188,33 @@
 
     $(() => {
         loadAverageReponseTime();
+
+        let to_date = $('#date_to').val();
+        let from_date  = $('#date_from').val();
+        getAverageByDate(from_date, to_date);
+
+
+        $('#date_to').change(function() {
+            let date_to = $(this).val();
+            let date_from = $('#date_from').val();
+            getAverageByDate(date_from, date_to);
+        });
     });
+
+    const getAverageByDate = (date_from, date_to) => {
+        let url = `{!! route($setting->grab('admin_route').'.average-ticket-response-by-date') !!}`;
+        $.ajax({
+            method: 'get',
+            data : {
+                'date_from' :  date_from,
+                'date_to' :  date_to,
+            },
+            url: url,
+            success: function(res) {
+                $('.date-range-response').text(res.average_response_by_date_rage);
+            }
+        });
+    }
 
     const loadAverageReponseTime = () => {
         let url = `{!! route($setting->grab('admin_route').'.average-ticket-response') !!}`;

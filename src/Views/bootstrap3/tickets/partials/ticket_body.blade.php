@@ -118,7 +118,7 @@
                         @endif
                         
                     </tr>
-        
+                                                
                     <tr>
                     <td width="10%"><h5 class="active-tickets__heading">Ticket #:</h5></td>
                         <td width="40%"><span class="active-tickets__text">{{ $ticket->id }}</span></td>

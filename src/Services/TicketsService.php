@@ -221,6 +221,33 @@ class TicketsService
             \Log::info($e->getMessage());
         }
     }
-}
+
+    public function getAverageByDateRange($date_to, $date_from)
+    {
+        $data = Ticket::with('comments')->whereHas('comments')->where('created_at', '>=', $date_from." 00:00:00")->where('created_at', '<=', $date_to." 00:00:00")->get();
+        $total_minutes = 0;
+        foreach ($data as $ticket) {
+            $ticket_date = Carbon::parse($ticket->created_at);
+            $interval =  $ticket_date->diffInMinutes($ticket->comment()->created_at);
+            $total_minutes += $interval;
+        }
+
+        $ticket_count = count($data);
+        if($ticket_count != 0 || $total_minutes != 0) {
+            $average_total = $total_minutes / $ticket_count;
+            $total = '';
+            if ($average_total > 1 && ($average_total % 60) > 1) {
+                $total = intdiv($average_total, 60) . ' hours ' . ($average_total % 60) . ' minutes';
+            } else {
+                $total = intdiv($average_total, 60) . ' hour ' . ($average_total % 60) . ' minute';
+            }
+            return $total;
+        } else {
+            return 0;
+        }
+    }
+                    
+              
+}                       
                                            
 
