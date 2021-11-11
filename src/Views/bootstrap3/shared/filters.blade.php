@@ -74,18 +74,22 @@
             <label>Owner</label>
             <select class="form-control select2" id="filter_owner">
                 <option value="">Select Owner</option>
-                @foreach($users as $user)
-                <option value="{{ $user->id }}">{{ $user->first_name . ' ' . $user->last_name }}</option>
-                @endforeach
+                @if(isset($users))
+                    @foreach($users as $user)
+                    <option value="{{ $user->id }}">{{ $user->first_name . ' ' . $user->last_name }}</option>
+                    @endforeach
+                @endif
             </select>
         </div>
         <div class="form-group">
             <label>Status</label>
             <select class="form-control" id="filter_status">
                 <option value="">Select Status</option>
-                @foreach($statuses as $status)
-                <option value="{{ $status->id }}">{{ $status->name }}</option>
-                @endforeach
+                @if(isset($statuses))
+                    @foreach($statuses as $status)
+                    <option value="{{ $status->id }}">{{ $status->name }}</option>
+                    @endforeach
+                @endif
                 <option value="no_response">No Response</option>
                 <option value="overdue">Overdue</option>
             </select>
@@ -94,9 +98,11 @@
             <label>Sub Categoy</label>
             <select class="form-control" id="filter_sub_category">
                 <option value="">Select Cateory</option>
-                @foreach($sub_categories as $category)
-                <option value="{{ $category->id }}">{{ $category->name }}</option>
-                @endforeach
+                @if(isset($sub_categories))
+                    @foreach($sub_categories as $category)
+                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    @endforeach
+                @endif
             </select>
         </div>
         <div class="form-group">
@@ -111,9 +117,21 @@
             <label>Message</label>
             <input type="text" class="form-control" id="filter_message" placeholder="Search messages"/>
         </div>
+
+        <div class="form-group">
+            <label>Tag</label>
+            <select class="form-control select2-tag" id=" " name="tags[]" multiple="multiple">
+                <option value="">Select Tag</option>
+                @if(isset($tags))
+                    @foreach($tags as $tag)
+                    <option value="{{ $tag->id }}">{{ $tag->name }}</option>
+                    @endforeach
+                @endif 
+            </select>
+        </div>
         <div class="form-group">
             <label for="filter_hide_closed_tickets">
-            <input type="checkbox" id="filter_hide_closed_tickets" onclick="filterTickets()" style="margin-top:30px;" checked/> Hide closed tickets
+            <input type="checkbox" id="filter_hide_closed_tickets" onclick="filterTickets()" style="margin-top:30px;"/> Hide closed tickets
             </label>
         </div>
         <div class="form-group">
@@ -131,15 +149,21 @@
     /* Set the width of the side navigation to 250px */
     function openNav() {
 		$('.select2').select2();
+        $('.select2-tag').select2({
+            placeholder: 'Select Tag',
+            multiple: true,
+        });
         document.getElementById("mySidenav").style.width = "370px";
     }
-
+                                          
     /* Set the width of the side navigation to 0 */
     function closeNav() {
         document.getElementById("mySidenav").style.width = "0";
     }
 
     $(document).ready(function() {
+
+
         $(window).click(function() {
             document.getElementById("mySidenav").style.width = "0";
         });

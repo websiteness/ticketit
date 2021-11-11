@@ -63,6 +63,7 @@
                 @foreach($agents as $agent)
                     <tr>
                         <td>
+                
                             {{ $agent->name . ' - ' . $agent->email . ' (' . $agent->roles()->first()->name . ')' }}
                         </td>
                         <td>
@@ -77,6 +78,7 @@
                             ]) !!}
                             {!! CollectiveForm::submit(trans('ticketit::admin.btn-remove'), ['class' => 'btn btn-danger']) !!}
                             {!! CollectiveForm::close() !!}
+
                             <a href="{{ route($setting->grab('admin_route').'.agent.notifications.settings', $agent->id) }}" class="btn btn-primary">Notifications</a>
                         </td>
                     </tr>
@@ -86,6 +88,28 @@
 
         @endif
     </div>
+    <!-- Modal -->
+<div class="modal fade" id="webhookUrlModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Agent: </h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+            <label for="exampleInputEmail1">Slack Webhook Url</label>
+            <input type="text" class="form-control" id="agent-slack-webhook-url" placeholder="URL">
+            <input type="hidden" id="agent-settings-id">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success btn-save" onclick="saveWebhookUrl()">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
 @stop
 
 @section('footer')
@@ -93,6 +117,35 @@
 	<script>
 		$(document).ready(function() {
 			$('.select2').select2();
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
 		});
+        
+        function getWebhookUrl(id, agent_name, agent_settings_id, url) {
+            $('#myModalLabel').text("Agent: " + agent_name);
+            $('#agent-slack-webhook-url').val(url);
+            $('#agent-settings-id').val(agent_settings_id);
+            $('#webhookUrlModal').modal('show')    
+        }
+
+        function saveWebhookUrl() {
+            let url = $('#agent-slack-webhook-url').val();       
+            let id = $('#agent-settings-id').val();     
+            let route = "{{ route($setting->grab('admin_route').'.agent.update.settings') }}";         
+            let new_route = route.replace('id', id);   
+            $('.btn-save').text('Saving...'); 
+            $.post(new_route, { url: url, id: id }).done(function( data ) {
+                if(data.success) {
+                    $('.btn-save').text('Saved'); 
+                    window.location.reload()
+                } else {
+                    alert(data.message);
+                    window.location.reload()
+                }
+            });
+        }
     </script>
 @stop

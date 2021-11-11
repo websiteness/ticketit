@@ -745,6 +745,11 @@
     .btn-primary{
         margin-left: 45px;
     }
+    #company-search-active-labels {
+        
+        
+        
+    }
 </style>
 
 
@@ -762,8 +767,8 @@
         <div class="pull-left">
             <h2>{{ trans('ticketit::lang.index-my-tickets') }}</h2>
         </div>
-        <div class="col-md-6 pull-right" style="margin-top:10px; display:flex;">
-                        <div id="companies-search-active-labels" style="margin-left: 100px;">
+        <div class="col-md-6 pull-right" style="margin-top:10px; display:flex; inline-size: fit-content;">
+                        <div id="companies-search-active-labels">
                             <div style="display: flex;" data-search-id="#companies-search" data-dropdown-id="#companiesDropdown" data-list-id="#companies-list">
                                 <input type="text" class="form-control" id="companies-search" name="" placeholder="Toggle Columns" autocomplete="off" style="height: 40px;" readonly>
                                 <div class="input-group-btn position_unset" id="companiesDropdown">
@@ -785,7 +790,7 @@
                                                         <div class="checkbox">
                                                             <label>
                                                                 <input type="checkbox" data-column="0" value="0"  class="ticket_dropdown_option company-checkboxes company-checkboxes_131">
-                                                                #
+                                                                User
                                                             </label>
                                                         </div>
                                                     </li>
@@ -801,7 +806,15 @@
                                                         <div class="checkbox">
                                                             <label>
                                                                 <input type="checkbox" data-column="2" value="1" class="ticket_dropdown_option company-checkboxes company-checkboxes_132">
-                                                               Status
+                                                               Ticket Status
+                                                            </label>
+                                                        </div>
+                                                    </li>
+                                                    <li class="main_sub_alphabet search_term search_term_companies " data-search-term="test company" data-name="Test Company">
+                                                        <div class="checkbox">
+                                                            <label>
+                                                                <input type="checkbox" data-column="3" value="1"  class="ticket_dropdown_option company-checkboxes company-checkboxes_132">
+                                                                Dev Status
                                                             </label>
                                                         </div>
                                                     </li>
@@ -852,6 +865,22 @@
                                                                 Category
                                                             </label>
                                                         </div>
+                                                    </li>                                    
+                                                    <li class="main_sub_alphabet search_term search_term_companies  " data-search-term="test company" data-name="Test Company">
+                                                        <div class="checkbox">
+                                                            <label>
+                                                                <input type="checkbox" data-column="10" value="1"  class="ticket_dropdown_option company-checkboxes company-checkboxes_132">
+                                                                Zone
+                                                            </label>
+                                                        </div>
+                                                    </li>
+                                                    <li class="main_sub_alphabet search_term search_term_companies  " data-search-term="test company" data-name="Test Company">
+                                                        <div class="checkbox">
+                                                            <label>
+                                                                <input type="checkbox" data-column="11" value="1"  class="ticket_dropdown_option company-checkboxes company-checkboxes_132">
+                                                                Tags
+                                                            </label>
+                                                        </div>
                                                     </li>
                                                     <li class="main_sub_alphabet search_term search_term_companies  " data-search-term="test company" data-name="Test Company">
                                                         <div class="checkbox">
@@ -860,7 +889,15 @@
                                                                 Actions
                                                             </label>
                                                         </div>
-                                   
+                                                    </li>
+                                                    <li class="main_sub_alphabet search_term search_term_companies  " data-search-term="test company" data-name="Test Company">
+                                                        <div class="checkbox">
+                                                            <label>
+                                                                <input type="checkbox" data-column="12" value="1"  class="ticket_dropdown_option company-checkboxes company-checkboxes_132">
+                                                                Actions
+                                                            </label>
+                                                        </div>
+                                                    </li>
                                                 </ul>
                                             </li>
                                         </ul>

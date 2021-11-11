@@ -239,7 +239,7 @@ class Agent extends User
         return $this->hasMany('Kordy\Ticketit\Models\Ticket', 'agent_id')->whereNotNull('completed_at');
     }
 
-    /**
+    /** 
      * Get related agent tickets.
      */
     public function agentOpenTickets()
@@ -275,4 +275,10 @@ class Agent extends User
     {
         return $this->hasMany('Kordy\Ticketit\Models\NotificationSetting', 'user_id');
     }
+
+    public function agentSlackUrl()
+    {
+      return $this->hasOne('Kordy\Ticketit\Models\TicketsAgentSettings', 'user_id')->where('slug', 'slack_webhook_url');
+    }
 }
+                         

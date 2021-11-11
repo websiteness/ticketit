@@ -1,7 +1,10 @@
 @push('header_styles')
+<link href="{{asset('libs/jasny-bootstrap/css/jasny-bootstrap.min.css')}}" rel="stylesheet">
+<link href="{{asset('libs/select2/dist/css/select2.min.css')}}" rel="stylesheet">
 <style>
     .ticket-comment__message-content {
         word-wrap: break-word;
+
     }
     .comment-comment__actions {
         margin-top: 20px;
@@ -9,12 +12,23 @@
     .comment-comment__actions button {
         padding: 0 5px;
     }
+    .rm-border-bot {
+        border: none !important;
+    }
+
 </style>
 @endpush
 
 <div class="ticket-system">
     <div class="ticket-system__tabs" role="tabpanel" data-example-id="togglable-tabs">
         <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title rm-border-bot">
+                        <h5> {{ ucfirst($ticket->subject) }} </h5>
+                    </div>
+                </div>
+            </div>
             <div class="col-md-12 col-sm-12 col-xs-12">
                 <div class="x_panel">
                     <div class="x_title">
@@ -30,9 +44,7 @@
                                     <div class="ticket-comment__message-content">
                                         <h5>{{ $ticket->user->name }}:</h5>
                                             {!! $ticket->html !!}
-                                    </div><!-- .ticket-comment__message-content -->
-
-                                  
+                                    </div><!-- .ticket-comment__message-content -->                                 
                                     <span class="ticket-comment__time-delivered">
                                         <span class="ticket-comment__date">
                                             {{ $ticket->created_at->format('m/d/Y') }}
@@ -45,7 +57,7 @@
                                     </span>
                                 </div><!-- .ticket-comment__message -->
                             </div><!-- .ticket-comment__item -->
-                  
+                                          
                             @if(!$comments->isEmpty())
                             @foreach($comments as $comment)
                             @if(!$comment->user->ticketit_admin && !$comment->user->ticketit_agent)
@@ -60,7 +72,7 @@
 
                                         @if($u->isAdmin() || $u->isAgent())
                                         <div class="comment-comment__actions">
-                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editCommentModal" onclick="editComment('{{ $comment->id }}', '{{ addslashes(trim($comment->html)) }}')" ><i class="fa fa-pencil"></i></button>
+                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editCommentModal" onclick="commentEdit('{{ $comment->id }}', '{{ addslashes(trim($comment->html)) }}')" ><i class="fa fa-pencil"></i></button>
                                             
                                             <form method="POST" action="{{ route($setting->grab('main_route').'-comment.destroy', $comment->id) }}" onsubmit="return confirm('Delete this comment?')">
                                             {{ csrf_field() }}
@@ -97,8 +109,8 @@
 
                                         @if($u->isAdmin() || $u->isAgent())
                                         <div class="comment-comment__actions">
-                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editCommentModal" onclick="editComment('{{ $comment->id }}', '{{ addslashes(trim($comment->html)) }}')" ><i class="fa fa-pencil"></i></button>
-                                            
+                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editCommentModal" onclick="commentEdit('{{ $comment->id }}', '{{ addslashes(trim($comment->html)) }}')" ><i class="fa fa-pencil"></i></button>
+                                            <!-- data-toggle="modal" data-target="#editCommentModal"  -->
                                             <form method="POST" action="{{ route($setting->grab('main_route').'-comment.destroy', $comment->id) }}" onsubmit="return confirm('Delete this comment?')">
                                             {{ csrf_field() }}
                                             {{ method_field('DELETE') }}
@@ -166,7 +178,7 @@
 
 @push('footer_scripts')
 <script src="//unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-<script>
+<script>    
     $('#btn-reply').click(function(e){
         if ($('.summernote-editor').summernote('isEmpty')) {
             e.preventDefault();
@@ -176,20 +188,20 @@
     $('#editCommentModal').on('shown.bs.modal', function() {
         $('.edit-comment-summernote-editor').summernote();
     });
-
-    function editComment(comment_id, content) {
-        // console.log('comment', comment_id);
-        // console.log('content', content);
-
+    $('.btn-secondary').on('click', function(e) {
+        e.preventDefault(e);
+        let value = $(this).val()
+        $('.summernote-editor').summernote('insertText', value);
+    });
+    function commentEdit(comment_id, content) {
         setTimeout(function() {
             $('.edit-comment-summernote-editor').summernote('destroy');
             $('.edit-comment-summernote-editor').summernote('code', content);
         }, 300);
-
         let form_url = `{{ route($setting->grab('main_route').'-comment.update', 'comment_id') }}`;
         let final_url = form_url.replace('comment_id', comment_id);
-
         document.getElementById('edit_comment_form').setAttribute('action', final_url);
     }
+
 </script>
 @endpush

@@ -13,10 +13,12 @@
   right: 0;
   padding: 5px;
 }
-
+.mt {
+  margin-top: 2vh;
+}
 </style>
 @endpush
-
+        
 <div class="ticket-system">
     <div class="ticket-system__tabs" role="tabpanel" data-example-id="togglable-tabs">
         <div class="row">
@@ -44,24 +46,16 @@
                           </span>
                         </td>
                         @if($u->isAgent() || $u->isAdmin())
-                        <td width="12%"><h5 class="active-tickets__heading">Responsible:</h5></td>
+                        <td width="12%"><h5 class="active-tickets__heading">Created:</h5></td>
                         <td width="40%">
-                            @if($u->isAdmin())
-                                {!! CollectiveForm::select(
-                                    'agent_id',
-                                    $agent_lists,
-                                    $ticket->agent_id,
-                                    ['class' => 'form-control']) !!}
-                            @else
-                                {{ $ticket->agent_id == $u->id ? $u->name : $ticket->agent->name }}
-                                {!! CollectiveForm::hidden('agent_id', $ticket->agent_id ) !!}
-                            @endif
-                            </span>
+                     
+                       <span class="active-tickets__text">{{ $ticket->created_at->format('m/d/Y') . ' (' . $ticket->created_at->diffForHumans() . ')' }}</span>
                         </td>
                         @else
                         <td width="10%"><h5 class="active-tickets__heading">Category:</h5></td>
                         <td width="40%"><span class="active-tickets__text">{{ isset($ticket->category->parent_category->name) ? $ticket->category->parent_category->name : $ticket->category->name }}</span></td>
                         @endif
+                        
                     </tr>
                     <tr>
                       <td width="10%"><h5 class="active-tickets__heading">Status:</h5></td>
@@ -84,8 +78,9 @@
                       @if($u->isAgent() || $u->isAdmin())
                       <td width="10%"><h5 class="active-tickets__heading">Category:</h5></td>
                       <td width="40%"><span class="active-tickets__text">{{ isset($ticket->category->parent_category->name) ? $ticket->category->parent_category->name : $ticket->category->name }}</span></td>
-                        @else
-                        <td width="10%"><h5 class="active-tickets__heading">Sub Category:</h5></td>
+                        
+                      @else
+                        <td width="10%"><h5 class="active-tickets__heading">Module:</h5></td>
                         <td width="40%"><span class="active-tickets__text">
                             @if($ticket->category->parent_category)
                                 {{ $ticket->category->name }}
@@ -94,7 +89,7 @@
                         @endif
                     </tr>
                     <tr>
-                      <td width="10%"><h5 class="active-tickets__heading">Priority:</h5></td>
+                    <td width="10%"><h5 class="active-tickets__heading">Priority:</h5></td>
                       <td width="40%" class="priority-status priority-status__moderate">
                         <div class="active-tickets__editable">
                             @if($u->isAgent() || $u->isAdmin())
@@ -111,7 +106,24 @@
                         </div>
                       </td>
                       @if($u->isAgent() || $u->isAdmin())
-                      <td width="10%"><h5 class="active-tickets__heading">Sub Category:</h5></td>
+                      <td width="10%"><h5 class="active-tickets__heading">Zone:</h5></td>
+                      <td width="40%"><span class="active-tickets__text">
+                          @if($ticket->zone)
+                              {{ $ticket->zone->name }}
+                          @endif
+                        </span></td>
+                        @else
+                        <td width="10%"><h5 class="active-tickets__heading">Last Update:</h5></td>
+                        <td width="40%"><span class="active-tickets__text">{{ $ticket->updated_at->diffForHumans() }}</span></td>
+                        @endif
+                        
+                    </tr>
+                                                
+                    <tr>
+                    <td width="10%"><h5 class="active-tickets__heading">Ticket #:</h5></td>
+                        <td width="40%"><span class="active-tickets__text">{{ $ticket->id }}</span></td>
+                      @if($u->isAgent() || $u->isAdmin())
+                      <td width="10%"><h5 class="active-tickets__heading">Module:</h5></td>
                       <td width="40%"><span class="active-tickets__text">
                         @if($ticket->category->parent_category)
                             {{ $ticket->category->name }}
@@ -122,9 +134,9 @@
                         <td width="40%"><span class="active-tickets__text">{{ $ticket->updated_at->diffForHumans() }}</span></td>
                         @endif
                     </tr>
+
                     <tr>
-                        <td width="10%"><h5 class="active-tickets__heading">Ticket #:</h5></td>
-                        <td width="40%"><span class="active-tickets__text">{{ $ticket->id }}</span></td>
+                   
                         @if($u->isAgent() || $u->isAdmin())
                         <td width="10%"><h5 class="active-tickets__heading">Last Update:</h5></td>
                         <td width="40%"><span class="active-tickets__text">{{ $ticket->updated_at->diffForHumans() }}</span></td>
@@ -133,30 +145,101 @@
                       <td width="40%"><span class="active-tickets__text">{{ $ticket->created_at->format('m/d/Y') . ' (' . $ticket->created_at->diffForHumans() . ')' }}</span></td>
                         @endif
                     </tr>
-                    @if($u->isAgent() || $u->isAdmin())
-                    <tr>
-                      <td width="10%"><h5 class="active-tickets__heading">Created:</h5></td>
-                      <td width="40%"><span class="active-tickets__text">{{ $ticket->created_at->format('m/d/Y') . ' (' . $ticket->created_at->diffForHumans() . ')' }}</span></td>
-                      <td width="10%"></td>
-                      <td width="40%"></td>
-                    </tr>
-                    @endif
+
+
                   </tbody>
                 </table>
+                @if($u->isAdmin())
+                <div class="x_panel mt">
+                      <div class="x_content">
+                        <h5>Internal inputs: </h5>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-3"> {{ CollectiveForm::label('Developer') }} {!! CollectiveForm::select('agent_id',$agent_lists,$ticket->agent_id,['class' => 'form-control']) !!} </div>
+                        <div class="col-md-4"> {{ CollectiveForm::label('Estimated Completion Date') }} {!! CollectiveForm::date('completion_date', $ticket->completion_date, ['class' => 'form-control']) !!} </div>  
+                        <div class="col-md-2"> {{ CollectiveForm::label('# of hours') }} {!! CollectiveForm::number('dev_hours',$ticket->dev_hours,['class' => 'form-control', 'placeholder' => 'Estimated hours']) !!}  </div>           
+                        <div class="col-md-3"> {{ CollectiveForm::label('Developer status') }} {!! CollectiveForm::select('dev_status_id',$dev_statuses,$ticket->dev_status_id,['class' => 'form-control']) !!} </div>                    
+                        
+                        <div class="form-group">       
+                          <div class="col-lg-12 col-md-12 col-sm-12 mt">
+                            {{ CollectiveForm::label('Tags') }}
+                            <select id="ticketit_tags" class="form-control" name="tags[]"></select>
+                          </div>
+                        </div>
 
-                    {!! CollectiveForm::submit('Update', ['class' => 'btn btn-success ticket-update-btn']) !!}
-                {!! CollectiveForm::close() !!}
-              </div><!-- x_content -->
-            </div><!-- .x_panel -->
+                        <div class="form-group">
+                          <div class="col-lg-12 col-md-12 col-sm-12 mt">
+                          {{ CollectiveForm::label('Slack Conversation Link') }}
+                          {!! CollectiveForm::text('slack_conversation_link',$ticket->slack_conversation_link,['class' => 'form-control', 'placeholder' => 'Slack Conversation Link']) !!}
+                          </div>
+                        </div>
+               
+                        <div class="form-group">
+                          <div class="col-lg-12 mt">
+                              {{ CollectiveForm::label('Developer Notes') }}
+                              {!! CollectiveForm::textarea('dev_notes', null, ['class' => 'form-control add-notes-summernote', 'rows' => "3"]) !!}
+                          </div>
+                      </div>
+                      </div>         
+          
+                  </div>
+                  @endif
+                  {!! CollectiveForm::submit('Update', ['class' => 'btn btn-success ticket-update-btn']) !!}
+                  {!! CollectiveForm::close() !!}     
+                  <input id="t-id" type="hidden" value="{{ $ticket->id }}">
+                  </div><!-- x_content -->
+              </div><!-- .x_panel -->
+       
+   
           </div><!-- .col-md-12 col-sm-12 col-xs-12 -->
         </div><!-- .col-md-12 col-sm-12 col-xs-12 -->
-
+ 
  
     </div>
 </div>
 
 @push('footer_scripts')
+<script src="{{asset('libs/parsleyjs/dist/parsley.min.js')}}"></script>
+<script src="{{asset('libs/jasny-bootstrap/js/jasny-bootstrap.js')}}"></script>
+<script src="{{asset('libs/select2/dist/js/select2.full.min.js')}}"></script>
 <script>
+  $(document).ready(function(){
+      $.ajaxSetup({
+        headers: {
+          'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+      });
+
+      $('#ticketit_tags').select2({
+        placeholder: ' Select Tags',    
+        language: {
+            noResults: function() {
+              return `<button style="width: 100%" type="button" class="btn btn-primary" onClick='addTag()'>+ Add New Tag</button> </li>`;
+            }
+         },
+        escapeMarkup: function (markup) {
+            return markup;
+        },
+        multiple: true,
+
+    });
+
+    fetchTags();
+  });
+
+  function addTag() {
+    let input = $('.select2-search__field').val();
+    let route = "{{ route($setting->grab('main_route').'.tags.store') }}"; 
+    $.post(route, { name : input  }, function(data){
+      if(data.success) {
+          alert(data.message)
+          window.location.reload( )
+      } else {
+          alert(data.message)
+      }
+    });
+    
+  }
   function copyEmail(email)
   {
     console.log('email', email);
@@ -168,5 +251,36 @@
     document.execCommand('copy');
     document.body.removeChild(input);
   }
+
+  function fetchTags() {
+    let url = "{{ route($setting->grab('main_route').'.tags.all') }}";  
+    fetch(url).then((res) => {
+      res.json().then((data) => {
+        let values = new Array(); 
+        $.each(data.data, function (i, item) {
+          values.push({ id: item.id, text: item.name});
+        });
+        $('#ticketit_tags').select2({data : values})
+        fetchSelectedTags();
+      });
+    }).catch((err) => {
+      console.log('Error', err);
+    });
+  }
+
+  function fetchSelectedTags(){
+    let id = $('#t-id').val();
+    let route = "{{ route($setting->grab('main_route').'.tags.ticket-tags', ['id' => 'id']) }}";         
+    let new_route = route.replace('id', id);       
+    let selected = new Array();
+    $.get(new_route, (res) => {
+      if(res.data) {
+        $.each(res.data,(i,item) => {
+          selected.push(item.id);
+        });
+        $("#ticketit_tags").val(selected).trigger("change");
+      }
+    })                                  
+  }
 </script>
-@endpush
+@endpush                                                                         

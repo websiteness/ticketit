@@ -36,4 +36,9 @@ class CategoriesRepository {
         
         return $cat->save();
     }
+
+    public function getZones($parent_id)
+    {
+        return Category::where('parent', $parent_id)->get();
+    }
 }

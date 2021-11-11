@@ -7,14 +7,16 @@ use Kordy\Ticketit\Models\Agent;
 use Kordy\Ticketit\Models\Category;
 use Kordy\Ticketit\Models\Ticket;
 use Sentinel;
+use App\User;
+use Kordy\Ticketit\Services\TicketsService;
 
 class DashboardController extends Controller
 {
     public function index($indicator_period = 2)
     {
-        $tickets_count = Ticket::adminUserTickets(Sentinel::getUser()->id)->count();
-        $open_tickets_count = Ticket::adminUserTickets(Sentinel::getUser()->id)->whereNull('completed_at')->count();
-        $closed_tickets_count = $tickets_count - $open_tickets_count;
+ 
+        $tickets_count = Ticket::count();
+   
 
         // Per Category pagination
         $categories = Category::paginate(10, ['*'], 'cat_page');
@@ -43,7 +45,7 @@ class DashboardController extends Controller
         $users = Agent::where('parent_user_id',Sentinel::getUser()->id)->users(10);
 
         // Per Category performance data
-        $ticketController = new TicketsController(new Ticket(), new Agent());
+        $ticketController = new TicketsController(new Ticket(), new Agent(), new User());
         $monthly_performance = $ticketController->monthlyPerfomance($indicator_period);
 
         if (request()->has('cat_page')) {
@@ -55,6 +57,18 @@ class DashboardController extends Controller
         } else {
             $active_tab = 'cat';
         }
+             
+        $ticketService = new TicketsService();
+        $open_tickets_count = $ticketService->getOpenTicketCount();
+        $no_response_tickets_count = $ticketService->getNoResponseTicketCount();;
+        $in_progress_tickets_count = $ticketService->getInProgressTicketCount();
+        $waiting_feedback_tickets_count = $ticketService->getWaitingOnFeedbackCount();
+        $has_response_tickets_count = $ticketService->getTicketsWhereUserHasResponse();
+        $closed_tickets_count = $tickets_count - $open_tickets_count;
+        $ticket_average_time_total = $ticketService->getTotalAverageResponse();
+        $ticket_average_time_thirty = $ticketService->getTotalAverageResponseThirtyDays();
+        $ticket_average_time_seven = $ticketService->getTotalAverageResponseSevenDays();
+          
 
         return view(
             'ticketit::admin.index',
@@ -68,7 +82,15 @@ class DashboardController extends Controller
                 'monthly_performance',
                 'categories_share',
                 'agents_share',
-                'active_tab'
+                'active_tab',
+                'no_response_tickets_count',
+                'in_progress_tickets_count',
+                'waiting_feedback_tickets_count',
+                'has_response_tickets_count',
+                'ticket_average_time_total',
+                'ticket_average_time_thirty',
+                'ticket_average_time_seven',
             ));
     }
 }
+                          

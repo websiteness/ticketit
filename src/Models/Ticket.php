@@ -15,7 +15,7 @@ class Ticket extends Model
     use Purifiable;
 
     protected $table = 'ticketit';
-    protected $dates = ['completed_at'];
+    protected $dates = ['completed_at', 'completion_date'];
     protected $appends = ['email_content'];
 
     /**
@@ -296,5 +296,23 @@ class Ticket extends Model
     {
         return $this->emailContent();
     }
+
+    public function tags()
+    {
+        return $this->belongsToMany('Kordy\Ticketit\Models\Tags', 'ticketit_ticket_tags', 'ticket_id', 'ticketit_tags_id');
+    }
+    
+    public function zone()
+    {
+        return $this->belongsTo('Kordy\Ticketit\Models\Category', 'zone_id');
+    }
+
+    public function comment()
+    {
+        return $this->comments()->orderBy('created_at', 'ASC')->take(1)->first();
+    }
+
+
     
 }
+                                                   

@@ -92,7 +92,7 @@
             subcategories[id].forEach(function(item, index){
                 options += '<option value="'+item.id+'">'+item.name+'</option>'
             });
-            let el =   '<label for="subcategory" class="col-lg-6 control-label">Sub Category: </label>'
+            let el =   '<label for="subcategory" class="col-lg-6 control-label">Module: </label>'
                 el +=       '<div class="col-lg-6">';
                 el +=           '<select class="form-control" required="required" name="subcategory_id">';
                 el +=               '<option selected="selected" value="">Please Select</option>';

@@ -279,7 +279,7 @@ class AsanaService
         }
 
         // add this task to it's section/category
-        $this->assign_task_section($response['gid'], $ticket->category_id);
+        $this->assign_task_section($response['gid'] ?? '', $ticket->category_id);
     }
 
     public function update_ticket($ticket_id)
@@ -291,6 +291,8 @@ class AsanaService
     
             $ticket_repository = new TicketsRepository;
             $ticket = $ticket_repository->getById($ticket_id);
+
+            
     
             if(!$ticket->asana_task_gid) {
                 return false;
@@ -465,7 +467,7 @@ class AsanaService
      * Extract Links from content
      * @return Array | array
      */
-    protected function extractLinks($content)
+    public function extractLinks($content)
     {
         //Get the page's HTML source using file_get_contents.
         $htmlDom = new \DomDocument();

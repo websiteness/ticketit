@@ -23,6 +23,17 @@ use Kordy\Ticketit\Services\Integrations\AsanaService;
 use App\User;
 use App\Models\Account;
 use AppendIterator;
+use Kordy\Ticketit\Services\Integrations\InfinityService;
+use Kordy\Ticketit\Services\Integrations\SlackService;
+use App\Models\TicketsDeveloperStatus;
+use Kordy\Ticketit\Models\SupportNote;
+use App\Jobs\ProcessTicketsToChannels;
+use Kordy\Ticketit\Models\Scripts;
+use Kordy\Ticketit\Models\TicketTags;
+use Kordy\Ticketit\Models\Tags;
+use Kordy\Ticketit\Models\Priority;
+use Illuminate\Support\Facades\Validator;
+use Kordy\Ticketit\Services\TicketsService;
 
 class TicketsController extends Controller
 {
@@ -44,6 +55,7 @@ class TicketsController extends Controller
 
     public function data(Request $request, $complete = false)
     {
+   
         if (LaravelVersion::min('5.4')) {
             $datatables = app(\Yajra\DataTables\DataTables::class);
         } else {
@@ -73,13 +85,18 @@ class TicketsController extends Controller
             } else {
                 $collection = Ticket::userTickets($user->id)->active();
             }
-        }
+        }           
+                                                                                                                                                                                                               
         // dd($collection->get());
         $collection
             ->join('users', 'users.id', '=', 'ticketit.user_id')
             ->join('ticketit_statuses', 'ticketit_statuses.id', '=', 'ticketit.status_id')
             ->join('ticketit_priorities', 'ticketit_priorities.id', '=', 'ticketit.priority_id')
             ->join('ticketit_categories', 'ticketit_categories.id', '=', 'ticketit.category_id')
+            ->leftjoin('tickets_developer_status', 'tickets_developer_status.id', '=', 'ticketit.dev_status_id')
+            ->leftjoin('ticketit_categories AS ticketit_zone', 'ticketit_zone.id', '=', 'ticketit.zone_id')
+            ->leftjoin('ticketit_ticket_tags as ttt','ttt.ticket_id','=', 'ticketit.id')
+            ->leftjoin('ticketit_tags as tt','ttt.ticketit_tags_id','=', 'tt.id')
             ->select([
                 'ticketit.id',
                 'ticketit.user_id',
@@ -92,12 +109,15 @@ class TicketsController extends Controller
                 'ticketit.id AS agent',
                 'ticketit.updated_at AS updated_at',
                 'ticketit_priorities.name AS priority',
+                'ticketit_zone.name AS zone',
                 // 'users.name AS owner',
                 DB::raw('CONCAT(users.first_name ," ", users.last_name) as owner'),
                 'ticketit.agent_id',
                 'ticketit_categories.name AS category',
+                'tickets_developer_status.name AS dev_status'
             ]);
-
+            
+                                                                     
         // check if filters are applied
         if($request->user) {
             $collection->where('ticketit.user_id', $request->user);
@@ -145,26 +165,38 @@ class TicketsController extends Controller
                 });
             }
         }
+   
+        if(!is_null($request->tags) && !empty($request->tags) && $request->tags != "null"){
+            $tag_ids = explode(',', $request->tags);
+            $collection->whereIn('tt.id', $tag_ids);
+        } 
 
+        // $collection->orderBy('ticketit.id', 'asc');
         $collection = $datatables->of($collection);
+    
 
         $this->renderTicketTable($collection);
 
-    
+        $collection->editColumn('updated_at', '{!! \Carbon\Carbon::parse($updated_at)->format("m/d/Y") . " (" . \Carbon\Carbon::createFromFormat("Y-m-d H:i:s", $updated_at)->diffForHumans("", true, false, 2) . " ago)" !!}');
+       
+            $collection->addColumn('tags', function($ticket) {
+                $tickets = Ticket::where('id', $ticket->id)->first();
+                $tags = $tickets->tags;
+                $new_tags = [];
+                foreach($tags as $tag) {
+                    array_push($new_tags, "<span class='label label-primary ml-3'>{$tag->name}</span>" );
+                }
+                return implode("", $new_tags);
+            });
   
-        //$collection->editColumn('updated_at', '{!! \Carbon\Carbon::parse($updated_at)->format("m/d/Y") . " (" . \Carbon\Carbon::createFromFormat("Y-m-d H:i:s", $updated_at)->diffForHumans("", true, false, 2) . " ago)" !!}');
-        $collection->editColumn('updated_at', function($col){
-            return Carbon::parse($col->updated_at)->format("m/d/Y")." (". Carbon::createFromFormat("Y-m-d H:i:s", $col->updated_at)->diffForHumans("", true, false, 2) ." ago)";
-        });
         // method rawColumns was introduced in laravel-datatables 7, which is only compatible with >L5.4
         // in previous laravel-datatables versions escaping columns wasn't defaut
         if (LaravelVersion::min('5.4')) {
-            $collection->rawColumns(['subject', 'status', 'priority', 'category', 'agent', 'resolved']);
+            $collection->rawColumns(['subject', 'status', 'priority', 'category', 'agent', 'zone', 'tags']);
         }
-
         return $collection->make(true);
     }
-
+                                  
     public function renderTicketTable($collection)
     {
         $collection->editColumn('subject', function ($ticket) {
@@ -240,13 +272,15 @@ class TicketsController extends Controller
      */
     public function index(CategoriesRepository $cr)
     {
+
+  
         $users = Agent::all();
         $statuses = Status::all();
         $sub_categories = $cr->getSubCategories();
-
+        $tags = Tags::all();
         $complete = false;
 
-        return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories'));
+        return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories', 'tags'));
     }
 
     /**
@@ -330,16 +364,13 @@ class TicketsController extends Controller
             'content'     => 'required|min:6',
             'priority_id' => 'required|exists:ticketit_priorities,id',
             'category_id' => 'required|exists:ticketit_categories,id',
+            // 'zone_id' => 'required'
         ]);
 
         $ticket = new Ticket();
-
         $ticket->subject = $request->subject;
         $ticket->html = $request->html;
-
         $content = $this->imagesToLink($request->get('content'));
-
-     
 
         // check if heat map urls is added
         if(isset($request->heat_map_url[0]) && $request->heat_map_url[0]) {
@@ -347,7 +378,6 @@ class TicketsController extends Controller
         }
 
         $ticket->setPurifiedContent($content);
-
         $category = Models\Category::find($request->category_id);
 
         if($category->children->count())
@@ -358,8 +388,8 @@ class TicketsController extends Controller
         }
 
         $ticket->priority_id = $request->priority_id;
-
         $ticket->status_id = TSetting::grab('default_status_id');
+        $ticket->zone_id = $request->zone_id; 
 
         if($request->user_id) {
             $ticket->user_id = $request->user_id;
@@ -372,24 +402,25 @@ class TicketsController extends Controller
         }else{
             $ticket->autoSelectAgent();
         } */
-
+                  
         $ticket->autoSelectAgent();
-
         $ticket->save();
 
+        ProcessTicketsToChannels::dispatch($ticket,$content);
+
         // push ticket to asana
-        try {
-            $asana_service->push_ticket($ticket->id);
-        } catch(\Exception $e) {
-            \Log::error('Tickets Error: failed to push tickets to Asana');
-            \Log::error($e->getMessage());
-        }
+        // try {
+        //     $asana_service->push_ticket($ticket->id);
+        // } catch(\Exception $e) {
+        //     \Log::error('Tickets Error: failed to push tickets to Asana');
+        //     \Log::error($e->getMessage());
+        // }
 
         session()->flash('status', trans('ticketit::lang.the-ticket-has-been-created'));
 
         return redirect()->action('\Kordy\Ticketit\Controllers\TicketsController@index');
     }
-
+                                               
     /**
      * Display the specified resource.
      *
@@ -399,8 +430,7 @@ class TicketsController extends Controller
      */
     public function show($id)
     {
-        $ticket = $this->tickets->findOrFail($id);
-
+        $ticket = $this->tickets->findOrFail($id);   
         $user = Sentinel::getUser();
  
         if($ticket->user_id == $user->id || Sentinel::getUser()->ticketit_agent || Sentinel::getUser()->ticketit_admin){
@@ -408,7 +438,7 @@ class TicketsController extends Controller
 
             $close_perm = $this->permToClose($id);
             $reopen_perm = $this->permToReopen($id);
-    
+            
             if(Sentinel::inRole('client')){
                 $first_admin = Sentinel::getUser()->admin_user;
             }elseif (Sentinel::inRole('admin')) {
@@ -433,24 +463,26 @@ class TicketsController extends Controller
             $selected_subcategory = ($ticket->category->parent_category) ? $ticket->category->id : null;
     
             $comments = $ticket->comments()->paginate(TSetting::grab('paginate_items'));
-
+            $plan_names = '';
             try {
-                $plan_names = implode(', ', $ticket->user->account->get_plan_names());
+               $plan_names = !empty($ticket->user->account->get_plan_names()) ? implode(', ', $ticket->user->account->get_plan_names()) : '';
             } catch (\Exception $e) {
                 $plan_names = '';
                 \Log::info($e->getMessage());
             }
-    
-            return view('ticketit::tickets.show',
-                compact('ticket', 'status_lists', 'priority_lists', 'category_lists', 'subcategories', 'selected_category', 'selected_subcategory', 'agent_lists', 'comments',
-                    'close_perm', 'reopen_perm', 'plan_names'));
+            
+            $dev_statuses = TicketsDeveloperStatus::all()->pluck('name', 'id')->toArray();
+            $scripts = Scripts::all();
+
+            return view('ticketit::tickets.show', compact('ticket', 'status_lists', 'priority_lists', 'category_lists', 'subcategories', 'selected_category', 'selected_subcategory', 'agent_lists', 'comments',
+                    'close_perm', 'reopen_perm', 'plan_names', 'dev_statuses', 'scripts'));
         } else {
             return redirect()->route(TSetting::grab('main_route').'.index');
         }
 
-       
+                                          
     }
-
+                 
     /**
      * Update the specified resource in storage.
      *
@@ -461,6 +493,9 @@ class TicketsController extends Controller
      */
     public function update(Request $request, $id, AsanaService $asana_service)
     {
+
+
+      
         $user = Sentinel::getUser();
 
         if($user->ticketit_admin || $user->ticketit_agent) {
@@ -483,7 +518,7 @@ class TicketsController extends Controller
         if($request->subject) {
             $ticket->subject = $request->subject;
         }
-
+        $content = '';
         if($request->content) {
             $content = $this->imagesToLink($request->get('content'));
             $ticket->setPurifiedContent($content);
@@ -526,11 +561,24 @@ class TicketsController extends Controller
             $ticket->completed_at = Carbon::now();
         }
 
+        $ticket->completion_date = $request->completion_date;
+        $ticket->dev_hours = $request->dev_hours;
+        $ticket->dev_status_id = $request->dev_status_id;
+        $ticket->dev_notes = $request->dev_notes;
+        $ticket->slack_conversation_link = $request->slack_conversation_link;
         $ticket->save();
-
+        
         if($request->status_id) {
 
-            $asana_service->update_task_status_tag($ticket);
+            try {
+                $infinity_service = new InfinityService();
+                $infinity_service->updateTicket($ticket, $content);
+            } catch(\Exception $e) {
+                \Log::error('Tickets Error: failed to update ticket on Infinity');
+                \Log::error($e->getMessage());
+            }
+
+            /* $asana_service->update_task_status_tag($ticket);
 
             // complete asana task
             if($request->status_id == 4) {
@@ -540,14 +588,31 @@ class TicketsController extends Controller
                     \Log::error('Tickets Error: failed to mark ticket as complete on Asana');
                     \Log::error($e->getMessage());
                 }
-            }
+            } */
         }
 
+        if(!isset($request->tags)) {
+            $curr_ticket = Ticket::where('id', $id)->first();
+            $curr_ticket->tags()->detach();
+        }else if(isset($request->tags)) {
+            //Insert tags 
+            $data = array();
+
+            foreach($request->tags as $value) {
+                array_push($data,[
+                    'ticket_id' => $id,
+                    'ticketit_tags_id' => $value
+                ]);
+            }
+            
+            TicketTags::insert($data);
+        }
+  
         session()->flash('status', trans('ticketit::lang.the-ticket-has-been-modified'));
 
         return redirect()->route(TSetting::grab('main_route').'.show', $id);
     }
-
+                                          
     /**
      * Remove the specified resource from storage.
      *
@@ -565,7 +630,7 @@ class TicketsController extends Controller
 
         return redirect()->route(TSetting::grab('main_route').'.index');
     }
-
+                                                                   
     /**
      * Mark ticket as complete.
      *
@@ -573,7 +638,7 @@ class TicketsController extends Controller
      *
      * @return Response
      */
-    public function complete($id, AsanaService $asana_service)
+    public function complete($id, AsanaService $asana_service, InfinityService $infinity_service)
     {
         if ($this->permToClose($id) == 'yes') {
             $ticket = $this->tickets->findOrFail($id);
@@ -584,10 +649,13 @@ class TicketsController extends Controller
             }
 
             $subject = $ticket->subject;
-            $ticket->save();
+          $ticket->save();
+
+     
 
             // complete asana task
             try {
+                $infinity_service->close_ticket($ticket);
                 $asana_service->complete_task($id);
             } catch(\Exception $e) {
                 \Log::error('Tickets Error: failed to mark ticket as complete on Asana');
@@ -844,6 +912,103 @@ class TicketsController extends Controller
 
         return $html;
     }
+
+    public function storeSupportNotes(Request $request)
+    {
+       $user_id = Sentinel::getUser()->id;
+       $note = new SupportNote();
+       $note->notes = $request->note;
+       $note->ticket_id = $request->ticket_id;
+       $note->user_id = $user_id;
+       if($note->save()) {
+            return response()->json(['success' => true, 'message' => 'Note added successfully.']);
+       } else {
+            return response()->json(['success' => false, 'message' => 'There was a problem adding the note.']);
+       }
+    }
+
+    public function getSupportNotesByTicketId($ticketid)
+    {
+        $support_notes = SupportNote::where('ticket_id', $ticketid)->with('user')->get();
+        return response()->json(['data' => $support_notes],200);
+    }
+
+    public function updateSupportNote(Request $request)
+    {
+        $note = SupportNote::find($request->id);
+        $note->notes = $request->note;
+        if($note->save()) {
+            return response()->json(['success' => true, 'message' => 'Note updated successfully.']);
+       } else {
+            return response()->json(['success' => false, 'message' => 'There was a problem updating the note.']);
+       }
+    }
     
+    public function deleteSupportNote(Request $request)
+    {
+        $note = SupportNote::find($request->id);
+        if($note) {
+           if($note->delete()){
+            return response()->json(['success' => true, 'message' => 'Note deleted successfully.']);
+           } else {
+            return response()->json(['success' => false, 'message' => 'There was a problem deleting the note.']);
+           }
+        } else {
+            return response()->json(['success' => false, 'message' => 'There was a problem deleting the note.']);
+        }
+    }         
+
+    public function apiStoreTicket(Request $request)
+    {
+        $user = User::where('email', $request->email)->first();
+        $priority = Priority::where('name', 'LIKE', '%'.$request->priority.'%')->first();
+        $sub_category = Category::where('name', 'LIKE', '%'.$request->module.'%')->first();
+
+        $ticket = new Ticket();
+        $ticket->user_id = $user->id; 
+        $ticket->priority_id = $priority->id; //not yet confirmed, default?
+        $ticket->category_id = $sub_category->id;   //not yet confirmed
+        $ticket->subject = $request->subject; //not yet confirmed
+        $ticket->content = $request->content; //not yet confirmed
+        $ticket->status_id = TSetting::grab('default_status_id'); 
+        $ticket->autoSelectAgent();
+        if($ticket->save()) {
+            //ProcessTicketsToChannels::dispatch($ticket,$request->content);
+            return response()->json(['success' => true, 'message' => 'Ticket successfully created.'], 200);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Error creating ticket.'], 400);
+        }
+    } 
     
-}
+    public function averageResponseTime()
+    {
+        $ticketService = new TicketsService();
+        $average_thirty_total = $ticketService->getTotalAverageResponseThirtyDays();
+        $average_seven_total = $ticketService->getTotalAverageResponseSevenDays();
+
+        return response()->json([ 'thirty_days' => $average_thirty_total, 'seven_days' =>  $average_seven_total],200);
+    }
+
+    public function emailReportsSettingsIndex()
+    {
+        $frequencies = ['Daily' => 'Daily', 'Weekly'  => 'Weekly', 'Monthly' => 'Monthly'];
+
+        $current_user_email = Sentinel::getUser()->email;
+
+        return view('ticketit::admin.email_reports.index')
+                ->with('frequencies', $frequencies)
+                ->with('current_user_email', $current_user_email);
+    }
+
+    public function getAverageByDateRange(Request $request)
+    {
+        $date_to = $request->date_to;
+        $date_from = $request->date_from;
+
+        $ticketService = new TicketsService();
+        $average_response_by_date_rage = $ticketService->getAverageByDateRange($date_to,$date_from);
+        return response()->json(['average_response_by_date_rage' => $average_response_by_date_rage],200);
+    }
+                                                                       
+}                             
+                                                                                                                

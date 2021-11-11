@@ -11,7 +11,7 @@ use Kordy\Ticketit\Helpers\LaravelVersion;
 use Cartalyst\Sentinel\Laravel\Facades\Activation;
 use Sentinel;
 use App\User;
-
+use Kordy\Ticketit\Models\TicketsAgentSettings;
 use Kordy\Ticketit\Repositories\CategoriesRepository;
 use Kordy\Ticketit\Repositories\NotificationSettingsRepository;
 use Kordy\Ticketit\Services\NotificationService;
@@ -201,4 +201,17 @@ class AgentsController extends Controller
 
         return redirect()->back();
     }
+
+    public function updateAgentSettings(Request $request)
+    {
+        $agent_settings = TicketsAgentSettings::where('id', $request->id)->first();
+        $agent_settings->data = $request->url;
+        if($agent_settings->save()) {
+            return response()->json(['success' => true, 'message' => 'Settings successfully saved.']);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Error saving settings.']);
+        }     
+    }
+
+
 }

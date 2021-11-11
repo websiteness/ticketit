@@ -1,3 +1,10 @@
+@push('header_styles')
+<style>
+.count:hover{
+  cursor: grab !important;
+}
+</style>
+@endpush
 <div class="row">
     <div class="col-md-2">
         <select class="form-control" id="show_stats">
@@ -15,7 +22,7 @@
         </div> -->
     </div>
 </div>
-
+                                                    
 @push('footer_scripts')
 <script>
     renderStats();
@@ -32,7 +39,7 @@
 
         getCategoriesStats();
     }
-
+                                                      
     function getStatusStats() {
         let url = `{{ route($setting->grab('admin_route') . '.stats.status_count') }}`;
         let content = '';
@@ -43,8 +50,8 @@
             res.json().then((data) => {
                 // console.log(data);
                 data.forEach(element => {
-                    // console.log(element.name)
-                    content = content + `<div class="col-md-2 col-sm-4  tile_stats_count">
+                    console.log(element.name)
+                    content = content + `<div class="col-md-2 col-sm-4 tile_stats_count" onclick="filterTable('`+element.name+`')">
                                     <span class="count_top"> ${element.name}</span>
                                     <div class="count green">${element.count}</div>
                                 </div>`;
@@ -56,16 +63,14 @@
             console.log('Error', err);
         });
     }
-
+                                                                                
     function getCategoriesStats() {
         let url = `{{ route($setting->grab('admin_route') . '.stats.categories_count') }}`;
         let content = '';
-        console.log(url);
-
         fetch(url)
         .then((res) => {
             res.json().then((data) => {
-                // console.log(data);
+                console.log(data);
                 data.forEach(element => {
                     console.log(element)
                     content = content + `<div class="col-md-2 col-sm-4  tile_stats_count">
@@ -79,6 +84,29 @@
         .catch((err) => {
             console.log('Error', err);
         });
-    }
+    };
+
+    function filterTable(status_name){
+        if(status_name == 'Overdue') {
+            let query_string = `?status=overdue`;
+            initDatatable(query_string);
+        }else if(status_name == 'No Response') {
+            let query_string = `?status=no_response`;
+            initDatatable(query_string);
+        }else if (status_name !== 'Overdue' && status_name !== 'No Response' ) {
+            let route = "{{ route($setting->grab('admin_route').'.status.name', ['name' => 'status_name']) }}";         
+            let url = route.replace('status_name', status_name);    
+            fetch(url).then((res) => {
+                res.json().then((data) => {
+                    console.log(data);
+                    let query_string = `?status=${data.data.id}`;
+                    initDatatable(query_string);
+                });
+            }).catch((err) => {
+                console.log('Error', err);
+            });
+        }
+    }                          
+              
 </script>
 @endpush

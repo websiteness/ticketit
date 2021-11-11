@@ -15,8 +15,8 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
     Route::resource($main_route_path, 'Kordy\Ticketit\Controllers\TicketsController', [
             'names' => [
                 'index'   => $main_route.'.index',
-                'store'   => $main_route.'.store',
                 'create'  => $main_route.'.create',
+                // 'store'  => $main_route.'.store',
                 'update'  => $main_route.'.update',
                 'show'    => $main_route.'.show',
                 'destroy' => $main_route.'.destroy',
@@ -26,6 +26,8 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
                 $field_name => 'ticket',
             ],
         ]);
+
+    Route::post("$main_route_path/store",'Kordy\Ticketit\Controllers\TicketsController@store');
     
 
     //Ticket Comments public route
@@ -53,6 +55,30 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
     Route::get("$main_route_path/{id}/reopen", 'Kordy\Ticketit\Controllers\TicketsController@reopen')
             ->name("$main_route.reopen");
     //});
+    
+    Route::prefix("$main_route_path/tags")->name("$main_route.tags.")->middleware('Kordy\Ticketit\Middleware\IsAgentMiddleware')->group(function() {
+        Route::get('index', '\Kordy\Ticketit\Controllers\TagsController@index')->name('index');
+        Route::post('store', '\Kordy\Ticketit\Controllers\TagsController@store')->name('store');
+        Route::get('all', '\Kordy\Ticketit\Controllers\TagsController@all')->name('all');
+        Route::get('ticket/{id}', '\Kordy\Ticketit\Controllers\TagsController@getSelectedTagsByTicketId')->name('ticket-tags');
+        Route::get('create', '\Kordy\Ticketit\Controllers\TagsController@create')->name('create');
+        Route::post('save', '\Kordy\Ticketit\Controllers\TagsController@save')->name('save');
+        Route::get('show/{id}', '\Kordy\Ticketit\Controllers\TagsController@show')->name('show');
+        Route::patch('update/{id}', '\Kordy\Ticketit\Controllers\TagsController@update')->name('update');
+        Route::delete('delete/{id}', '\Kordy\Ticketit\Controllers\TagsController@delete')->name('delete');
+    });
+
+    Route::prefix("$main_route_path/scripts")->name("$main_route.scripts.")->middleware('Kordy\Ticketit\Middleware\IsAgentMiddleware')->group(function() {
+        Route::get('index', '\Kordy\Ticketit\Controllers\ScriptsController@index')->name('index');
+        Route::post('store', '\Kordy\Ticketit\Controllers\ScriptsController@store')->name('store');
+        Route::get('all', '\Kordy\Ticketit\Controllers\ScriptsController@all')->name('all');
+        Route::get('ticket/{id}', '\Kordy\Ticketit\Controllers\ScriptsController@getSelectedTagsByTicketId')->name('ticket-tags');
+        Route::get('create', '\Kordy\Ticketit\Controllers\ScriptsController@create')->name('create');
+        Route::post('save', '\Kordy\Ticketit\Controllers\ScriptsController@save')->name('save');
+        Route::get('show/{id}', '\Kordy\Ticketit\Controllers\ScriptsController@show')->name('show');
+        Route::patch('update/{id?}', '\Kordy\Ticketit\Controllers\ScriptsController@update')->name('update');
+        Route::delete('delete/{id}', '\Kordy\Ticketit\Controllers\ScriptsController@delete')->name('delete');
+    });
 
     Route::group(['middleware' => 'Kordy\Ticketit\Middleware\IsAgentMiddleware'], function () use ($main_route, $main_route_path) {
 
@@ -83,6 +109,7 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
                 'edit'    => "$admin_route.status.edit",
             ],
         ]);
+
 
         //Ticket priorities admin routes (ex. http://url/tickets-admin/priority)
         Route::resource("$admin_route_path/priority", 'Kordy\Ticketit\Controllers\PrioritiesController', [
@@ -149,6 +176,7 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
             ],
         ]);
 
+        // Route::get('status', 'Kordy\Ticketit\Controllers\TicketsController@get');
         //Tickets demo data route (ex. http://url/tickets-admin/demo-seeds/)
         // Route::get("$admin_route/demo-seeds", 'Kordy\Ticketit\Controllers\InstallController@demoDataSeeder');
     });
@@ -159,11 +187,18 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
         # Settings
         Route::prefix($admin_route.'/settings')->name($admin_route.'.settings.')->group(function() {
             Route::get('/', 'Kordy\Ticketit\Controllers\SettingsController@index')->name('index');
-
+            Route::post('store-token', 'Kordy\Ticketit\Controllers\SettingsController@storeToken')->name('store-token');
             Route::prefix('overdue')->name('overdue.')->group(function() {
                 Route::post('save', 'Kordy\Ticketit\Controllers\SettingsController@saveOverdueHours')->name('save');
             });
+
+            Route::prefix('email-reports')->name('email-reports.')->group(function() {
+                Route::get('index', 'Kordy\Ticketit\Controllers\TicketsController@emailReportsSettingsIndex')->name('index');
+                Route::post('store', 'Kordy\Ticketit\Controllers\SettingsController@storeEmailReportSettings')->name('store');
+            });
+           
         });
+
     });
 
     # Agent and Admin Routes
@@ -171,12 +206,16 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
 
         # Agent
         Route::prefix('agent/{id}')->name('agent.')->group(function () {
-
+          
             # Notfications
             Route::prefix('notifications')->name('notifications.')->group(function () {
                 Route::get('settings', 'Kordy\Ticketit\Controllers\AgentsController@viewNotifications')->name('settings');
                 Route::post('settings', 'Kordy\Ticketit\Controllers\AgentsController@saveNotificationSettings')->name('settings.store');
             });
+        });
+
+        Route::prefix('agent')->name('agent.')->group(function () {
+            Route::post('update/settings','\Kordy\Ticketit\Controllers\AgentsController@updateAgentSettings')->name('update.settings');
         });
 
         # Categories
@@ -186,7 +225,16 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
             Route::prefix('owners')->name('owners.')->group(function() {
                 Route::get('/', '\Kordy\Ticketit\Controllers\CategoriesController@viewCategoryOwners')->name('index');
                 Route::post('/store', '\Kordy\Ticketit\Controllers\CategoriesController@storeCategoryOwners')->name('store');
+
             });
+            
+        });
+
+        Route::prefix('support-notes')->name('support-notes.')->group(function() {
+            Route::post('store/note', '\Kordy\Ticketit\Controllers\TicketsController@storeSupportNotes')->name('store.note');
+            Route::get('notes/{ticketid}', '\Kordy\Ticketit\Controllers\TicketsController@getSupportNotesByTicketId')->name('notes');
+            Route::post('update','\Kordy\Ticketit\Controllers\TicketsController@updateSupportNote')->name('update');
+            Route::post('delete','\Kordy\Ticketit\Controllers\TicketsController@deleteSupportNote')->name('delete');
         });
 
         # Asana
@@ -225,6 +273,46 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
                 Route::post('map','\Kordy\Ticketit\Controllers\Integrations\AsanaController@map_statuses')->name('map');
             });
         });
+
+        Route::prefix('infinity')->name('infinity.')->group(function() {
+            Route::get('/', '\Kordy\Ticketit\Controllers\Integrations\InfinityController@index')->name('index');
+            Route::get('fields/mapping','\Kordy\Ticketit\Controllers\Integrations\InfinityController@tickets_mapping_index')->name('fields.mapping');
+            Route::get('users/mapping','\Kordy\Ticketit\Controllers\Integrations\InfinityController@user_mapping_index')->name('users.mapping');
+            Route::get('boards','\Kordy\Ticketit\Controllers\Integrations\InfinityController@get_boards')->name('boards');
+            Route::post('boards/store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_board')->name('boards.store');
+            Route::get('folders/workspace/{workspace}/board/{board}','\Kordy\Ticketit\Controllers\Integrations\InfinityController@get_folders')->name('folders');
+            Route::post('folders/store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_folder')->name('folders.store');  
+            Route::post('token/store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_token')->name('token.store');  
+            Route::post('fields/map','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_fields')->name('fields.map'); 
+            Route::post('users/store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_users')->name('users.store'); 
+            Route::get('ticket/status/mapping','\Kordy\Ticketit\Controllers\Integrations\InfinityController@ticket_status_mapping_index')->name('ticket.status.mapping');  
+            Route::post('status/store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_status')->name('status.store');  
+            Route::get('versions/workspace/{workspace}/board/{board}','\Kordy\Ticketit\Controllers\Integrations\InfinityController@get_versions')->name('versions');
+
+
+            Route::prefix('workspaces')->name('workspaces.')->group(function() {
+                Route::get('list','\Kordy\Ticketit\Controllers\Integrations\InfinityController@get_workspace_list')->name('list');
+                Route::post('store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_workspace')->name('store');
+                
+            });
+            Route::prefix('categories')->name('categories.')->group(function() {
+                Route::get('/','\Kordy\Ticketit\Controllers\Integrations\InfinityController@categories_mapping_index')->name('index');
+                Route::post('store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_categories')->name('store');
+                Route::get('sub/index','\Kordy\Ticketit\Controllers\Integrations\InfinityController@sub_categories_mapping_index')->name('sub.index');
+                Route::post('sub/store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_sub_categories')->name('sub.store');
+            });
+
+            Route::prefix('versions')->name('versions.')->group(function() {
+                // Route::get('/','\Kordy\Ticketit\Controllers\Integrations\InfinityController@version_mapping_index')->name('index');
+                // Route::post('store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_versions')->name('store');
+            });
+
+            Route::prefix('dev-status')->name('dev-status.')->group(function() {
+                Route::get('/','\Kordy\Ticketit\Controllers\Integrations\InfinityController@dev_status_mapping_index')->name('index');
+                Route::post('store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_dev_status')->name('store');
+            });
+        });
+        
     });
 
     # Stats
@@ -235,5 +323,15 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
         // Route::get('status', 'Kordy\Ticketit\Controllers\StatsController@getStatus')->name('status');
     });
 
+    Route::prefix("$admin_route/status")->name($admin_route.'.status.')->group(function() {
+        Route::get("name/{name}", 'Kordy\Ticketit\Controllers\StatusesController@getByName')->name('name');
+    });
+    
+
+    // Get zones
+    Route::get($main_route_path.'category/{id}/zones', '\Kordy\Ticketit\Controllers\CategoriesController@getZones')->name($main_route_path.'.category.zones');
+
+    Route::get($admin_route.'/average-ticket-response', '\Kordy\Ticketit\Controllers\TicketsController@averageResponseTime')->name($admin_route.'.average-ticket-response');
+    Route::get($admin_route.'/average-ticket-response-by-date', '\Kordy\Ticketit\Controllers\TicketsController@getAverageByDateRange')->name($admin_route.'.average-ticket-response-by-date');
 
 });

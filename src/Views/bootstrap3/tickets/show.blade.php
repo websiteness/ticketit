@@ -90,18 +90,60 @@
     .mt-5{
         margin-top: 5px;
     }
+
+    .thumbnail-padding {
+        padding: 20px;
+    }
+    .ticket-comment__message-content {
+        background-color: #eee;
+    }
+
+    .note-user-name {
+        color:  #4c6578 !important;
+    }
+    .note-notes {
+        color: #4c6578  !important;
+    }
+
+    .thumbnail-scripts {
+        overflow-y: scroll;
+        height: 100%;
+    }
+
+    .thumbnail-notes .note-font {
+        visibility: hidden !important;
+    }
+
+    .thumbnail-notes  .note-para {
+        visibility: hidden !important;
+    }
+
+    .thumbnail-notes  .note-table {
+        visibility: hidden !important;
+    }
+
+    .thumbnail-notes  .note-view {
+        visibility: hidden !important;
+    }
+    
+    .thumbnail-notes  .note-insert {
+        float: left !important;
+    }
+
+ 
+        
 </style>
 @stop
 @section('content')
 @include('ticketit::shared.header')
 <div class="container">
-    <div class="row">
+    <div class="row ticket-cont">
         @if(Sentinel::inRole('super-admin'))
-            <div class="col-lg-8 col-md-8 col-sm-8">
+            <div class="col-lg-8 col-md-8 col-sm-8 col-1">
         @elseif(Sentinel::inRole('ticket-agent'))
-            <div class="col-lg-8 col-md-8 col-sm-8">
+            <div class="col-lg-8 col-md-8 col-sm-8 col-1">
         @else
-            <div class="col-lg-12 col-md-12 col-sm-12">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-1">
         @endif
                 @include('ticketit::tickets.partials.ticket_body')
                 <br>
@@ -113,8 +155,8 @@
             </div>
 
             @if(Sentinel::inRole('super-admin') || Sentinel::inRole('ticket-agent'))
-            <div class="col-sm-4 ticket-sidenavbar-mt-20 h-100 ticket-sidenav">
-                <div class="thumbnail">
+            <div class="col-sm-4 ticket-sidenavbar-mt-20 h-100 ticket-sidenav col-2">
+                <div class="thumbnail thumbnail-contact">
                     <div class="caption">
                         <div class="row ticket-profile-pic">
                             <img src="{{asset('images/user-big.png')}}" class="img-circle" alt="" width="100" height="88">                
@@ -123,6 +165,7 @@
                             <span><img src="{{asset('images/icon-user.png')}}" alt="" width="20px" height="20px"><h3>Contact Info</h3></span>
                             <hr>
                         </div>
+                        <input type="hidden" class="t-id" value="{{ $ticket->id }}">
                         <div class="text-light">
                             <h4>  {{ $ticket->user->name }}</h4>
                             <p class="fw-600 contact-info-details align-center"> <span class="contact-info-span-main"> <img src="{{asset('images/email-result.png')}}" alt="" width="20px" height="20px"> </span> <span class="contact-info-span" > Email: {{ $ticket->user->email }} </span> </p>  
@@ -159,16 +202,95 @@
                         </table>
                     </div>
                 </div>
+
+                <div class="thumbnail thumbnail-padding thumbnail-notes">
+                    <h4>Support Notes</h4>
+                    <hr>
+                    <div class="row">       
+                        <div class="form-group">
+                          <div class="col">
+                              {{ CollectiveForm::label('Note:') }}
+                              {!! CollectiveForm::textarea('dev_notes', null, ['class' => 'form-control add-note', 'rows' => "3"]) !!}
+                              <button class="btn btn-success mt-5 pull-right btn-submit-note"> Submit</button>  
+                        </div>
+                        </div>
+                    </div> 
+                    <hr>
+                    <div class="support-notes-items">
+                    </div>      
+                </div>
+                <div class="thumbnail thumbnail-padding thumbnail-scripts">
+                    <h4>Scripts</h4>
+                    <hr>
+                    <div class="col-sm">
+                        @if($scripts)
+                            @foreach ($scripts as $script)
+                                <button class="btn btn-secondary text-sm" value="{{ $script->content }}">{{ $script->title }} </button>
+                            @endforeach
+                        @endif
+                    </div>      
+                </div>
             </div>
             @endif
         </div>
     </div>
+</div>
+
+<div class="modal fade" id="editSupportNoteModal" tabindex="-1" role="dialog" aria-labelledby="editSupportNoteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Edit Note</h5>
+            </div>
+            <div class="modal-body">
+                {{ csrf_field() }}
+                {{ method_field('PUT') }}
+                <fieldset>
+                    <div class="form-group">
+                        <div class="col-lg-12">
+                            {!! CollectiveForm::textarea('content', null, ['class' => 'form-control edit-support-note-editor', 'rows' => "3"]) !!}
+                            <input name="sn_id" class="update-note-id" type="hidden" value="">
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button class="btn btn-primary btn-update-supp-note">Update</button>
+            </div>
+    </div>
+  </div>
 </div>
 @endsection
 
 @section('footer')
 <script>
     $(document).ready(function() {
+
+        var options = $.extend(true, {lang: '' , codemirror: {theme: 'monokai', mode: 'text/html', htmlMode: true, lineWrapping: true} } , {
+        "height": 50,
+        "toolbar": [
+          ["font", ["bold", "underline", "italic"]],
+          ["para", ["ul", "ol", "paragraph"]],
+          ["table", ["table"]],
+          ["insert", ["link"]],
+          ["view", ["fullscreen", "codeview", "help"]]
+	    ]});
+
+        $(".add-note").summernote(options);
+
+        let col_1 = $('.col-1').height();
+        // $('.col-2').css('height', col_1);
+        let thumbnail_contact = $('.thumbnail-contact').height();
+        let thumbnail_notes = $('.thumbnail-notes').height();
+        let total_height = col_1 - thumbnail_contact - thumbnail_notes + 33;
+                    
+        $('.thumbnail-scripts').css('height', total_height);
+        if($('.thumbnail-scripts').height() < 50) {
+            $('.thumbnail-scripts').css('height', 500) ;
+           // $('.col-2').css('height', col_1 + 560);
+        }
+
         $(".deleteit").click(function(event) {
             event.preventDefault();
             if (confirm("{!! trans('ticketit::lang.show-ticket-js-delete') !!}" + $(this).attr("node") + " ?")) {
@@ -176,10 +298,12 @@
                 $("#" + form).submit();
             }
         });
+             
         $('#category_id').change(function() {
             var loadpage = "{!! route($setting->grab('main_route').'agentselectlist') !!}/" + $(this).val() + "/{{ $ticket->id }}";
             $('#agent_id').load(loadpage);
         });
+
         $('#confirmDelete').on('show.bs.modal', function(e) {
             $message = $(e.relatedTarget).attr('data-message');
             $(this).find('.modal-body p').text($message);
@@ -189,31 +313,71 @@
             var form = $(e.relatedTarget).closest('form');
             $(this).find('.modal-footer #confirm').data('form', form);
         });
+
         $('#confirmDelete').find('.modal-footer #confirm').on('click', function() {
             $(this).data('form').submit();
         });
+
         $('#comment_reply').click(function() {
             $('#comment_form').css('display', 'block');
             $('#comment_reply').css('display', 'none');
         });
+
         $('#cancel_reply').click(function() {
             $('#comment_form').css('display', 'none');
             $('#comment_reply').css('display', 'block');
         });
-    });
+
+        $('.btn-submit-note').click(function () {
+            let note = $(".add-note").summernote("code");
+            let route = "{{ route($setting->grab('admin_route').'.support-notes.store.note') }}"; 
+            let ticket_id = $('.t-id').val();
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            $.post(route, {note: note, ticket_id : ticket_id}, function(data){
+                $(".add-note").summernote("code", "");
+                $('.support-notes-items').empty();
+                getSupportNotes();
+            });
+        });
+
+        $('.btn-update-supp-note').click( function() {
+            let note = $('.edit-support-note-editor').val();
+            let id = $('.update-note-id').val();
+            let route = "{{ route($setting->grab('admin_route').'.support-notes.update') }}"; 
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            $.post(route, {note: note, id : id}, function(data){
+                if(data.success) {
+                    $('#editSupportNoteModal').modal('hide')
+                    alert(data.message)
+                } else {
+                    alert(data.message)
+                }
+                $('.support-notes-items').empty();
+                getSupportNotes();
+            });
+        })
+    });                                                                  
 </script>
 @include('ticketit::tickets.partials.summernote')
 {{-- {!! json_encode($status_lists) !!} --}}
 <script>
     $('document').ready(function() {
-
+        getSupportNotes();
         var subcategories = {!! json_encode($subcategories) !!};
         let val = $('.cat option:selected').val();
 
         if (typeof(subcategories[val]) !== 'undefined' && subcategories[val] !== '' && subcategories[val] !== null) {
             $('.subcat').html(generateDropdown(val, subcategories));
         } else {
-            $('.subcat').html('');
+            $('.subcat').empty();
         }
 
         // Form Submit Handling
@@ -247,6 +411,12 @@
             Swal.close();
         });
 
+        $('.btn-secondary').on('click', function(e) {
+            e.preventDefault(e);
+            let value = $(this).val()
+            $('.summernote-editor').summernote('code', value);
+        });
+
     });
 
     function selectCategory(ev) {
@@ -257,7 +427,7 @@
             $('.subcat').html('');
         }
     }
-
+            
     // generate Dropdown Element HTML
     function generateDropdown(id, subcategories) {
         var seleted_ = "{{ $selected_subcategory }}"
@@ -295,6 +465,61 @@
         el += '</div>';
         return el;
     }
-    // Reply Submit if user is agent or Super Admin
+
+    function getSupportNotes() {     
+        let ticket_id = $('.t-id').val();
+        let route = "{{ route($setting->grab('admin_route').'.support-notes.notes', ['ticketid' => 'ticketid'] ) }}";         
+        let new_route = route.replace('ticketid', ticket_id);         
+        let content = '';
+        const formatter = new Intl.RelativeTimeFormat();
+        $.get(new_route, (res) => {
+            res.data.forEach((e) => {
+              let d = new Date(e.created_at);
+              let deltaDays = (d.getTime() - Date.now()) / (1000 * 3600 * 24);
+              let result = formatter.format(Math.round(deltaDays), 'days')
+                let notes =  e.notes;
+              content +=  `<div class="ticket-comment__item ">
+                                <div class="ticket-comment__message ">
+                                    <div class="ticket-comment__message-content">
+                                        <h5 class="note-user-name">Name: `+ e.user.full_name +` </h5> <p class="note-notes"> ` + e.notes + ` </p>                    
+                                        <div class="comment-comment__actions">
+                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editSupportNoteModal" onclick="editComment(`+ e.id + `,`+ escape(notes)  +`)" ><i class="fa fa-pencil"></i></button>                       
+                                            <button onclick="deleteNote(`+ e.id +`)" class="btn btn-sm btn-delete-note"><i class="fa fa-trash"></i></button>         
+                                        </div>
+                                </div>
+                                <span class="ticket-comment__time-delivered">
+                                    <span class="ticket-comment__date"> ` + d.toLocaleDateString() +` </span> ` + result + `   
+                                </span>
+                            </div></div>`;
+            }); 
+            $('.support-notes-items').append(content);                    
+        })           
+    }
+                         
+    function editComment(id, content) {
+        setTimeout(function() {
+            $('.edit-support-note-editor').val(content);
+            $('.update-note-id').val(id);
+        }, 300);
+    }
+
+    function deleteNote(id) {
+        let route = "{{ route($setting->grab('admin_route').'.support-notes.delete') }}"; 
+        $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+        });
+        $.post(route, { id : id}, function(data){
+            if(data.success) {
+                alert(data.message)
+            } else {
+                alert(data.message)
+            }
+            $('.support-notes-items').empty();
+            getSupportNotes();
+        });
+    }
+                                         
 </script>
 @append

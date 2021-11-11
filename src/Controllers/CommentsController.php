@@ -12,6 +12,8 @@ use Kordy\Ticketit\Models\Ticket;
 use Sentinel;
 use Illuminate\Support\Str;
 use Kordy\Ticketit\Services\Integrations\AsanaService;
+use Kordy\Ticketit\Services\Integrations\InfinityService;
+use Kordy\Ticketit\Services\TicketCommentsService;
 
 class CommentsController extends Controller
 {
@@ -56,6 +58,9 @@ class CommentsController extends Controller
             'content'     => 'required|min:6',
         ]);
 
+        $ticketCommentService = new TicketCommentsService();
+        $formatted_content = $ticketCommentService->formatTags($request);
+        
         if($request->has('status_change') && $request->get('status_change')){
             // check if status realy changed then send combined email otherwise send only comment do other wise
             $ticket = Models\Ticket::find($request->get('ticket_id'));
@@ -64,15 +69,11 @@ class CommentsController extends Controller
             }else{
                 session(['com_stat_both' => false]);
             }
-
         }
 
         $comment = new Models\Comment();
-
-        $content = $this->imagesToLink($request->content);
-
+        $content = $this->imagesToLink($formatted_content);
         $comment->setPurifiedContent($content);
-
         $comment->ticket_id = $request->get('ticket_id');
         $comment->user_id = \Sentinel::getuser()->id;
         $comment->save();
@@ -108,6 +109,13 @@ class CommentsController extends Controller
 
         // update asana task
         $asana_service->update_ticket($ticket->id);
+        $infinity_service = new InfinityService();
+        $update_ticket = $infinity_service->updateTicket($ticket, $content);
+
+        if(!$update_ticket) {
+            \Log::error('Tickets Error: failed to update ticket.');
+        
+        }
 
         // update task tag if status was changed
         if($request->status_change)

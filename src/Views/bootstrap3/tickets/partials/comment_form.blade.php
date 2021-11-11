@@ -1,3 +1,15 @@
+@push('header_styles')
+<style>
+    @media only screen and (max-width: 1366px) {
+        .custom-btn {
+            width: 150px !important;
+            padding: 13px 12px !important;
+        }
+        
+    }
+</style>
+@endpush
+           
 <div class="ticket-system">
     <div class="ticket-system__tabs" role="tabpanel" data-example-id="togglable-tabs">
         <div class="row">
@@ -22,7 +34,7 @@
                     @endif
                     <div class="x_content" id="comment_form" {{ $u->isAdmin() ? '' : 'style=display:none;' }}>
                         @if(!$u->isAdmin() && !$u->isAgent())
-                            {!! CollectiveForm::open(['method' => 'POST', 'route' => $setting->grab('main_route').'-comment.store', 'class' => 'form-horizontal']) !!}
+                            {!! CollectiveForm::open(['method' => 'POST', 'route' => $setting->grab('main_route').'-comment.store', 'class' => 'form-horizontal comment-form']) !!}
                         @else
                             {!! CollectiveForm::open(['method' => 'POST', 'route' => $setting->grab('main_route').'-comment.store', 'class' => 'form-horizontal comment-form']) !!}
                         @endif
@@ -47,7 +59,7 @@
                                 @else
                                         <!-- {!! CollectiveForm::submit( trans('ticketit::lang.btn-submit'), ['class' => 'custom-btn submit-btn']) !!} -->
                                         @if($u->isAdmin())
-                                        <button class="custom-btn submit-btn pull-right">Reply to user</button>
+                                        <button class="custom-btn submit-btn pull-right" onclick="disable()">Reply to user</button>
                                         @else
                                         <button type="button" class="custom-btn cancel-btn pull-left" id="cancel_reply">Cancel</button>
                                         <button class="custom-btn submit-btn pull-left">Send Reply</button>
@@ -56,6 +68,10 @@
                                 @endif
 
                                 @if($u->isAdmin())
+                                <button class="btn btn-secondary text-sm" value="@{{EMAIL}}">Email</button>
+                                <button class="btn btn-secondary text-sm" value="@{{FIRST_NAME}}">First Name</button>
+                                <button class="btn btn-secondary text-sm" value="@{{LAST_NAME}}">Last Name</button>
+                                <button class="btn btn-secondary text-sm" value="@{{SUBJECT}}">Subject</button>
                                 <div class="ticket-info__actions pull-right">
                                     @if(! $ticket->completed_at && $close_perm == 'yes')
                                             {!! link_to_route($setting->grab('main_route').'.complete', 'Close Ticket', $ticket->id,
@@ -67,7 +83,7 @@
                                             </div>
                                 @endif
                             </div>
-
+                       
                         </fieldset>
                         {!! CollectiveForm::close() !!}
                     </div><!-- x_content -->
@@ -76,3 +92,11 @@
         </div>
     </div>
 </div>
+<script>
+function disable() {
+    $('.submit-btn').prop('disabled', true);
+    $('form.comment-form').submit();
+}
+</script>
+                                           
+                                              

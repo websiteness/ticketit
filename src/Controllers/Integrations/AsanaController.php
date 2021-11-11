@@ -116,8 +116,7 @@ class AsanaController extends Controller
     public function store_settings(Request $request, AsanaService $asana_service)
     {
         $asana_service->store_project($request->project);
-        $asana_service->store_tags($request->tags);
-        
+        $asana_service->store_tags($request->tags);      
         return redirect()->back();
     }
 

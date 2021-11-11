@@ -42,5 +42,4 @@ class Comment extends Model
     {
         return $this->emailContent();
     }
-    
 }

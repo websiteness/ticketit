@@ -324,6 +324,16 @@ class NotificationsController extends Controller
                     Mail::to($to)->queue($mail);
                 } else {
                     Mail::to($to)->send($mail);
+
+                    if($type == 'new-ticket')
+                    {
+                        // try to get zapier email parser and send an email
+                        $zapier_email_parser = TSetting::where('slug', 'zapier_email_parser')->first();
+                        if($zapier_email_parser)
+                        {
+                            Mail::to($zapier_email_parser->value)->send($mail);
+                        }
+                    }
                 }
 
                 // Send User Inapp Notification when email sent
