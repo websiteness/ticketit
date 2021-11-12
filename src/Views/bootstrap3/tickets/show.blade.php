@@ -483,7 +483,7 @@
                                     <div class="ticket-comment__message-content">
                                         <h5 class="note-user-name">Name: `+ e.user.full_name +` </h5> <p class="note-notes"> ` + e.notes + ` </p>                    
                                         <div class="comment-comment__actions">
-                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editSupportNoteModal" onclick="editComment(`+ e.id + `,`+ escape(notes)  +`)" ><i class="fa fa-pencil"></i></button>                       
+                                            <button class="btn btn-sm pull-left" data-toggle="modal" data-target="#editSupportNoteModal" onclick="editComment(`+ e.id + `,'` + e.notes +`')" ><i class="fa fa-pencil"></i></button>                       
                                             <button onclick="deleteNote(`+ e.id +`)" class="btn btn-sm btn-delete-note"><i class="fa fa-trash"></i></button>         
                                         </div>
                                 </div>
@@ -497,10 +497,8 @@
     }
                          
     function editComment(id, content) {
-        setTimeout(function() {
-            $('.edit-support-note-editor').val(content);
-            $('.update-note-id').val(id);
-        }, 300);
+        $('.edit-support-note-editor').summernote('code', content);
+        $('.update-note-id').val(id);
     }
 
     function deleteNote(id) {

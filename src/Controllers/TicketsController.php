@@ -177,7 +177,7 @@ class TicketsController extends Controller
 
         $this->renderTicketTable($collection);
 
-        $collection->editColumn('updated_at', '{!! \Carbon\Carbon::parse($updated_at)->format("m/d/Y") . " (" . \Carbon\Carbon::createFromFormat("Y-m-d H:i:s", $updated_at)->diffForHumans("", true, false, 2) . " ago)" !!}');
+        $collection->editColumn('updated_at', '{!! \Carbon\Carbon::parse($updated_at)->format("m/d/Y") !!}');
        
             $collection->addColumn('tags', function($ticket) {
                 $tickets = Ticket::where('id', $ticket->id)->first();
