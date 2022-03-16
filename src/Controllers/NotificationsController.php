@@ -297,7 +297,7 @@ class NotificationsController extends Controller
 
             if($type == 'new-ticket-zapier'){
                 // $to = [$to];
-                $zapp =  (object)['email' => env('TICKETS_SECOND_EMAIL',''), 'name' => env('APP_NAME')];
+                $zapp =  (object)['email' => config('constants.tickets_notification_email'), 'name' => config('app.name')];
                 // array_push($to, $zapp);
                 $to = $zapp;
             }
