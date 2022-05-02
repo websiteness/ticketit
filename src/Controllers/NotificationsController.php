@@ -302,46 +302,29 @@ class NotificationsController extends Controller
                 $to = $zapp;
             }
 
+            $mail = new \Kordy\Ticketit\Mail\TicketitNotification($template, $data, $notification_owner, $subject);
 
-            if (LaravelVersion::lt('5.4')) {
-                $mail_callback = function ($m) use ($to, $notification_owner, $subject) {
-                    $m->to($to->email, $to->name);
+            if (TSetting::grab('queue_emails') == 'yes') {
+                Mail::to($to)->queue($mail);
+            } else {
+                Mail::to($to)->send($mail);
 
-                    $m->replyTo($notification_owner->email, $notification_owner->name);
-
-                    $m->subject($subject);
-                };
-
-                if (TSetting::grab('queue_emails') == 'yes') {
-                    Mail::queue($template, $data, $mail_callback);
-                } else {
-                    Mail::send($template, $data, $mail_callback);
-                }
-            } elseif (LaravelVersion::min('5.4')) {
-                $mail = new \Kordy\Ticketit\Mail\TicketitNotification($template, $data, $notification_owner, $subject);
-
-                if (TSetting::grab('queue_emails') == 'yes') {
-                    Mail::to($to)->queue($mail);
-                } else {
-                    Mail::to($to)->send($mail);
-
-                    if($type == 'new-ticket')
+                if($type == 'new-ticket')
+                {
+                    // try to get zapier email parser and send an email
+                    $zapier_email_parser = TSetting::where('slug', 'zapier_email_parser')->first();
+                    if($zapier_email_parser)
                     {
-                        // try to get zapier email parser and send an email
-                        $zapier_email_parser = TSetting::where('slug', 'zapier_email_parser')->first();
-                        if($zapier_email_parser)
-                        {
-                            Mail::to($zapier_email_parser->value)->send($mail);
-                        }
+                        Mail::to($zapier_email_parser->value)->send($mail);
                     }
                 }
+            }
 
-                // Send User Inapp Notification when email sent
-                if(isset($to->id)){
-                    $user = Sentinel::findUserById($to->id);
-                    {
-                        $user->notify(new TicketNotification($notify_data));
-                    }
+            // Send User Inapp Notification when email sent
+            if(isset($to->id)){
+                $user = Sentinel::findUserById($to->id);
+                {
+                    $user->notify(new TicketNotification($notify_data));
                 }
             }
 
