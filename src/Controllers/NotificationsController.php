@@ -29,7 +29,7 @@ class NotificationsController extends Controller
         if($comment->user_id != $ticket->user_id) {
 
             try {
-                $this->sendNotification($template, $data, $ticket, $notification_owner, trans('ticketit::lang.notify-new-comment-from').self::OWNER.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
+                $this->sendNotification($template, $data, $ticket, $notification_owner, trans('ticketit::lang.notify-new-comment-from').config('app.name').' Support'.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
             } catch (\Exception $e) {
                 \Log::error('Tickets Error');
                 \Log::error($e->getMessage());
@@ -53,7 +53,7 @@ class NotificationsController extends Controller
                     return false;
                 }
 
-                $this->sendNotification($template, $data, $ticket, $agent, trans('ticketit::lang.notify-new-comment-from').self::OWNER.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
+                $this->sendNotification($template, $data, $ticket, $agent, trans('ticketit::lang.notify-new-comment-from').config('app.name').' Support'.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
             }
         } catch(\Exception $e) {
             \Log::error('Ticket Error on line '. $e->getLine());
