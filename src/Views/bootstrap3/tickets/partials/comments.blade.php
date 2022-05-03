@@ -102,7 +102,7 @@
                                             @if($u->isAgent() || $u->isAdmin())
                                                 {{ $comment->user->name }}:
                                             @else
-                                                Lead Generated Support:
+                                                {{config('app.name')}} Support:
                                             @endif
                                         </h5>
                                         {!! $comment->html !!}

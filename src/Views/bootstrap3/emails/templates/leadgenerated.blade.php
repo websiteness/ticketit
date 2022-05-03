@@ -155,13 +155,13 @@
     <div class="email-template__content" style="margin: 50px auto;max-width: 650px;box-shadow: -5px 1px 13px 7px rgba(0,0,0,0.05);border-top: 2px solid #14b6b7;">
       <div class="email-template__header" style="padding: 50px;display: flex;align-items: center;">
         <div class="email-template__logo" style="width: 220px;margin-right: 20px;">
-          <img src="https://app.leadgenerated.com/images/ticket-email/leadgenerated-logo.png" alt="" style="display: block;height: auto;max-width: 100%;">
+          <img src="{{url('/images/logo-dark.png')}}" alt="" style="display: block;height: auto;max-width: 100%;">
         </div><!-- .email-template__logo -->
         <nav class="email-template__navigation" style="display: flex;justify-content: flex-end;width: 310px;">
           <ul style="padding: 0;margin: 0;list-style: none;">
-            <li style="display: inline-block;border-right: 1px solid #bebebe;padding: 0 5px;"><a href="https://www.leadgenerated.com/" style="color: #bebebe;font-size: 14px;text-decoration: none;display: block;line-height: 15px;font-family: 'Montserrat', sans-serif;">Home</a></li>
-            <li style="display: inline-block;border-right: 1px solid #bebebe;padding: 0 5px;"><a href="https://www.leadgenerated.com/contact/" style="color: #bebebe;font-size: 14px;text-decoration: none;display: block;line-height: 15px;font-family: 'Montserrat', sans-serif;">Contact</a></li>
-            <li style="display: inline-block;border-right: 1px solid #bebebe;padding: 0 5px;"><a href="https://www.leadgenerated.com/support/" style="color: #bebebe;font-size: 14px;text-decoration: none;display: block;line-height: 15px;font-family: 'Montserrat', sans-serif;">Support</a></li>
+            <li style="display: inline-block;border-right: 1px solid #bebebe;padding: 0 5px;"><a href="{{ url('/') }}" style="color: #bebebe;font-size: 14px;text-decoration: none;display: block;line-height: 15px;font-family: 'Montserrat', sans-serif;">Home</a></li>
+            <li style="display: inline-block;border-right: 1px solid #bebebe;padding: 0 5px;"><a href="{{ url('/contact/') }}" style="color: #bebebe;font-size: 14px;text-decoration: none;display: block;line-height: 15px;font-family: 'Montserrat', sans-serif;">Contact</a></li>
+            <li style="display: inline-block;border-right: 1px solid #bebebe;padding: 0 5px;"><a href="{{ url('/support/') }}" style="color: #bebebe;font-size: 14px;text-decoration: none;display: block;line-height: 15px;font-family: 'Montserrat', sans-serif;">Support</a></li>
             <li style="display: inline-block;border-right: 0 none;padding: 0 5px;"><a href="{{ url('/') }}" style="color: #bebebe;font-size: 14px;text-decoration: none;display: block;line-height: 15px;font-family: 'Montserrat', sans-serif;">Login</a></li>
           </ul>
         </nav>
@@ -182,8 +182,8 @@
             <i class="fa fa-envelope-open-o" aria-hidden="true" style="display: inline-block;font: normal normal normal 14px/1 FontAwesome;font-size: 32px;text-rendering: auto;-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;color: #ffffff;margin-right: 12px;"></i>
           </div><!-- .email-template__footer-icon -->
           <div class="email-template__footer-details" style="position: relative;top: 2px;">
-            <h5 style="margin: 0;color: #ffffff;font-size: 18px;font-weight: 400;line-height: 14px;">Lead Generated:</h5>
-            <a href="mailto:support@leadgenerated.com" style="text-decoration: none;color: #ffffff;font-size: 15px;">support@leadgenerated.com</a>
+            <h5 style="margin: 0;color: #ffffff;font-size: 18px;font-weight: 400;line-height: 14px;">{{config('app.name')}}:</h5>
+            <a href="mailto:{{config('constants.support_email')}}" style="text-decoration: none;color: #ffffff;font-size: 15px;">{{config('constants.support_email')}}</a>
           </div>
         </div><!-- .email-template__footer-content -->
       </div><!-- .email-template__footer -->

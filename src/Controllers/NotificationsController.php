@@ -16,7 +16,10 @@ use Kordy\Ticketit\Services\NotificationService;
 
 class NotificationsController extends Controller
 {
-    private const OWNER = 'LG SUPPORT';
+    
+    public function getOnwerLabel(){
+        return config('app.name').' Support';
+    }
 
     public function newComment(Comment $comment)
     {
@@ -29,7 +32,7 @@ class NotificationsController extends Controller
         if($comment->user_id != $ticket->user_id) {
 
             try {
-                $this->sendNotification($template, $data, $ticket, $notification_owner, trans('ticketit::lang.notify-new-comment-from').config('app.name').' Support'.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
+                $this->sendNotification($template, $data, $ticket, $notification_owner, trans('ticketit::lang.notify-new-comment-from').$this->getOnwerLabel().trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
             } catch (\Exception $e) {
                 \Log::error('Tickets Error');
                 \Log::error($e->getMessage());
@@ -53,18 +56,12 @@ class NotificationsController extends Controller
                     return false;
                 }
 
-                $this->sendNotification($template, $data, $ticket, $agent, trans('ticketit::lang.notify-new-comment-from').config('app.name').' Support'.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
+                $this->sendNotification($template, $data, $ticket, $agent, trans('ticketit::lang.notify-new-comment-from').$this->getOnwerLabel().trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
             }
         } catch(\Exception $e) {
             \Log::error('Ticket Error on line '. $e->getLine());
             \Log::error($e->getMessage());
         }
-        
-        /* if($notification_owner->email !== Sentinel::getUser()->email){
-            $this->sendNotification($template, $data, $ticket, $notification_owner,
-                // trans('ticketit::lang.notify-new-comment-from').$notification_owner->name.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
-                trans('ticketit::lang.notify-new-comment-from').self::OWNER.trans('ticketit::lang.notify-on').$ticket->subject, 'comment');
-        } */
     }
 
     public function ticketStatusUpdated(Ticket $ticket, Ticket $original_ticket)
@@ -106,7 +103,7 @@ class NotificationsController extends Controller
         } else {
             $this->sendNotification($template, $data, $ticket, $notification_owner,
                 // $notification_owner->name.trans('ticketit::lang.notify-updated').$ticket->subject.trans('ticketit::lang.notify-status-to').$ticket->status->name, 'status');
-                self::OWNER.trans('ticketit::lang.notify-updated').$ticket->subject.trans('ticketit::lang.notify-status-to').$ticket->status->name, 'status');
+                $this->getOnwerLabel().trans('ticketit::lang.notify-updated').$ticket->subject.trans('ticketit::lang.notify-status-to').$ticket->status->name, 'status');
         }
     }
 
@@ -234,11 +231,11 @@ class NotificationsController extends Controller
         if (strtotime($ticket->completed_at)) {
             $this->sendNotification($template, $data, $ticket, $notification_owner,
                 // $notification_owner->name.trans('ticketit::lang.comment-notify-updated').$ticket->subject.trans('ticketit::lang.notify-status-to-complete'), 'status');
-                self::OWNER.trans('ticketit::lang.comment-notify-updated').$ticket->subject.trans('ticketit::lang.notify-status-to-complete'), 'status');
+                $this->getOnwerLabel().trans('ticketit::lang.comment-notify-updated').$ticket->subject.trans('ticketit::lang.notify-status-to-complete'), 'status');
         } else {
             $this->sendNotification($template, $data, $ticket, $notification_owner,
                 // $notification_owner->name.trans('ticketit::lang.comment-notify-updated').$ticket->subject.trans('ticketit::lang.notify-status-to').$ticket->status->name, 'status');
-                self::OWNER.trans('ticketit::lang.comment-notify-updated').$ticket->subject.trans('ticketit::lang.notify-status-to').$ticket->status->name, 'status');
+                $this->getOnwerLabel().trans('ticketit::lang.comment-notify-updated').$ticket->subject.trans('ticketit::lang.notify-status-to').$ticket->status->name, 'status');
         }
     }
 

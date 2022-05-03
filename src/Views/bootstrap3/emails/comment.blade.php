@@ -30,7 +30,7 @@
 	]) !!} --}}
 	
 	  <h3 class="email-template__intro" style="margin: 0 0 20px;font-weight: 400;font-size: 20px;">Hello {{ $ticket->user->first_name }},</h3>
-	  <p class="email-template__message" style="line-height: 1.4em;font-size: 15px;">Lead Generated support has replied to the ticket you created. </p>
+	  <p class="email-template__message" style="line-height: 1.4em;font-size: 15px;">{{config('app.name')}} support has replied to the ticket you created. </p>
 	  <table class="email-template__schedule" style="margin: 50px auto;width: 100%;">
 	    <tbody>
 	      <tr>
@@ -50,7 +50,7 @@
 	        <td> {{ $ticket->status->name }} </td>
 	      </tr>
 	      <tr>
-	        <td colspan="2" style="padding: 20px 10px 5px 0;width: 70px;"><span class="heading-bold" style="font-weight: 600;">Reply from Lead Generated Support:</span></td>
+	        <td colspan="2" style="padding: 20px 10px 5px 0;width: 70px;"><span class="heading-bold" style="font-weight: 600;">Reply from {{config('app.name')}} Support:</span></td>
 	      </tr>
 	      <tr>
 	        <td colspan="2"> {!! $comment->email_content !!} </td>

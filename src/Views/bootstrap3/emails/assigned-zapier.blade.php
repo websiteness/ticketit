@@ -32,7 +32,7 @@
 
 	<h3 class="email-template__intro" style="margin: 0 0 20px;font-weight: 400;font-size: 20px;">Hello Support Team,</h3>
 	<p class="email-template__message" style="line-height: 1.4em;font-size: 15px;">
-		A new ticket has been created in the Lead Generated support system.
+		A new ticket has been created in the {{config('app.name')}} support system.
 	</p>
 	<table class="email-template__schedule" style="margin: 50px auto;width: 100%;">
 	  <tbody>

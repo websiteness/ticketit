@@ -54,7 +54,7 @@
 	      <td> {{ $ticket->status->name }} </td>
 	    </tr>
 	    <tr>
-	      <td colspan="2" style="padding: 20px 10px 5px 0;width: 100px;"><span class="heading-bold" style="font-weight: 600;">Reply from Lead Generated Support:</span></td>
+	      <td colspan="2" style="padding: 20px 10px 5px 0;width: 100px;"><span class="heading-bold" style="font-weight: 600;">Reply from {{config('app.name')}} Support:</span></td>
 	    </tr>
 	    <tr>
 	      <td colspan="2"> {!! $latest_comment->email_content !!} </td>
