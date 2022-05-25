@@ -106,6 +106,6 @@ class AdministratorsController extends Controller
     {
         $form_cats = ($request->input('administrator_cats') == null) ? [] : $request->input('administrator_cats');
         $administrator = Agent::find($id);
-        $administrator->categories()->sync($form_cats);
+        $administrator->categories()->sync($form_cats); //test
     }
 }
