@@ -371,10 +371,13 @@ class TicketsController extends Controller
         $ticket->subject = $request->subject;
         $ticket->html = $request->html;
         $content = $this->imagesToLink($request->get('content'));
+        $content_text = $content;
 
         // check if heat map urls is added
         if(isset($request->heat_map_url[0]) && $request->heat_map_url[0]) {
             $content .= $this->heatMapURLToTag($request->heat_map_url);
+
+            $content_text .= "\n Heatmap URL: ".implode("\n", $request->heat_map_url);
         }
 
         $ticket->setPurifiedContent($content);
@@ -406,7 +409,7 @@ class TicketsController extends Controller
         $ticket->autoSelectAgent();
         $ticket->save();
 
-        ProcessTicketsToChannels::dispatch($ticket,$content);
+        ProcessTicketsToChannels::dispatch($ticket,$content, $content_text);
 
         // push ticket to asana
         // try {
