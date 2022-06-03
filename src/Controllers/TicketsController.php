@@ -23,6 +23,7 @@ use Kordy\Ticketit\Services\Integrations\AsanaService;
 use App\User;
 use App\Models\Account;
 use AppendIterator;
+use Kordy\Ticketit\Services\Integrations\ClickupService;
 use Kordy\Ticketit\Services\Integrations\InfinityService;
 use Kordy\Ticketit\Services\Integrations\SlackService;
 use App\Models\TicketsDeveloperStatus;
@@ -372,8 +373,6 @@ class TicketsController extends Controller
         // check if heat map urls is added
         if(isset($request->heat_map_url[0]) && $request->heat_map_url[0]) {
             $content .= $this->heatMapURLToTag($request->heat_map_url);
-
-            $content_text .= "\n Heatmap URL: ".implode("\n", $request->heat_map_url);
         }
 
         $ticket->setPurifiedContent($content);
@@ -566,7 +565,7 @@ class TicketsController extends Controller
         $ticket->dev_notes = $request->dev_notes;
         $ticket->slack_conversation_link = $request->slack_conversation_link;
         $ticket->save();
-        
+
         if($request->status_id) {
 
             try {
@@ -577,6 +576,13 @@ class TicketsController extends Controller
                 \Log::error($e->getMessage());
             }
 
+            try {
+                $clickup_service = new ClickupService();
+                $clickup_service->save('update', $ticket, $content, null);
+            } catch(\Exception $e) {
+                \Log::error('Tickets Error: failed to update ticket on ClickUp');
+                \Log::error($e->getMessage());
+            }
             /* $asana_service->update_task_status_tag($ticket);
 
             // complete asana task
@@ -637,7 +643,7 @@ class TicketsController extends Controller
      *
      * @return Response
      */
-    public function complete($id, AsanaService $asana_service, InfinityService $infinity_service)
+    public function complete($id, AsanaService $asana_service, InfinityService $infinity_service, ClickupService $clickup_service)
     {
         if ($this->permToClose($id) == 'yes') {
             $ticket = $this->tickets->findOrFail($id);
@@ -658,6 +664,13 @@ class TicketsController extends Controller
                 $asana_service->complete_task($id);
             } catch(\Exception $e) {
                 \Log::error('Tickets Error: failed to mark ticket as complete on Asana');
+                \Log::error($e->getMessage());
+            }
+
+            try {
+                $clickup_service->closeTicket($ticket);
+            } catch(\Exception $e) {
+                \Log::error('Tickets Error: failed to mark ticket as complete on ClickUp');
                 \Log::error($e->getMessage());
             }
 
