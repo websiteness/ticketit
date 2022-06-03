@@ -26,7 +26,7 @@ class ClickupService
         'Low' => 4
     ];
     
-    public function store_ticket_data($ticket, $images, $content_text)
+    public function save($type, $ticket, $images, $content_text)
     {
         $client = new Client();
         $asana_service = new AsanaService();
@@ -39,13 +39,7 @@ class ClickupService
         $clickup_token = collect($settings)->where('slug','clickup_token')->first();
 
         $status_id = Status::where('id', $ticket->status_id)->first();
-        $image_link = $asana_service->extractLinks($images);
-        $image_url = '';
-        if(count($image_link)) {
-            foreach($image_link as $image) {
-                $image_url .= '<a href="' . $image['href'] . '">' . trim($image['text']) . '</a>' . "\n";
-            }
-        }
+        $image_url = !empty($images) ? $this->evaluateLinks($images) : '';
 
         foreach ($fields as $field) {
             if($field['slug'] == 'clickup_version') {
@@ -105,21 +99,22 @@ class ClickupService
                 ];
             }
 
-            if($field['slug'] == 'clickup_screenshot' && !empty($image_url)) {
-                $custom_fields[] = [
-                    'id' => $field['value'],
-                    'value' => $image_url
-                ];
-            }
+            // if($field['slug'] == 'clickup_screenshot' && !empty($image_url)) {
+            //     $custom_fields[] = [
+            //         'id' => $field['value'],
+            //         'value' => $image_url
+            //     ];
+            // }
         }
 
         $params['name'] = $ticket->subject;
-        $params['description'] = strip_tags($content_text);
+        if($content_text) {
+            $params['markdown_description'] = str_replace('View Image', '', html_entity_decode(strip_tags($content_text)))."\n{$image_url}";
+        }
+        
         $params['status'] = 'Open';
         $params['priority'] = $this->priority[$ticket->priority->name];
         $params['custom_fields'] = $custom_fields;
-        
-        $url = "https://api.clickup.com/api/v2/list/{$clickup_list_id->value}/task";
 
         $options = [
             'headers' => [
@@ -129,7 +124,12 @@ class ClickupService
             'json' => $params
         ];
 
-        $data = $client->post($url, $options);
+        if($type == 'create') { 
+            $data = $client->post("https://api.clickup.com/api/v2/list/{$clickup_list_id->value}/task", $options);
+        } else {
+            $data = $client->put("https://api.clickup.com/api/v2/task/{$ticket->clickup_item_id}", $options);
+        }
+
         $res = $data->getBody()->getContents();
 
         if (isset(json_decode($res)->id)) {
@@ -142,6 +142,45 @@ class ClickupService
             \Log::info('Error updating ticket.');
             return false;
         }         
+    }
+
+    public function closeTicket($ticket) {
+        $client = new Client();
+        $params = [];
+        $settings = TSetting::where('slug', 'like', 'clickup%')->get();
+        $clickup_token = collect($settings)->where('slug','clickup_token')->first();
+
+        $options = [
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Authorization' => $clickup_token->value
+            ],
+            'json' => [ 'status' => 'Closed']
+        ];
+        
+        $data = $client->put("https://api.clickup.com/api/v2/task/{$ticket->clickup_item_id}", $options);
+        $res = $data->getBody()->getContents();
+
+        if (isset(json_decode($res)->id)) {   
+            \Log::info('Ticket sucessfully sent');
+            return true;
+        } else {
+            \Log::info('Error updating ticket.');
+            return false;
+        }   
+    }
+
+    public function evaluateLinks($data) {
+        $result = '';
+        $dom = new \DomDocument();
+        $dom->loadHtml($data, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_NOERROR | LIBXML_NOWARNING);
+
+        $images = $dom->getElementsByTagName('a');
+        foreach($images as $k => $img) {
+            $result .= "[{$img->textContent}]({$img->getAttribute('href')})\n";
+        }
+
+        return $result;
     }
 
 }                                                         
