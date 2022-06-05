@@ -568,13 +568,13 @@ class TicketsController extends Controller
 
         if($request->status_id) {
 
-            try {
-                $infinity_service = new InfinityService();
-                $infinity_service->updateTicket($ticket, $content);
-            } catch(\Exception $e) {
-                \Log::error('Tickets Error: failed to update ticket on Infinity');
-                \Log::error($e->getMessage());
-            }
+            // try {
+            //     $infinity_service = new InfinityService();
+            //     $infinity_service->updateTicket($ticket, $content);
+            // } catch(\Exception $e) {
+            //     \Log::error('Tickets Error: failed to update ticket on Infinity');
+            //     \Log::error($e->getMessage());
+            // }
 
             try {
                 $clickup_service = new ClickupService();
@@ -659,13 +659,13 @@ class TicketsController extends Controller
      
 
             // complete asana task
-            try {
-                $infinity_service->close_ticket($ticket);
-                $asana_service->complete_task($id);
-            } catch(\Exception $e) {
-                \Log::error('Tickets Error: failed to mark ticket as complete on Asana');
-                \Log::error($e->getMessage());
-            }
+            // try {
+            //     $infinity_service->close_ticket($ticket);
+            //     $asana_service->complete_task($id);
+            // } catch(\Exception $e) {
+            //     \Log::error('Tickets Error: failed to mark ticket as complete on Asana');
+            //     \Log::error($e->getMessage());
+            // }
 
             try {
                 $clickup_service->closeTicket($ticket);
