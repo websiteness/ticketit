@@ -16,6 +16,7 @@ use Kordy\Ticketit\Services\Integrations\AsanaService;
 use Kordy\Ticketit\Models\Status;
 use Kordy\Ticketit\Models\Category;
 use App\Models\TicketsDeveloperStatus;
+use App\Jobs\ClickupUpdateTask;
 use Log;
 
 class ClickupService
@@ -26,7 +27,7 @@ class ClickupService
         'Low' => 4
     ];
     
-    public function save($type, $ticket, $images, $content_text)
+    public function save($type, $ticket, $images, $content_text, $changes = [])
     {
         $client = new Client();
         $asana_service = new AsanaService();
@@ -56,7 +57,7 @@ class ClickupService
                 ];
             }
 
-            if($field['slug'] == 'clickup_developer_status' && $ticket->dev_status_id) {
+            if($field['slug'] == 'clickup_developer_status' && $ticket->dev_status_id && !empty($changes['dev_status_id'])) {
                 $dev_status_id = TicketsDeveloperStatus::where('id', $ticket->dev_status_id)->first();
                 $custom_fields[] = [
                     'id' => $field['value'],
@@ -85,7 +86,7 @@ class ClickupService
                 ];
             }
 
-            if($field['slug'] == 'clickup_ticket_status') {
+            if($field['slug'] == 'clickup_ticket_status' && !empty($changes['status_id'])) {
                 $custom_fields[] = [
                     'id' => $field['value'],
                     'value' => $status_id->clickup_status_id
@@ -98,22 +99,24 @@ class ClickupService
                     'value' => url("/tickets/{$ticket->id}")
                 ];
             }
-
-            // if($field['slug'] == 'clickup_screenshot' && !empty($image_url)) {
-            //     $custom_fields[] = [
-            //         'id' => $field['value'],
-            //         'value' => $image_url
-            //     ];
-            // }
         }
 
         $params['name'] = $ticket->subject;
         if($content_text) {
             $params['markdown_description'] = str_replace('View Image', '', html_entity_decode(strip_tags($content_text)))."\n{$image_url}";
         }
+
+        if($ticket->agent && !empty($changes['agent_id']) && $ticket->agent->clickup_member_id) {
+            $params['assignees'] = [
+                'add' => [$ticket->agent->clickup_member_id]
+            ];
+        }
         
-        $params['status'] = 'Open';
-        $params['priority'] = $this->priority[$ticket->priority->name];
+        if(!empty($changes['priority_id'])) {
+            $params['priority'] = $this->priority[$ticket->priority->name];
+        }
+
+        $params['status'] = $status_id->name == 'Ticket Closed' ? 'Closed' : 'Open';
         $params['custom_fields'] = $custom_fields;
 
         $options = [
@@ -128,6 +131,10 @@ class ClickupService
             $data = $client->post("https://api.clickup.com/api/v2/list/{$clickup_list_id->value}/task", $options);
         } else {
             $data = $client->put("https://api.clickup.com/api/v2/task/{$ticket->clickup_item_id}", $options);
+            
+            if(count($changes)) {
+                ClickupUpdateTask::dispatch($ticket, $changes);
+            }
         }
 
         $res = $data->getBody()->getContents();
@@ -144,7 +151,7 @@ class ClickupService
         }         
     }
 
-    public function closeTicket($ticket) {
+    public function updateTicketStatus($ticket, $status) {
         $client = new Client();
         $params = [];
         $settings = TSetting::where('slug', 'like', 'clickup%')->get();
@@ -155,7 +162,7 @@ class ClickupService
                 'Content-Type' => 'application/json',
                 'Authorization' => $clickup_token->value
             ],
-            'json' => [ 'status' => 'Closed']
+            'json' => [ 'status' => $status == 'closed' ? 'Closed' : 'Open' ]
         ];
         
         $data = $client->put("https://api.clickup.com/api/v2/task/{$ticket->clickup_item_id}", $options);
@@ -168,6 +175,68 @@ class ClickupService
             \Log::info('Error updating ticket.');
             return false;
         }   
+    }
+
+    public function saveComment($comment, $ticket = null, $status_change = null) {
+        $client = new Client();
+        $params = [];
+        $settings = TSetting::where('slug', 'like', 'clickup%')->get();
+        $clickup_token = collect($settings)->where('slug','clickup_token')->first();
+        $image_url = !empty($comment->html) ? $this->evaluateLinks($comment->html) : '';
+
+        $options = [
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Authorization' => $clickup_token->value
+            ],
+            'json' => [ 
+                'comment_text' => "From: ".$comment->user->name."\n\n".$comment->content."\n".$image_url 
+            ]
+        ];
+
+        if(!empty($ticket)) {
+            $data = $client->post("https://api.clickup.com/api/v2/task/{$ticket->clickup_item_id}/comment", $options);
+        } else {
+            $data = $client->put("https://api.clickup.com/api/v2/comment/{$comment->clickup_item_id}", $options);
+        }
+
+        $res = $data->getBody()->getContents();
+        $res = json_decode($res);
+
+        if($status_change) {
+            ClickupUpdateTask::dispatch((object) [ 
+                'status_id' => $status_change,
+                'clickup_item_id' => $ticket->clickup_item_id
+            ]);
+        }
+
+        if (isset($res->id)) {
+            if(!empty($ticket)) {
+                $comment->clickup_item_id = $res->id;  
+                $comment->save();
+            }
+            \Log::info('Comment sucessfully sent');
+            return true;
+        } else {
+            \Log::info('Error updating comment.');
+            return false;
+        }   
+    }
+
+    public function deleteComment($comment) {
+        $client = new Client();
+        $params = [];
+        $settings = TSetting::where('slug', 'like', 'clickup%')->get();
+        $clickup_token = collect($settings)->where('slug','clickup_token')->first();
+
+        $options = [
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Authorization' => $clickup_token->value
+            ]
+        ];
+
+        $client->delete("https://api.clickup.com/api/v2/comment/{$comment->clickup_item_id}", $options);
     }
 
     public function evaluateLinks($data) {

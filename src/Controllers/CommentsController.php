@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 use Kordy\Ticketit\Services\Integrations\AsanaService;
 use Kordy\Ticketit\Services\Integrations\InfinityService;
 use Kordy\Ticketit\Services\TicketCommentsService;
+use Kordy\Ticketit\Services\Integrations\ClickupService;
 
 class CommentsController extends Controller
 {
@@ -57,10 +58,12 @@ class CommentsController extends Controller
             'ticket_id'   => 'required|exists:ticketit,id',
             'content'     => 'required|min:6',
         ]);
+        
+        $ticket = null;
 
         $ticketCommentService = new TicketCommentsService();
         $formatted_content = $ticketCommentService->formatTags($request);
-        
+
         if($request->has('status_change') && $request->get('status_change')){
             // check if status realy changed then send combined email otherwise send only comment do other wise
             $ticket = Models\Ticket::find($request->get('ticket_id'));
@@ -107,10 +110,10 @@ class CommentsController extends Controller
             $asana_service->update_task_status_tag($ticket);
         }
 
-        // update asana task
-        $asana_service->update_ticket($ticket->id);
-//        $infinity_service = new InfinityService();
-//        $update_ticket = $infinity_service->updateTicket($ticket, $content);
+        //Create comment on clickup
+        $clickup_service = new ClickupService;
+        $clickup_service->saveComment($comment, $ticket, $request->status_change);
+
         $update_ticket = true;
 
         if(!$update_ticket) {
@@ -179,8 +182,9 @@ class CommentsController extends Controller
         $comment->setPurifiedContent($content);
         $comment->save();
 
-        // update asana task
-        $asana_service->update_ticket($comment->ticket_id);
+        //Update comment on clickup
+        $clickup_service = new ClickupService;
+        $clickup_service->saveComment($comment);
 
         return redirect()->back();
     }
@@ -194,7 +198,13 @@ class CommentsController extends Controller
      */
     public function destroy($id)
     {
-        Comment::destroy($id);
+        $comment = Comment::find($id);
+
+        //Delete comment on clickup
+        $clickup_service = new ClickupService;
+        $clickup_service->saveComment($comment);
+
+        $comment->delete();
 
         return redirect()->back();
     }
