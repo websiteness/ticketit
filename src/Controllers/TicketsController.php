@@ -64,7 +64,7 @@ class TicketsController extends Controller
         }
 
         $user = $this->agent->find(Sentinel::getUser()->id);
-
+        
         if ($user->isAdmin()) {
             if ($complete) {
                 $collection = Ticket::complete()->adminUserTickets($user->id, true);
@@ -493,7 +493,7 @@ class TicketsController extends Controller
     {
 
 
-      
+
         $user = Sentinel::getUser();
 
         if($user->ticketit_admin || $user->ticketit_agent) {
@@ -564,6 +564,7 @@ class TicketsController extends Controller
         $ticket->dev_status_id = $request->dev_status_id;
         $ticket->dev_notes = $request->dev_notes;
         $ticket->slack_conversation_link = $request->slack_conversation_link;
+        $changes = $ticket->getDirty();
         $ticket->save();
 
         if($request->status_id) {
@@ -578,7 +579,7 @@ class TicketsController extends Controller
 
             try {
                 $clickup_service = new ClickupService();
-                $clickup_service->save('update', $ticket, $content, null);
+                $clickup_service->save('update', $ticket, $content, null, $changes);
             } catch(\Exception $e) {
                 \Log::error('Tickets Error: failed to update ticket on ClickUp');
                 \Log::error($e->getMessage());
@@ -668,7 +669,7 @@ class TicketsController extends Controller
             // }
 
             try {
-                $clickup_service->closeTicket($ticket);
+                $clickup_service->updateTicketStatus($ticket, 'close');
             } catch(\Exception $e) {
                 \Log::error('Tickets Error: failed to mark ticket as complete on ClickUp');
                 \Log::error($e->getMessage());
@@ -690,7 +691,7 @@ class TicketsController extends Controller
      *
      * @return Response
      */
-    public function reopen($id)
+    public function reopen($id, ClickupService $clickup_service)
     {
         if ($this->permToReopen($id) == 'yes') {
             $ticket = $this->tickets->findOrFail($id);
@@ -702,6 +703,8 @@ class TicketsController extends Controller
 
             $subject = $ticket->subject;
             $ticket->save();
+
+            $clickup_service->updateTicketStatus($ticket, 'open');
 
             session()->flash('status', trans('ticketit::lang.the-ticket-has-been-reopened', ['name' => $subject]));
 
