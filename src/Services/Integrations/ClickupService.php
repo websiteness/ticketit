@@ -106,7 +106,7 @@ class ClickupService
             $params['markdown_description'] = str_replace('View Image', '', html_entity_decode(strip_tags($content_text)))."\n{$image_url}";
         }
 
-        if($ticket->agent && !empty($changes['agent_id']) && $ticket->agent->clickup_member_id) {
+        if($ticket->agent && !empty($changes['agent_id'])) {
             $params['assignees'] = [
                 'add' => [$ticket->agent->clickup_member_id]
             ];
@@ -162,7 +162,7 @@ class ClickupService
                 'Content-Type' => 'application/json',
                 'Authorization' => $clickup_token->value
             ],
-            'json' => [ 'status' => $status == 'closed' ? 'Closed' : 'Open' ]
+            'json' => [ 'status' => $status == 'close' ? 'Closed' : 'Open' ]
         ];
         
         $data = $client->put("https://api.clickup.com/api/v2/task/{$ticket->clickup_item_id}", $options);
@@ -207,7 +207,7 @@ class ClickupService
             ClickupUpdateTask::dispatch((object) [ 
                 'status_id' => $status_change,
                 'clickup_item_id' => $ticket->clickup_item_id
-            ]);
+            ], [ 'status_id' => $status_change ]);
         }
 
         if (isset($res->id)) {
