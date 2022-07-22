@@ -111,8 +111,9 @@ class CommentsController extends Controller
         }
 
         //Create comment on clickup
-        $clickup_service = new ClickupService;
-        $clickup_service->saveComment($comment, $ticket, $request->status_change);
+        //Commented By Yashan on 22nd July. Check for error in Sentry as its giving 500 error
+//        $clickup_service = new ClickupService;
+//        $clickup_service->saveComment($comment, $ticket, $request->status_change);
 
         $update_ticket = true;
 
