@@ -116,7 +116,7 @@ class ClickupService
             $params['priority'] = $this->priority[$ticket->priority->name];
         }
 
-        $params['status'] = $status_id->name == 'Ticket Closed' ? 'Closed' : 'Open';
+        $params['status'] = $status_id->name == 'Ticket Closed' ? 'Closed' : 'Not Started';
         $params['custom_fields'] = $custom_fields;
 
         $options = [
@@ -162,7 +162,7 @@ class ClickupService
                 'Content-Type' => 'application/json',
                 'Authorization' => $clickup_token->value
             ],
-            'json' => [ 'status' => $status == 'close' ? 'Closed' : 'Open' ]
+            'json' => [ 'status' => $status == 'close' ? 'Closed' : 'In progress' ]
         ];
         
         $data = $client->put("https://api.clickup.com/api/v2/task/{$ticket->clickup_item_id}", $options);
