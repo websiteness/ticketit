@@ -111,8 +111,10 @@ class CommentsController extends Controller
         }
 
         //Create comment on clickup
-        $clickup_service = new ClickupService;
-        $clickup_service->saveComment($comment, $ticket, $request->status_change);
+        if(!empty($ticket->clickup_item_id)) {
+            $clickup_service = new ClickupService;
+            $clickup_service->saveComment($comment, $ticket, $request->status_change);
+        }
 
         $update_ticket = true;
 
@@ -183,8 +185,10 @@ class CommentsController extends Controller
         $comment->save();
 
         //Update comment on clickup
-        $clickup_service = new ClickupService;
-        $clickup_service->saveComment($comment);
+        if(!empty($ticket->clickup_item_id)) {
+            $clickup_service = new ClickupService;
+            $clickup_service->saveComment($comment);
+        }
 
         return redirect()->back();
     }
@@ -201,8 +205,10 @@ class CommentsController extends Controller
         $comment = Comment::find($id);
 
         //Delete comment on clickup
-        $clickup_service = new ClickupService;
-        $clickup_service->saveComment($comment);
+        if(!empty($ticket->clickup_item_id)) {
+            $clickup_service = new ClickupService;
+            $clickup_service->saveComment($comment);
+        }
 
         $comment->delete();
 
