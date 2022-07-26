@@ -50,7 +50,7 @@ class ClickupService
                 ];
             }
 
-            if($field['slug'] == 'clickup_module') {
+            if($field['slug'] == 'clickup_module'  && !empty($ticket->category)) {
                 $custom_fields[] = [
                     'id' => $field['value'],
                     'value' => $ticket->category->clickup_category_id
