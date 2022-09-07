@@ -133,8 +133,16 @@ class TicketsService
 
         foreach ($data as $ticket) {
             $ticket_date = Carbon::parse($ticket->created_at);
-            $interval =  $ticket_date->diffInMinutes($ticket->comment()->created_at);
-            $total_minutes += $interval;
+            $need_response=1;
+
+            foreach($ticket->comments as $comment){
+                if($need_response==1 && $comment->user_id!=$ticket->user_id){
+                    $interval =  $ticket_date->diffInMinutes($comment->created_at);
+                    $need_response=0;
+                    $total_minutes += $interval;
+                }
+
+            }
         }
 
         $ticket_count = count($data);
@@ -162,10 +170,10 @@ class TicketsService
                 $total .= ($average_total % 60) . ' minute ';
             }
 
-            return $total;
+            return $total ? $total : 'N/A';
 
         } else {
-            return 0;
+            return 'N/A';
         }
     }
 
@@ -202,12 +210,9 @@ class TicketsService
             }
         }
 
-        //$ticket_count = count($data);
-        $ticket_count = $total_response;
+        if ($total_response != 0 || $total_minutes != 0) {
 
-        if($ticket_count != 0 || $total_minutes != 0) {
-
-            $average_total = $total_minutes / $ticket_count;
+            $average_total = $total_minutes / $total_response;
 
             $total = '';
 
@@ -228,10 +233,10 @@ class TicketsService
                 $total .= ($average_total % 60) . ' minute ';
             }
 
-            return $total;
+            return $total ? $total : 'N/A';
 
         } else {
-            return 0;
+            return 'N/A';
         }
     }
 
@@ -244,7 +249,7 @@ class TicketsService
 
         $average_tickets_per_day = $tickets->avg('total_record') ?? '0.00';
 
-        return $average_tickets_per_day;
+        return round($average_tickets_per_day, 2);
 
     }
 
@@ -257,7 +262,7 @@ class TicketsService
 
         $average_tickets_per_week = $tickets->avg('total_record') ?? '0.00';
 
-        return $average_tickets_per_week;
+        return round($average_tickets_per_week, 2);
 
     }
 
@@ -348,10 +353,10 @@ class TicketsService
                 $total .= ($average_total % 60) . ' minute ';
             }
 
-            return $total;
+            return $total ? $total : 'N/A';
 
         } else {
-            return 0;
+            return 'N/A';
         }
 
     }
