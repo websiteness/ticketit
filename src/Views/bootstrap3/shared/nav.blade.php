@@ -4,6 +4,11 @@
         <img src="{{asset('images/ticket-system/icon-leadgenerated.png')}}" alt="">
       </div><!-- .ticket-system__tab-icon -->
       <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+        @if($u->isAdmin())
+        <li role="presentation" class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\DashboardController@index2')) ? "active" : "" !!}">
+          <a href="{{ action('\Kordy\Ticketit\Controllers\DashboardController@index2') }}">{{ trans('ticketit::admin.nav-dashboard') }}</a>
+        </li>
+        @endif
         <li role="presentation" @if(Route::currentRouteName() == 'tickets.create' || Route::currentRouteName() == 'tickets.crmticket.create') class="active" @endif>
           <a href="{{ route($setting->grab('main_route').'.create') }}">Create New Ticket</a>
         </li>
@@ -39,9 +44,9 @@
           </span>
         </li>
         @if($u->isAdmin())
-                <li role="presentation" class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\DashboardController@index')) || Request::is($setting->grab('admin_route').'/indicator*') ? "active" : "" !!}">
+                {{--<li role="presentation" class="{!! $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\DashboardController@index')) || Request::is($setting->grab('admin_route').'/indicator*') ? "active" : "" !!}">
                     <a href="{{ action('\Kordy\Ticketit\Controllers\DashboardController@index') }}">{{ trans('ticketit::admin.nav-dashboard') }}</a>
-                </li>
+                </li>--}}
 
                 <li role="presentation" class="dropdown {!!
                     $tools->fullUrlIs(action('\Kordy\Ticketit\Controllers\StatusesController@index').'*') ||

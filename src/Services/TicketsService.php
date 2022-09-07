@@ -119,6 +119,259 @@ class TicketsService
         }
     }
 
+    public function getFirstResponseTimeAverage($filter_arr = array())
+    {
+        $query = Ticket::with('comments')->whereHas('comments');
+
+        if(isset($filter_arr['user_id']) && intval($filter_arr['user_id'])>0){
+            $query->where('user_id',intval($filter_arr['user_id']));
+        }
+
+        $data = $query->get();
+
+        $total_minutes = 0;
+
+        foreach ($data as $ticket) {
+            $ticket_date = Carbon::parse($ticket->created_at);
+            $interval =  $ticket_date->diffInMinutes($ticket->comment()->created_at);
+            $total_minutes += $interval;
+        }
+
+        $ticket_count = count($data);
+
+        if($ticket_count != 0 || $total_minutes != 0) {
+
+            $average_total = $total_minutes / $ticket_count;
+
+            $total = '';
+
+            if(intdiv($average_total, 60)>1)
+            {
+                $total = intdiv($average_total, 60) . ' hours ';
+            }
+            else if(intdiv($average_total, 60)>0)
+            {
+                $total = intdiv($average_total, 60) . ' hour ';
+            }
+
+            if(($average_total % 60) > 1) {
+                $total .= ($average_total % 60) . ' minutes';
+            }
+            else if(($average_total % 60) > 0)
+            {
+                $total .= ($average_total % 60) . ' minute ';
+            }
+
+            return $total;
+
+        } else {
+            return 0;
+        }
+    }
+
+    public function getResponseTimeAverage($filter_arr = array())
+    {
+        $query = Ticket::with('comments')->whereHas('comments');
+
+        if(isset($filter_arr['user_id']) && intval($filter_arr['user_id'])>0){
+            $query->where('user_id',intval($filter_arr['user_id']));
+        }
+
+        $data = $query->get();
+
+        $total_minutes = 0;
+
+        $total_response=0;
+
+        foreach ($data as $ticket) {
+
+            $ticket_date = Carbon::parse($ticket->created_at);
+            $need_response=1;
+
+            foreach($ticket->comments as $comment){
+                if($need_response==1 && $comment->user_id!=$ticket->user_id){
+                    $interval =  $ticket_date->diffInMinutes($comment->created_at);
+                    $need_response=0;
+                    $total_minutes += $interval;
+                    $total_response++;
+                }
+                elseif($need_response==0 && $comment->user_id==$ticket->user_id){
+                    $ticket_date = Carbon::parse($comment->created_at);
+                    $need_response=1;
+                }
+            }
+        }
+
+        //$ticket_count = count($data);
+        $ticket_count = $total_response;
+
+        if($ticket_count != 0 || $total_minutes != 0) {
+
+            $average_total = $total_minutes / $ticket_count;
+
+            $total = '';
+
+            if(intdiv($average_total, 60)>1)
+            {
+                $total = intdiv($average_total, 60) . ' hours ';
+            }
+            else if(intdiv($average_total, 60)>0)
+            {
+                $total = intdiv($average_total, 60) . ' hour ';
+            }
+
+            if(($average_total % 60) > 1) {
+                $total .= ($average_total % 60) . ' minutes';
+            }
+            else if(($average_total % 60) > 0)
+            {
+                $total .= ($average_total % 60) . ' minute ';
+            }
+
+            return $total;
+
+        } else {
+            return 0;
+        }
+    }
+
+    public function getAverageTicketsPerDay()
+    {
+        $tickets = Ticket::select('created_at', \DB::raw('count(id) AS total_record'))
+            //->groupBy('created_at')
+            ->groupByRaw('DATE(created_at)')
+            ->get();
+
+        $average_tickets_per_day = $tickets->avg('total_record') ?? '0.00';
+
+        return $average_tickets_per_day;
+
+    }
+
+    public function getAverageTicketsPerWeek(){
+
+        $tickets = Ticket::select( \DB::raw(' week(created_at)'), \DB::raw('count(id) AS total_record'))
+            //->groupBy('created_at')
+            ->groupByRaw('week(created_at)')
+            ->get();
+
+        $average_tickets_per_week = $tickets->avg('total_record') ?? '0.00';
+
+        return $average_tickets_per_week;
+
+    }
+
+    public function getAverageNoOfInteractions($filter_arr = array()){
+
+        $closed_ticket_status = Status::where('name', 'like', '%Ticket Closed%')->first();
+
+        $query = Ticket::with('comments');
+
+        if(isset($filter_arr['user_id']) && intval($filter_arr['user_id'])>0){
+            $query->where('user_id',intval($filter_arr['user_id']));
+        }
+
+        //$query->where('status_id', '=', $closed_ticket_status->id)->whereNotNull('completed_at');
+
+
+        $data = $query->get();
+
+        $total_interactions=0;
+
+        foreach ($data as $ticket) {
+            $ticket_interaction =1;
+            $comments =  $ticket->comments;
+            foreach ($comments as $comment) {
+                $ticket_interaction++;
+            }
+
+            $total_interactions+=$ticket_interaction;
+        }
+
+        $ticket_count = count($data);
+
+        $average=0;
+
+        if($ticket_count != 0) {
+
+            $average = $total_interactions / $ticket_count;
+        }
+
+        return round($average,2);
+
+    }
+
+    public function getAverageResolutionTime($filter_arr = array()){
+
+        $closed_ticket_status = Status::where('name', 'like', '%Ticket Closed%')->first();
+
+        $query = Ticket::with('comments');
+
+        if(isset($filter_arr['user_id']) && intval($filter_arr['user_id'])>0){
+            $query->where('user_id',intval($filter_arr['user_id']));
+        }
+
+        $query->where('status_id', '=', $closed_ticket_status->id)->whereNotNull('completed_at');
+
+        $data = $query->get();
+
+        $total_minutes = 0;
+
+        foreach ($data as $ticket) {
+            $ticket_date = Carbon::parse($ticket->created_at);
+            $interval =  $ticket_date->diffInMinutes($ticket->completed_at);
+            $total_minutes += $interval;
+        }
+
+        $ticket_count = count($data);
+
+        if($ticket_count != 0 || $total_minutes != 0) {
+
+            $average_total = $total_minutes / $ticket_count;
+
+            $total = '';
+
+            if(intdiv($average_total, 60)>1)
+            {
+                $total = intdiv($average_total, 60) . ' hours ';
+            }
+            else if(intdiv($average_total, 60)>0)
+            {
+                $total = intdiv($average_total, 60) . ' hour ';
+            }
+
+            if(($average_total % 60) > 1) {
+                $total .= ($average_total % 60) . ' minutes';
+            }
+            else if(($average_total % 60) > 0)
+            {
+                $total .= ($average_total % 60) . ' minute ';
+            }
+
+            return $total;
+
+        } else {
+            return 0;
+        }
+
+    }
+
+    public function getTotalTickets($filter_arr = array()){
+
+        $query = Ticket::query();
+
+        if(isset($filter_arr['user_id']) && intval($filter_arr['user_id'])>0){
+            $query->where('user_id',intval($filter_arr['user_id']));
+        }
+
+        $data = $query->get();
+
+        $ticket_count = count($data);
+
+        return $ticket_count;
+
+    }
+
     public function getTotalAverageResponseThirtyDays()
     {
         $data = $this->getTicketsByDays(30);

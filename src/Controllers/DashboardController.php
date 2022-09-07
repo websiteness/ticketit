@@ -92,5 +92,31 @@ class DashboardController extends Controller
                 'ticket_average_time_seven',
             ));
     }
+
+    public function index2()
+    {
+        $tickets_count = Ticket::count();
+
+        $ticketService = new TicketsService();
+
+        $ticket_first_response_time_average = $ticketService->getFirstResponseTimeAverage();
+        $ticket_response_time_average = $ticketService->getResponseTimeAverage();
+        $average_tickets_per_day = $ticketService->getAverageTicketsPerDay();
+        $average_tickets_per_week = $ticketService->getAverageTicketsPerWeek();
+        $average_no_of_interactions = $ticketService->getAverageNoOfInteractions();
+        $average_resolution_time = $ticketService->getAverageResolutionTime();
+
+        return view(
+            'ticketit::admin.index2',
+            compact(
+                'tickets_count',
+                'ticket_first_response_time_average',
+                'ticket_response_time_average',
+                'average_tickets_per_day',
+                'average_tickets_per_week',
+                'average_no_of_interactions',
+                'average_resolution_time'
+            ));
+    }
 }
                           

@@ -476,8 +476,21 @@ class TicketsController extends Controller
             $dev_statuses = TicketsDeveloperStatus::all()->pluck('name', 'id')->toArray();
             $scripts = Scripts::all();
 
+            $ticketService = new TicketsService();
+
+            $ticket_first_response_time_average = $ticketService->getFirstResponseTimeAverage(['user_id'=>$ticket->user_id]);
+
+            $average_no_of_interactions = $ticketService->getAverageNoOfInteractions(['user_id'=>$ticket->user_id]);
+
+            $average_resolution_time = $ticketService->getAverageResolutionTime(['user_id'=>$ticket->user_id]);
+
+            $total_tickets = $ticketService->getTotalTickets(['user_id'=>$ticket->user_id]);
+
+            $ticket_response_time_average = $ticketService->getResponseTimeAverage(['user_id'=>$ticket->user_id]);
+
             return view('ticketit::tickets.show', compact('ticket', 'status_lists', 'priority_lists', 'category_lists', 'subcategories', 'selected_category', 'selected_subcategory', 'agent_lists', 'comments',
-                    'close_perm', 'reopen_perm', 'plan_names', 'dev_statuses', 'scripts'));
+                    'close_perm', 'reopen_perm', 'plan_names', 'dev_statuses', 'scripts',
+                'ticket_first_response_time_average', 'ticket_response_time_average', 'average_no_of_interactions', 'average_resolution_time', 'total_tickets'));
         } else {
             return redirect()->route(TSetting::grab('main_route').'.index');
         }

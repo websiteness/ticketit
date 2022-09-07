@@ -172,7 +172,27 @@
                             <p class="fw-600 contact-info-details align-center"> <span class="contact-info-span-main"> <img src="{{asset('images/pricing/phone-system.png')}}" alt="" width="20px" height="20px"> </span> <span class="contact-info-span" > Phone: </span> </p>  
                             <p class="fw-600 contact-info-details align-center"> <span class="contact-info-span-main"> <img src="{{asset('images/company-creation-mapping/facebook-hover.png')}}" alt="" width="20px" height="20px"> </span> <span class="contact-info-span" > Facebook: </span> </p>  
                             <p class="fw-600 contact-info-details align-center contact-info-dec-mg mt-5"> <span class="contact-info-span-main"> <img src="{{asset('images/pricing-icon/plan.png')}}" alt="" width="20px" height="20px"> </span> <span class="contact-info-span subscription-span-mg">Subscription Plan: {{  $plan_names }} 
-                            </span> </p>         
+                            </span> </p>
+                            <p class="fw-600 contact-info-details align-center contact-info-dec-mg mt-5">
+                                <span class="contact-info-span-main"> <img src="{{asset('images/ticket-system/reputation-management-issue.png')}}" alt="" width="20px" height="20px"> </span>
+                                <span class="contact-info-span subscription-span-mg">Average First Response Time: {{  $ticket_first_response_time_average }} </span>
+                            </p>
+                            <p class="fw-600 contact-info-details align-center contact-info-dec-mg mt-5">
+                                <span class="contact-info-span-main"> <img src="{{asset('images/ticket-system/reputation-management-issue.png')}}" alt="" width="20px" height="20px"> </span>
+                                <span class="contact-info-span subscription-span-mg">Average Response Time: {{  $ticket_response_time_average }} </span>
+                            </p>
+                            <p class="fw-600 contact-info-details align-center contact-info-dec-mg mt-5">
+                                <span class="contact-info-span-main"> <img src="{{asset('images/ticket-system/reputation-management-issue.png')}}" alt="" width="20px" height="20px"> </span>
+                                <span class="contact-info-span subscription-span-mg">Average Resolution Time: {{  $average_resolution_time }} </span>
+                            </p>
+                            <p class="fw-600 contact-info-details align-center contact-info-dec-mg mt-5">
+                                <span class="contact-info-span-main"> <img src="{{asset('images/ticket-system/reputation-management-issue.png')}}" alt="" width="20px" height="20px"> </span>
+                                <span class="contact-info-span subscription-span-mg">Average Number of Interactions: {{  $average_no_of_interactions }} </span>
+                            </p>
+                            <p class="fw-600 contact-info-details align-center contact-info-dec-mg mt-5">
+                                <span class="contact-info-span-main"> <img src="{{asset('images/ticket-system/reputation-management-issue.png')}}" alt="" width="20px" height="20px"> </span>
+                                <span class="contact-info-span subscription-span-mg">Total Tickets: {{  $total_tickets }} </span>
+                            </p>
                         </div>
                         <form action="{{ route('developer.process.login.as.user.submit')}}" method="POST">
                         {{ csrf_field() }}
