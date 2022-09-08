@@ -131,6 +131,8 @@ class TicketsService
 
         $total_minutes = 0;
 
+        $total_response=0;
+
         foreach ($data as $ticket) {
             $ticket_date = Carbon::parse($ticket->created_at);
             $need_response=1;
@@ -140,16 +142,17 @@ class TicketsService
                     $interval =  $ticket_date->diffInMinutes($comment->created_at);
                     $need_response=0;
                     $total_minutes += $interval;
+                    $total_response++;
                 }
 
             }
         }
 
-        $ticket_count = count($data);
+        //$ticket_count = count($data);
 
-        if($ticket_count != 0 || $total_minutes != 0) {
+        if($total_response != 0 || $total_minutes != 0) {
 
-            $average_total = $total_minutes / $ticket_count;
+            $average_total = $total_minutes / $total_response;
 
             $total = '';
 
