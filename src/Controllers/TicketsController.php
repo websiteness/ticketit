@@ -895,14 +895,15 @@ class TicketsController extends Controller
         {
             $data = $img->getAttribute('src');
             if(Str::contains($data, ';base64')){
-                list($type, $data) = explode(';', $data);
-                list(, $data)      = explode(',', $data);
-                $data = base64_decode($data);
-                $image_name= "/tickets_images/" . time().$k.'.png';
-                $path = public_path() . $image_name;
-                file_put_contents($path, $data);
-                $img->removeAttribute('src');
-                $img->setAttribute('src', url($image_name));
+               list($type, $data) = explode(';', $data);
+               list(, $data)      = explode(',', $data);
+               $data = base64_decode($data);
+               $image_name= "tickets_images/" . time().$k.'.png';
+//               $path = public_path() . $image_name;
+//               file_put_contents($path, $data);
+               $store_to_s3 = \Storage::disk('s3')->put($image_name, $data, 'public');
+               $img->removeAttribute('src');
+               $img->setAttribute('src', \Storage::url($image_name));
            }
         }
         $description = $dom->saveHTML();
