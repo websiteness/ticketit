@@ -63,7 +63,7 @@ class Category extends Model
      */
     public function getLabelAttribute()
     {
-        if($this->parent !== null){
+        if($this->parent !== null && isset($this->parent_category->name){
             return $this->parent_category->name.' - '.$this->name;
         }else{
             return $this->name;
