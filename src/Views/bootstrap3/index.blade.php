@@ -5,55 +5,76 @@
 @stop
 
 @section('header_styles')
-	<link href="//cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+	<!--<link href="//cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />-->
+	<link href="{{asset('libs/select2/dist/css/select2.min.css')}}" rel="stylesheet">
 	<link href="//cdn.datatables.net/buttons/2.0.1/css/buttons.dataTables.min.css"> </link>
-	<style>
-		.filters-panel .form-control {
-			height: 32px !important;
-        }
-        .ticket-subject a {
-            color: #28b999 !important;
-            text-decoration: underline;
-            font-weight: bold;
-        }
-		.buttons-csv{
-			float: left;
-			color: #fff;
-			background-color: #337ab7;
-			border-color: #2e6da4;
-			font-weight: 400;
-			line-height: 1.42857143;
-			text-align: center;
-			white-space: nowrap;
-			vertical-align: middle;
-		}
-		.ml-3 {
-			margin-left: 3px;
-		}
-	</style>
+	<!-- Daterangepicker -->
+	<link href="{{asset('libs/bootstrap-daterangepicker/daterangepicker.css')}}" rel="stylesheet">
+	<link href="{{asset('css/ticket-listing.css')}}" rel="stylesheet">
 @stop
                               
 @section('content')
-    @include('ticketit::shared.header')
-    @include('ticketit::tickets.index')
+	<div class="ticket-system">
+    	@include('ticketit::shared.header')
+    	@include('ticketit::tickets.index')
+		@include('ticketit::tickets.partials.advanced-search-filter.index')
+	</div>
 @stop
                                                                                     
 @section('footer')
-	<script src="//cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+	<!--<script src="//cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>-->
+	<script src="{{asset('libs/select2/dist/js/select2.full.min.js')}}"></script>
 	<script src="//cdn.datatables.net/v/bs/dt-{{ Kordy\Ticketit\Helpers\Cdn::DataTables }}/r-{{ Kordy\Ticketit\Helpers\Cdn::DataTablesResponsive }}/datatables.min.js"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
 	<script src="//cdn.datatables.net/buttons/2.0.1/js/dataTables.buttons.min.js"></script>
 	<script src="//cdn.datatables.net/buttons/2.0.1/js/buttons.html5.min.js"></script>
+	<!-- Daterangepicker -->
+	<script src="{{asset('libs/bootstrap-daterangepicker/moment.min.js')}}"></script>
+	<script src="{{asset('libs/bootstrap-daterangepicker/daterangepicker.js')}}"></script>
 	<script>
-		$(document).ready(function() {
-			$('.select2').select2();
-			initDatatable();
-		});
-	
+		let ticket_main_route = `{!! url('/').'/'.$setting->grab('main_route')!!}`;
+		let get_tags_url = `{!! route($setting->grab('main_route').'.get-all-tags') !!}`;
+		let get_users_url = `{!! route($setting->grab('main_route').'.get-all-users') !!}`;
+		let get_all_ticket_priorities_url = `{!! route($setting->grab('main_route').'.get-all-ticket-priorities') !!}`;
+		let get_all_ticket_statuses_url = `{!! route($setting->grab('main_route').'.get-all-ticket-statuses') !!}`;
+	</script>
+	<script src="{{asset('js/ticket-listing.js')}}"></script>
+	<script src="{{asset('js/ticket-tag-create-and-select-in-datatable.js')}}"></script>
+	<script>
 
-		 function initDatatable(filter = null) {
+        var ticket_tag_create_and_select_in_datatable= new TicketTagCreateAndSelectInDatatable();
+		var ticket_datatable_obj;
+
+		$(document).ready(function() {
+			//$('.select2').select2();
+			initDatatable();
+
+			jQuery('body').on('click', function (e) {
+				//did not click a popover toggle or popover
+				if (jQuery(e.target).data('toggle') !== 'popover' && jQuery(e.target).parents('.popover.in').length === 0) {
+					jQuery('[data-toggle="popover"]').popover('hide');
+				}
+			});
+
+			jQuery(document).on('show.bs.popover', function () {
+				jQuery('.popover').not(this).popover('hide');
+			});
+
+			jQuery('body').on('hidden.bs.popover', function (e) {
+				jQuery(e.target).data("bs.popover").inState = {click: false, hover: false, focus: false}
+			});
+
+			$( "body" ).on( "click", ".tag-remove", function() {
+
+                let $elem = jQuery(this);
+				ticket_tag_create_and_select_in_datatable.updateTag($elem.data('id'), $elem.data('name'), 'remove');
+
+			});
+		});
+
+        function initDatatable(filter = null) {
 
             let btn_search_filter = document.getElementById('btn_search_filter');
             
@@ -76,20 +97,44 @@
                     url = url + '?filter_hide_closed_tickets=1'
                 }
             }
-                                                                                                                
-			$('.table').DataTable({
+
+			 ticket_datatable_obj = $('.table').DataTable({
 				processing: false,
 				serverSide: true,
 				responsive: true,
                 destroy: true, 
 				dom: 'Blfrtip',
                 buttons: [
-                    'colvis',
-					'csvHtml5',
+                    //'colvis',
+					//'csvHtml5',
                 ],
 				pageLength: {{ $setting->grab('paginate_items') }},
 				lengthMenu: {{ json_encode($setting->grab('length_menu')) }},
-				ajax: url,
+				ajax: {
+					url: url,
+					beforeSend: function(){
+						// Here, manually add the loading message.
+						$('.table > tbody').html(
+                            '<tr class="odd">' +
+                            '<td valign="top" colspan="15" class="dataTables_empty">Loading&hellip;</td>' +
+                            '</tr>'
+						);
+					},
+					data: function (d) {
+
+						jQuery('.filter-loader').show();
+
+						d.custom_filters = getFormIndexedData(jQuery('#frm_ticket_asf'));
+					},
+					dataSrc: function (response) {
+
+						if (typeof response.tags!="undefined" && response.tags !== null) {
+							ticket_tag_create_and_select_in_datatable.tags = response.tags;
+						}
+
+						return response.data;
+					}
+				},
 				language: {
 					decimal:        "{{ trans('ticketit::lang.table-decimal') }}",
 					emptyTable:     "{{ trans('ticketit::lang.table-empty') }}",
@@ -115,35 +160,60 @@
 					},
 				},
 				columns: [
-					{ data: 'id', name: 'ticketit.id' },
+					{ data: 'id', name: 'ticketit.id' ,responsivePriority: 1},
 					@if( $u->isAgent() || $u->isAdmin() )
-					{ data: 'owner', name: 'users.name' },
+					{ data: 'owner_info', name: 'users.name', responsivePriority: 2, width:'200px' },
 					@endif			
-					{ data: 'subject', name: 'subject' },
-					{ data: 'status', name: 'ticketit_statuses.name' },
+					{ data: 'subject', name: 'subject', responsivePriority: 2 },
+					{ data: 'status', name: 'ticketit_statuses.name', responsivePriority: 2 },
 					@if( $u->isAgent() || $u->isAdmin() )
-                    { data: 'dev_status', name: 'tickets_developer_status.name' },
-					{ data: 'last_reply', name: 'ticketit.last_reply' },
+					{ data: 'priority', name: 'ticketit_priorities.name', responsivePriority: 2 },
 					@endif
-					{ data: 'updated_at', name: 'ticketit.updated_at' },
 					@if( $u->isAgent() || $u->isAdmin() )
-					{ data: 'agent', name: 'users.name' },
-					{ data: 'priority', name: 'ticketit_priorities.name' },
-					// { data: 'owner', name: 'users.name' },
-					{ data: 'category', name: 'ticketit_categories.name' },
+                    { data: 'dev_status', name: 'tickets_developer_status.name', responsivePriority: 2 },
 					@endif
-					{ data: 'zone', name: 'zone' },
-					{ data: 'tags', name: 'tags' },
-					{ data: 'resolved', name: 'resolved' },
+					{ data: 'tags', name: 'tags', width:'300px' ,responsivePriority: 2, orderable:false},
+					{ data: 'updated_at', name: 'ticketit.updated_at', responsivePriority: 2 },
+					@if( $u->isAgent() || $u->isAdmin() )
+					{ data: 'agent', name: 'users.name', responsivePriority: 2 },
+					{ data: 'category', name: 'ticketit_categories.name', responsivePriority: 2 },
+					@endif
+					@if( $u->isAgent() || $u->isAdmin() )
+					{ data: 'last_reply', name: 'ticketit.last_reply', responsivePriority: 2 },
+					@endif
+                    { data: 'zone', name: 'zone', responsivePriority: 2 },
+					@if( !$complete)
+                    { data: 'resolved', name: 'resolved' ,responsivePriority: 1, orderable:false, 'searchable': false},
+					@endif
 				],
+				createdRow: function (row, data, index) {
+
+					if(data.no_follow_up_in_one_day){
+						$(row).addClass("ticket-system__yellow");
+					}
+
+					if(data.no_resolution_in_three_days){
+						$(row).addClass("ticket-system__red");
+					}
+
+				},
 				@if( $u->isAgent() || $u->isAdmin() )
                 columnDefs: [
                     {'searchable': false, 'targets': [5,10,11]}
-                ]
+                ],
+				@else
+				 columnDefs: [
+					 {'searchable': false, 'targets': [5]}
+				 ],
 				@endif	
             });
+
+            ticket_datatable_obj.columns().visible(true);
+            let result = ticket_datatable_obj.columns().visible().reduce((a, v, i) => v ? [...a, i] : a, [])
+            localStorage.setItem('ticket_column_visible', result);
                                 			
 			if(localStorage.getItem('ticket_column_visible')) {
+
 				let ticket_column_visible = localStorage.getItem('ticket_column_visible');
 				let tickets_table = $('.table').DataTable();
 				tickets_table.columns().visible(false)
@@ -164,48 +234,44 @@
                 closeNav();
                 document.getElementById('btn_search_filter').innerText = "Search";
             }
+
+			ticket_datatable_obj.on('draw column-visibility responsive-resize column-visibility.dt', function () {
+
+				jQuery('.tag-popup').popover({
+					html: true,
+					container: 'body',
+					content: function () {
+						return ticket_tag_create_and_select_in_datatable.getAvailableTags(jQuery(this));
+					},
+					placement: 'auto right'
+				});
+
+
+			});
+
+			ticket_datatable_obj.on( 'responsive-resize', function ( e, datatable, columns ) {
+				var count = columns.reduce( function (a,b) {
+					return b === false ? a+1 : a;
+				}, 0 );
+
+				//console.warn( count +' column(s) are hidden' );
+			} );
+
+			ticket_datatable_obj.on( 'responsive-display', function ( e, datatable, row, showHide, update ) {
+				//console.warn( 'Details for row '+row.index()+' '+(showHide ? 'shown' : 'hidden') );
+
+				jQuery('.tag-popup').popover({
+					html: true,
+					container: 'body',
+					content: function () {
+						return ticket_tag_create_and_select_in_datatable.getAvailableTags(jQuery(this));
+					},
+					placement: 'auto right'
+				});
+			});
 		}
                                                            
-		// $('select#tickets_show').change( function (e) {
-		// 	let data = $(this).children(":selected").attr('data-column');
-		// 	console.log(data)
-		// 	let tickets_table = $('.table').DataTable();
-		// 	if(data == "all") {
-		// 		tickets_table.columns().visible(true);
-		// 		let result = tickets_table.columns().visible().reduce((a, v, i) => v ? [...a, i] : a, [])
-		// 		localStorage.setItem('ticket_column_visible', result)
-		// 	} else {
-		// 		let column = tickets_table.column(data);
-		// 		column.visible( ! column.visible() );
-		// 		let result = tickets_table.columns().visible().reduce((a, v, i) => v ? [...a, i] : a, [])
-		// 		localStorage.setItem('ticket_column_visible', result)		
-		// 	}
-		// });
-		
-		// let dropdownvalue = '';
-		
-		// $('select#tickets_show').change(function (e) {
-		// 	let data = $(this).children(":selected").attr('data-column');	
-		// 	let tickets_table = $('.table').DataTable();
-			
-		// 	if(data == "all") {
-		// 		tickets_table.columns().visible(true);
-		// 		let result = tickets_table.columns().visible().reduce((a, v, i) => v ? [...a, i] : a, [])
-		// 		localStorage.setItem('ticket_column_visible', result)
-		// 	} else {	
-		// 		let column = tickets_table.column(data);
-		// 		column.visible( ! column.visible() );
-		// 		let result = tickets_table.columns().visible().reduce((a, v, i) => v ? [...a, i] : a, [])
-		// 		localStorage.setItem('ticket_column_visible', result)		
-		// 	}
-
-		// 	dropdownvalue = data;
-		// });
-                      
-
-		
-
-		$('.ticket_dropdown_option').click(function (e) {			
+		$('.ticket_dropdown_option').click(function (e) {
 			let data = $(this).attr('data-column');	
 			let tickets_table = $('.table').DataTable();
 			

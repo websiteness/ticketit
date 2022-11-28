@@ -56,216 +56,32 @@ class TicketsController extends Controller
 
     public function data(Request $request, $complete = false)
     {
-   
-        if (LaravelVersion::min('5.4')) {
-            $datatables = app(\Yajra\DataTables\DataTables::class);
-        } else {
-            $datatables = app(\Yajra\Datatables\Datatables::class);
-        }
 
         $user = $this->agent->find(Sentinel::getUser()->id);
-        
-        if ($user->isAdmin()) {
-            if ($complete) {
-                $collection = Ticket::complete()->adminUserTickets($user->id, true);
-            } else {
-                $collection = Ticket::active()->adminUserTickets($user->id, true);
+        $ticket_service = new TicketsService();
+        $ticket_service->saveFiltersInSession($request);
 
-            }
-        } elseif ($user->isAgent()) {
-            if ($complete) {
-                // $collection = Ticket::complete()->agentUserTickets($user->id);
-                $collection = Ticket::complete()->adminUserTickets($user->id, true);
-            } else {
-                // $collection = Ticket::active()->agentUserTickets($user->id);
-                $collection = Ticket::active()->adminUserTickets($user->id, true);
-            }
-        } else {
-            if ($complete) {
-                $collection = Ticket::userTickets($user->id)->complete();
-            } else {
-                $collection = Ticket::userTickets($user->id)->active();
-            }
-        }           
-                                                                                                                                                                                                               
-        // dd($collection->get());
-        $collection
-            ->join('users', 'users.id', '=', 'ticketit.user_id')
-            ->join('ticketit_statuses', 'ticketit_statuses.id', '=', 'ticketit.status_id')
-            ->join('ticketit_priorities', 'ticketit_priorities.id', '=', 'ticketit.priority_id')
-            ->join('ticketit_categories', 'ticketit_categories.id', '=', 'ticketit.category_id')
-            ->leftjoin('tickets_developer_status', 'tickets_developer_status.id', '=', 'ticketit.dev_status_id')
-            ->leftjoin('ticketit_categories AS ticketit_zone', 'ticketit_zone.id', '=', 'ticketit.zone_id')
-            ->leftjoin('ticketit_ticket_tags as ttt','ttt.ticket_id','=', 'ticketit.id')
-            ->leftjoin('ticketit_tags as tt','ttt.ticketit_tags_id','=', 'tt.id')
-            ->select([
-                'ticketit.id',
-                'ticketit.user_id',
-                'ticketit.status_id',
-                'ticketit.subject AS subject',
-                'ticketit_statuses.name AS status',
-                'ticketit_statuses.color AS color_status',
-                'ticketit_priorities.color AS color_priority',
-                'ticketit_categories.color AS color_category',
-                'ticketit.id AS agent',
-                'ticketit.updated_at AS updated_at',
-                'ticketit_priorities.name AS priority',
-                'ticketit_zone.name AS zone',
-                // 'users.name AS owner',
-                DB::raw('CONCAT(users.first_name ," ", users.last_name) as owner'),
-                'ticketit.agent_id',
-                'ticketit_categories.name AS category',
-                'tickets_developer_status.name AS dev_status'
-            ]);
-            
-                                                                     
-        // check if filters are applied
-        if($request->user) {
-            $collection->where('ticketit.user_id', $request->user);
-        }
-        if($request->status) {
-            if($request->status == 'no_response') {
-                $collection->whereDoesntHave('comments', function($query) {
-                    $query->where('ticketit_comments.user_id', '!=', 'ticketit.user_id');
-                });
-            } elseif($request->status == 'overdue') {
-                $settings_repository = new SettingsRepository;
-                $overdue_hours = $settings_repository->getOverdueHours();
-                $datetime_now = \Carbon\Carbon::now()->subHours($overdue_hours);
+        $tickets_query = $ticket_service->buildDatatableQuery($user, $complete, $request);
 
-                $collection->where('ticketit.created_at', '<', $datetime_now)
-                    ->whereDoesntHave('comments');
-            } else {
-                $collection->where('ticketit.status_id', $request->status);
+        $table = $ticket_service->renderDatatable($tickets_query, $user, $complete, $this->tickets);
+
+        $tags = [];
+        $available_tags = Tags::orderBy('name', 'ASC')->get();
+
+        foreach($available_tags as $item) {
+            if($item) {
+                array_push($tags, $item->name);
             }
         }
-        if($request->sub_category) {
-            $collection->where('ticketit.category_id', $request->sub_category);
-        }
-        if($request->message) {
-            $message = str_replace('}}', ' ', str_replace('{{', ' ', $request->message));
 
-            $collection->where('ticketit.html', 'like', '%'.$message.'%');
-        }
-        if($request->filter_hide_closed_tickets) {
-            $collection->where('ticketit.status_id', '!=', 4);
-        }
-        if($request->last_reply) {
-            // $comments_repository = new CommentsRepository;
+        $table = json_decode(json_encode($table), true);
+        $table = $table['original'];
+        $table['tags'] = $tags;
 
-            if($request->last_reply == 'user') {
-                $collection->where(function($query) {
-                    $query->where('ticketit.user_id', function($query) {
-                        return $query->from('ticketit_comments')->select('ticketit_comments.user_id')->whereColumn('ticketit_comments.ticket_id', 'ticketit.id')->orderBy('ticketit_comments.id', 'desc')->limit(1);
-                    })
-                    ->orWhereDoesntHave('comments');
-                });
-            } else {
-                $collection->where('ticketit.user_id', '!=', function($query) {
-                    return $query->from('ticketit_comments')->select('ticketit_comments.user_id')->whereColumn('ticketit_comments.ticket_id', 'ticketit.id')->orderBy('ticketit_comments.id', 'desc')->limit(1);
-                });
-            }
-        }
-   
-        if(!is_null($request->tags) && !empty($request->tags) && $request->tags != "null"){
-            $tag_ids = explode(',', $request->tags);
-            $collection->whereIn('tt.id', $tag_ids);
-        } 
+        return  $table;
 
-        // $collection->orderBy('ticketit.id', 'asc');
-        $collection = $datatables->of($collection);
-    
-
-        $this->renderTicketTable($collection);
-
-        $collection->editColumn('updated_at', '{!! \Carbon\Carbon::parse($updated_at)->format("m/d/Y") !!}');
-       
-            $collection->addColumn('tags', function($ticket) {
-                $tickets = Ticket::where('id', $ticket->id)->first();
-                $tags = $tickets->tags;
-                $new_tags = [];
-                foreach($tags as $tag) {
-                    array_push($new_tags, "<span class='label label-primary ml-3'>{$tag->name}</span>" );
-                }
-                return implode("", $new_tags);
-            });
-  
-        // method rawColumns was introduced in laravel-datatables 7, which is only compatible with >L5.4
-        // in previous laravel-datatables versions escaping columns wasn't defaut
-        if (LaravelVersion::min('5.4')) {
-            $collection->rawColumns(['subject', 'status', 'priority', 'category', 'agent', 'zone', 'tags', 'resolved']);
-        }
-        return $collection->make(true);
     }
                                   
-    public function renderTicketTable($collection)
-    {
-        $collection->editColumn('subject', function ($ticket) {
-            // return '<span class="ticket-subject">' . (string) link_to_route(
-            //     TSetting::grab('main_route').'.show',
-            //     str_limit($ticket->subject, 30, '...'),
-            //     $ticket->id
-            // )
-            // . '</span>';
-
-            $show_route = TSetting::grab('main_route');
-            return "<span class='ticket-subject'> <a href='". url($show_route."/{$ticket->id}") ."'> ". Str::limit($ticket->subject, 20) ." </a> </span>";
-        });
-
-        $collection->editColumn('status', function ($ticket) {
-            $color = $ticket->color_status;
-            $status = e($ticket->status);
-            
-            if($ticket->status_id == 2) {
-                $status = 'Waiting on feedback from ' . e($ticket->owner);
-            }
-
-            return "<div style='color: $color'>$status</div>";
-        });
-
-        $collection->editColumn('priority', function ($ticket) {
-            $color = $ticket->color_priority;
-            $priority = e($ticket->priority);
-
-            return "<div style='color: $color'>$priority</div>";
-        });
-
-        $collection->editColumn('category', function ($ticket) {
-            $color = $ticket->color_category;
-            $category = e($ticket->category);
-
-            return "<div style='color: $color'>$category</div>";
-        });
-
-        $collection->editColumn('agent', function ($ticket) {
-            $ticket = $this->tickets->find($ticket->id);
-
-            return e($ticket->agent->name);
-        });
-
-        $collection->addColumn('resolved', function ($ticket) {
-            $route = url(TSetting::grab('main_route')."/".$ticket->id.'/complete');
-            return '<a class="btn btn-success btn-sm" href="'.$route.'"> Resolved </a>';    
-        });
-
-        $collection->editColumn('last_reply', function ($ticket) {
-            $comments_repository = new CommentsRepository;
-            $comment = $comments_repository->getLastCommentByTicketId($ticket->id);
-
-            if(!$comment) {
-                return 'User';
-            }
-
-            if($ticket->user_id == $comment->user_id) {
-                return 'User';
-            } else {
-                return 'Support';
-            }
-        });
-
-        return $collection;
-    }
-
     /**
      * Display a listing of active tickets related to user.
      *
@@ -280,8 +96,11 @@ class TicketsController extends Controller
         $sub_categories = $cr->getSubCategories();
         $tags = Tags::all();
         $complete = false;
+        $ss = new \Kordy\Ticketit\Services\StatsService();
+        $statuses_count = $ss->getStatusesAssoc();
+        $categories_count = $ss->getCategoriesAssoc();
 
-        return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories', 'tags'));
+        return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories', 'tags', 'statuses_count', 'categories_count'));
     }
 
     /**
@@ -297,7 +116,12 @@ class TicketsController extends Controller
 
         $complete = true;
 
-        return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories'));
+        $ss = new \Kordy\Ticketit\Services\StatsService();
+        $statuses_count = $ss->getStatusesAssoc();
+        $categories_count = $ss->getCategoriesAssoc();
+
+
+        return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories', 'statuses_count', 'categories_count'));
     }
 
     /**
@@ -1041,6 +865,152 @@ class TicketsController extends Controller
         $ticketService = new TicketsService();
         $average_response_by_date_rage = $ticketService->getAverageByDateRange($date_to,$date_from);
         return response()->json(['average_response_by_date_rage' => $average_response_by_date_rage],200);
+    }
+
+    public function addTag($id, Request $request)
+    {
+
+        if(isset($id) && isset($request->tag)) {
+            $ticket = Ticket::find($id);
+
+            if(isset($request->tag) && $request->tag) {
+
+                $tag = Tags::where('name', $request->tag)->first();
+
+                if ($ticket) {
+                    if (!$tag) {
+                        $tag = new Tags();
+                        $tag->name = ucwords($request->tag);
+                        $tag->save();
+                    }
+
+                    $ticket->tags()->syncWithoutDetaching(array($tag->id));
+
+                }
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => 'Tag updated successfully.'],200);
+    }
+
+    public function removeTag($id, Request $request) {
+
+        if(isset($id) && isset($request->tag)) {
+            $ticket = Ticket::find($id);
+
+            if(isset($request->tag) && $request->tag) {
+
+                $tag = Tags::where('name', $request->tag)->first();
+
+                if ($ticket && $tag) {
+                    $ticket->tags()->detach($tag->id);
+                }
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => 'Tag updated successfully.'],200);
+    }
+
+    public function getAllTags(Request $request) {
+
+        $tags_query = Tags::query();
+
+        $input = request('q');
+
+        if($input)
+        {
+            $tags_query->where('name', 'like', $input.'%')
+                ->orWhere('name', 'like', '% '.$input.'%');
+        }
+
+        $tags = $tags_query->orderBy('name', 'ASC')->get(
+            ['name AS text', 'id']
+        )->toArray();
+
+
+        return response()->json([
+            'type' =>'success',
+            'data' => $tags
+        ]);
+
+    }
+
+    public function getAllUsers(Request $request)
+    {
+        $data = array();
+
+        $users_query = Sentinel::getUserRepository()
+            ->with('roles')
+            ->withCount(array('activations' => function($query){
+                $query->where('completed', 1);
+            }));
+
+        if($request->input('search') && strlen($request->input('search')) > 2 ) {
+
+            $users_query->where(function ($query) use ($request) {
+                $query->where('first_name', 'like', '%' . $request->input('search') . '%');
+                $query->orWhere('last_name', 'like', '%' . $request->input('search') . '%');
+                $query->orWhere('email', 'like', '%' . $request->input('search') . '%');
+                $query->orWhereRaw("concat(first_name, ' ', last_name) like '%" . $request->input('search') . "%' ");
+            });
+        }
+
+        $users = $users_query->get();
+
+        $i = 0;
+        if(count($users)>0){
+            foreach ($users as $user) {
+                if($user->activations_count > 0){
+                    $data[$i]['text'] = $user->full_name . ' - ' . $user->email. ' - '  .$user->roles()->first()->name;
+                }else{
+                    $data[$i]['text'] = $user->full_name . ' - ' . $user->email. ' - '  .$user->roles()->first()->name .' (Not Activated)';
+                }
+
+                $data[$i]['id'] = $user->id;
+
+                $i++;
+            }
+        }
+
+        return response()->json([
+            'type' =>'success',
+            'data' => $data
+        ]);
+
+    }
+
+    public function getAllTicketPriorities(Request $request) {
+
+        $priorities_query =  Models\Priority::query();
+
+        $input = request('q');
+
+        $priorities = $priorities_query->orderBy('id', 'ASC')->get(
+            ['name AS text', 'id']
+        )->toArray();
+
+
+        return response()->json([
+            'type' =>'success',
+            'data' => $priorities
+        ]);
+
+    }
+
+    public function getAllTicketStatuses(Request $request) {
+
+        $statuses_query =  Models\Status::query();
+
+        $statuses = $statuses_query->orderBy('id', 'ASC')->get(
+            ['name AS text', 'id']
+        )->toArray();
+
+
+        return response()->json([
+            'type' =>'success',
+            'data' => $statuses
+        ]);
+
     }
                                                                        
 }                             

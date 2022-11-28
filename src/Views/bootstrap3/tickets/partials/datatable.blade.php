@@ -1,26 +1,33 @@
-<table class="ticketit-table table table-striped table-bordered dt-responsive nowrap" style="width:100%">
+<table id="ticket-system-tbl" class="ticket-system__tbl table table-striped table-bordered dt-responsive nowrap" style="width:100%">
     <thead>
-        <tr>
-            <td>{{ trans('ticketit::lang.table-id') }}</td>
-          @if( $u->isAgent() || $u->isAdmin() )
-            <td>User</td>
-          @endif
-            <td>{{ trans('ticketit::lang.table-subject') }}</td>
-            <td>Ticket Status</td>
-          @if( $u->isAgent() || $u->isAdmin() )
-            <td>Dev Status</td>
-            <td>Last Reply</td>
-          @endif
-            <td>{{ trans('ticketit::lang.table-last-updated') }}</td>
-          @if( $u->isAgent() || $u->isAdmin() )
-            <td>{{ trans('ticketit::lang.table-agent') }}</td>
-            <td>{{ trans('ticketit::lang.table-priority') }}</td>
-            <!-- <td>{{ trans('ticketit::lang.table-owner') }}</td> -->
-            <td>{{ trans('ticketit::lang.table-category') }}</td>
-          @endif
-            <td>Zone</td>
-            <td>Tags</td>
-            <td>Actions</td>
-        </tr>
+    <tr>
+        <th>Number</th>
+        @if( $u->isAgent() || $u->isAdmin() )
+        <th>User</th>
+        @endif
+        <th>{{ trans('ticketit::lang.table-subject') }}</th>
+        <th>Ticket Status</th>
+        @if( $u->isAgent() || $u->isAdmin() )
+        <th>{{ trans('ticketit::lang.table-priority') }}</th>
+        @endif
+        @if( $u->isAgent() || $u->isAdmin() )
+        <th>Dev Status</th>
+        @endif
+        <th>Tags</th>
+        <th>{{ trans('ticketit::lang.table-last-updated') }}</th>
+        @if( $u->isAgent() || $u->isAdmin() )
+        <th>{{ trans('ticketit::lang.table-agent') }}</th>
+        <th>{{ trans('ticketit::lang.table-category') }}</th>
+        @endif
+        @if( $u->isAgent() || $u->isAdmin() )
+        <th>Last Reply</th>
+        @endif
+        <th>Zone</th>
+        @if( !$complete)
+        <th>Actions</th>
+        @endif
+    </tr>
     </thead>
-</table>                                                                                                                      
+    <tbody>
+    </tbody>
+</table>

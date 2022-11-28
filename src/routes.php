@@ -28,6 +28,13 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
         ]);
 
     Route::post("$main_route_path/store",'Kordy\Ticketit\Controllers\TicketsController@store');
+
+    Route::post("$main_route_path/{id}/add-tag", array('as' => "$main_route.add-tag", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@addTag'));
+    Route::post("$main_route_path/{id}/remove-tag", array('as' => "$main_route.remove-tag", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@removeTag'));
+    Route::post("$main_route_path/get-all-tags", array('as' => "$main_route.get-all-tags", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@getAllTags'));
+    Route::post("$main_route_path/get-all-users", array('as' => "$main_route.get-all-users", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@getAllUsers'));
+    Route::post("$main_route_path/get-all-ticket-priorities", array('as' => "$main_route.get-all-ticket-priorities", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@getAllTicketPriorities'));
+    Route::post("$main_route_path/get-all-ticket-statuses", array('as' => "$main_route.get-all-ticket-statuses", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@getAllTicketStatuses'));
     
 
     //Ticket Comments public route
@@ -315,7 +322,7 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
                 Route::post('store','\Kordy\Ticketit\Controllers\Integrations\InfinityController@store_mapped_dev_status')->name('store');
             });
         });
-        
+
     });
 
     # Stats

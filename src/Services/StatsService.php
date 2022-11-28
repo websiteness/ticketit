@@ -51,10 +51,37 @@ class StatsService {
         return $stats;
     }
 
+    public function getStatusesAssoc()
+    {
+        $stats = $this->getStatuses();
+
+        $statuses_assoc = [];
+
+        foreach($stats as $stat){
+            $statuses_assoc[$stat['name']] = ($stat['count']<10?'0'.$stat['count']:$stat['count']);
+        }
+
+        return $statuses_assoc;
+    }
+
     public function getCategories()
     {
         $cr = new CategoriesRepository;
 
         return $cr->getCategoriesCount();
     }
+
+    public function getCategoriesAssoc()
+    {
+        $categories = $this->getCategories();
+
+        $categories_assoc = [];
+
+        foreach($categories as $category){
+            $categories_assoc[$category['name']] = ($category['tickets_count']<10?'0'.$category['tickets_count']:$category['tickets_count']);
+        }
+
+        return $categories_assoc;
+    }
+
 }
