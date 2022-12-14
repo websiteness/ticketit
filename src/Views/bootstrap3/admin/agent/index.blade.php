@@ -34,7 +34,7 @@
                             <select class="form-control select2" id="agent" name="agent" required>
                                 <option value="">Select User</option>
                                 @foreach($users as $user)
-                                <option value="{{ $user->id }}">{{ $user->first_name . ' ' . $user->last_name . ' - ' . $user->email . ' (' . $user->roles()->first()->name . ')' }}</option>
+                                <option value="{{ $user->id }}">{{ $user->first_name . ' ' . $user->last_name . ' - ' . $user->email . ' (' . ($user->roles()->first() ? $user->roles()->first()->name : 'No role associated') .  ')' }}</option>
                                 @endforeach
                             </select>
                         </div>
