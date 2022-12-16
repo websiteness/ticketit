@@ -869,18 +869,29 @@ class TicketsService
             foreach($tags as $tag) {
                 array_push($ticket_tag_name_arr, $tag->name);
                 //array_push($new_tags, "<span class='label label-primary ml-3'>{$tag->name}</span>" );
-                $list .= "<span
+                $list .= "".
+                "<span
                     id='".$ticket->id."-".$tag->id."-tag'
-                    class='label label-primary datatable-tag-label ml-3'>{$tag->name}
-                    &nbsp;&nbsp;<img
-                        src='".asset('images/contacts/new/cross-hover.png')."'
-                        title='Click to remove tag'
-                        class='clickable mgl-5 tag-remove'
-                        data-id='".$ticket->id."'
-                        data-tag-id='".$tag->id."'
-                        data-name='".$tag->name."'
-                />
-                </span>";
+                    class='label label-primary datatable-tag-label ml-3'>
+                        {$tag->name}
+                ";
+
+                if ($user->isAgent() || $user->isAdmin()) {
+                    $list .= "" .
+                        "&nbsp;&nbsp;
+                        <img
+                            src='" . asset('images/contacts/new/cross-hover.png') . "'
+                            title='Click to remove tag'
+                            class='clickable mgl-5 tag-remove'
+                            data-id='" . $ticket->id . "'
+                            data-tag-id='" . $tag->id . "'
+                            data-name='" . $tag->name . "'
+                        />
+                    ";
+                }
+
+                $list .= "".
+                "</span>";
             }
 
             $add = "<span
