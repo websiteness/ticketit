@@ -100,7 +100,12 @@ class TicketsController extends Controller
         $statuses_count = $ss->getStatusesAssoc();
         $categories_count = $ss->getCategoriesAssoc();
 
-        return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories', 'tags', 'statuses_count', 'categories_count'));
+        $datatable_visible_column_arr = [];
+		if(is_array(session('ticket_datatable_columns')) && count(session('ticket_datatable_columns'))) {
+            $datatable_visible_column_arr = session('ticket_datatable_columns');
+        }
+
+        return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories', 'tags', 'statuses_count', 'categories_count', 'datatable_visible_column_arr'));
     }
 
     /**
@@ -1012,6 +1017,27 @@ class TicketsController extends Controller
         ]);
 
     }
-                                                                       
+
+    public function saveDatatableColumnsVisibilitySetting(Request $request) {
+
+        $default_columns =[
+            'id'
+        ];
+
+        $columns = is_array(request('columns'))?request('columns'):[];
+
+        $columns = array_merge($default_columns,$columns);
+
+        $columns = array_values(array_diff($columns, ["show_all"]));
+
+        session([
+            'ticket_datatable_columns' => $columns,
+        ]);
+
+        return response()->json([
+            'type' =>'success'
+        ]);
+    }
+
 }                             
                                                                                                                 

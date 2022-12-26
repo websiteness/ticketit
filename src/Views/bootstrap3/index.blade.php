@@ -33,16 +33,108 @@
 	<!-- Daterangepicker -->
 	<script src="{{asset('libs/bootstrap-daterangepicker/moment.min.js')}}"></script>
 	<script src="{{asset('libs/bootstrap-daterangepicker/daterangepicker.js')}}"></script>
+	<!-- Select2 Multiple Checkboxes -->
+	<script src="{{asset('libs/select2-multi-checkboxes/select2.multi-checkboxes.js')}}"></script>
 	<script>
 		let ticket_main_route = `{!! url('/').'/'.$setting->grab('main_route')!!}`;
 		let get_tags_url = `{!! route($setting->grab('main_route').'.get-all-tags') !!}`;
 		let get_users_url = `{!! route($setting->grab('main_route').'.get-all-users') !!}`;
 		let get_all_ticket_priorities_url = `{!! route($setting->grab('main_route').'.get-all-ticket-priorities') !!}`;
 		let get_all_ticket_statuses_url = `{!! route($setting->grab('main_route').'.get-all-ticket-statuses') !!}`;
+		let save_datatable_columns_visibility_setting_url = `{!! route($setting->grab('main_route').'.save-datatable-columns-visibility-setting') !!}`;
+		let datatable_visible_column_arr = [];
+		@if(is_array($datatable_visible_column_arr) && count($datatable_visible_column_arr))
+			datatable_visible_column_arr = @json($datatable_visible_column_arr,JSON_PRETTY_PRINT);
+		@endif
+
 	</script>
 	<script src="{{asset('js/ticket-listing.js')}}"></script>
 	<script src="{{asset('js/ticket-tag-create-and-select-in-datatable.js')}}"></script>
 	<script>
+
+		var DoActionAfterTimeout = (function (options){
+			'use strict';
+
+			var _defaults = {
+				some_thing: 23,
+				other_thing: 'hello',
+				input_jquery_object:'',
+				callback:''
+			};
+
+			options = $.extend(_defaults, options);
+
+			var _timer;                	//timer identifier
+			var _interval = 800;  		//time in ms (5 seconds)
+			var _old_value='';
+			var _current_value='';
+
+			function start(val)
+			{
+				clearTimeout(_timer);
+				if(options.input_jquery_object){
+					_current_value = options.input_jquery_object.val();
+
+					if(!_current_value)
+						_current_value='';
+
+					if (_current_value.constructor === Array || _current_value.constructor === Object) {
+						_current_value=JSON.stringify(_current_value);
+					}
+
+					if (_current_value!=_old_value) {
+						_timer = setTimeout(done, _interval);
+					}
+				}
+			}
+
+			function done () {
+
+				if(options.input_jquery_object) {
+					_old_value = options.input_jquery_object.val();
+				}
+
+				if(options.callback) {
+					options.callback();
+				}
+
+			}
+
+			return {
+				start: start
+			};
+
+		});
+
+		function submitDatatableColumnsVisibilitySetting() {
+
+			var token = jQuery("meta[name='csrf-token']").attr("content");
+
+			columns =jQuery('#toggle-columns-select').val();
+
+			if(!columns)
+				columns='';
+
+			setTimeout(function() {
+				jQuery.ajax({
+					url: save_datatable_columns_visibility_setting_url,
+					type: 'POST',
+					data: {
+						"columns": columns,
+						"_token": token
+					},
+					success: function (response) {
+
+					}
+				});
+			},3000);
+		}
+
+		var do_action_after_timeout1 = new DoActionAfterTimeout({
+			some_thing: 17,
+			input_jquery_object:jQuery('#toggle-columns-select'),
+			callback:submitDatatableColumnsVisibilitySetting
+		});
 
         var ticket_tag_create_and_select_in_datatable= new TicketTagCreateAndSelectInDatatable();
 		var ticket_datatable_obj;
@@ -53,7 +145,7 @@
 
 			jQuery('body').on('click', function (e) {
 				//did not click a popover toggle or popover
-				if (jQuery(e.target).data('toggle') !== 'popover' && jQuery(e.target).parents('.popover.in').length === 0) {
+				if (jQuery(e.target).data('toggle') !== 'popover' && jQuery(e.target).parents('.popover.in').length === 0 && jQuery(e.target).parents('.create-tag-modal').length === 0 && !jQuery(e.target).hasClass('create-tag-modal')) {
 					jQuery('[data-toggle="popover"]').popover('hide');
 				}
 			});
@@ -73,8 +165,8 @@
 
 			});
 		});
-
-        function initDatatable(filter = null) {
+		var datatable_columns_arr;
+		function initDatatable(filter = null) {
 
             let btn_search_filter = document.getElementById('btn_search_filter');
             
@@ -99,6 +191,7 @@
             }
 
 			 ticket_datatable_obj = $('.table').DataTable({
+				 autoWidth: false,
 				processing: false,
 				serverSide: true,
 				responsive: true,
@@ -162,7 +255,7 @@
 				columns: [
 					{ data: 'id', name: 'ticketit.id' ,responsivePriority: 1},
 					@if( $u->isAgent() || $u->isAdmin() )
-					{ data: 'owner_info', name: 'users.name', responsivePriority: 2, width:'200px' },
+					{ data: 'user', name: 'users.name', responsivePriority: 2, width:'200px' },
 					@endif			
 					{ data: 'subject', name: 'subject', responsivePriority: 2 },
 					{ data: 'status', name: 'ticketit_statuses.name', responsivePriority: 2 },
@@ -170,7 +263,7 @@
 					{ data: 'priority', name: 'ticketit_priorities.name', responsivePriority: 2 },
 					@endif
 					@if( $u->isAgent() || $u->isAdmin() )
-                    { data: 'dev_status', name: 'tickets_developer_status.name', responsivePriority: 2 },
+                    { data: 'developer_status', name: 'tickets_developer_status.name', responsivePriority: 2 },
 					@endif
 					{ data: 'tags', name: 'tags', width:'300px' ,responsivePriority: 2, orderable:false},
 					{ data: 'updated_at', name: 'ticketit.updated_at', responsivePriority: 2 },
@@ -183,7 +276,7 @@
 					@endif
                     { data: 'zone', name: 'zone', responsivePriority: 2 },
 					@if( !$complete)
-                    { data: 'resolved', name: 'resolved' ,responsivePriority: 1, orderable:false, 'searchable': false},
+                    { data: 'actions', name: 'actions' ,responsivePriority: 1, orderable:false, 'searchable': false},
 					@endif
 				],
 				createdRow: function (row, data, index) {
@@ -208,10 +301,58 @@
 				@endif	
             });
 
-            ticket_datatable_obj.columns().visible(true);
-            let result = ticket_datatable_obj.columns().visible().reduce((a, v, i) => v ? [...a, i] : a, [])
-            localStorage.setItem('ticket_column_visible', result);
-                                			
+			datatable_columns_arr = ticket_datatable_obj.settings().init().columns;
+
+			if (datatable_visible_column_arr.length) {
+
+				var datatable_column_index_arr=[];
+
+				var total_options=0;
+
+				jQuery('#toggle-columns-select').find("option").each(function (i, selected) {
+
+					total_options++;
+				});
+
+				if(total_options==(datatable_visible_column_arr.length)){
+					datatable_visible_column_arr.push('show_all');
+				}
+
+				ticket_datatable_obj.columns().every(function(index) {
+
+					if(jQuery.inArray(datatable_columns_arr[index].data, datatable_visible_column_arr) !== -1){
+						datatable_column_index_arr.push(index);
+					}
+				});
+
+				ticket_datatable_obj.columns().visible(false);
+				ticket_datatable_obj.columns(datatable_column_index_arr).visible(true);
+
+				setTimeout(function(){
+					jQuery('#toggle-columns-select').val(datatable_visible_column_arr).trigger('change');
+				},5000);
+
+			}
+			else {
+				var datatable_column_index_arr=[];
+				datatable_visible_column_arr.push('show_all');
+				ticket_datatable_obj.columns().every(function(index) {
+
+					datatable_column_index_arr.push(index);
+					datatable_visible_column_arr.push(datatable_columns_arr[index].data);
+
+				});
+
+				ticket_datatable_obj.columns().visible(false);
+				ticket_datatable_obj.columns(datatable_column_index_arr).visible(true);
+
+				setTimeout(function(){
+					jQuery('#toggle-columns-select').val(datatable_visible_column_arr).trigger('change');
+				},5000);
+
+			}
+
+/*
 			if(localStorage.getItem('ticket_column_visible')) {
 
 				let ticket_column_visible = localStorage.getItem('ticket_column_visible');
@@ -223,12 +364,25 @@
                 let column_arr = ticket_column_visible.split(',');
 
                 // set active columns to checked
-                column_arr.forEach((item) => {
+                /*column_arr.forEach((item) => {
                     $(`input[data-column='${item}']`).prop('checked', true);
-                });
+                });*//*
+
+				jQuery('#toggle-columns-select').val(column_arr).trigger('change');
 
 			}
-                                                               
+			else {
+				ticket_datatable_obj.columns().visible(true);
+				let result = ticket_datatable_obj.columns().visible().reduce((a, v, i) => v ? [...a, i] : a, [])
+				localStorage.setItem('ticket_column_visible', result);
+
+				// convert to array
+				let column_arr = result;
+
+				jQuery('#toggle-columns-select').val(column_arr).trigger('change');
+
+			}
+*/
             if(btn_search_filter)
             {
                 closeNav();
@@ -270,6 +424,195 @@
 				});
 			});
 		}
+
+		jQuery('#toggle-columns-select').on('change', function(e) {
+			do_action_after_timeout1.start();
+		});
+
+		jQuery('#toggle-columns-select').on('select2:selecting', function(e) {
+
+			var cur = e.params.args.data.id;
+
+			if(cur=='show_all'){
+				var datatable_column_index_arr=[];
+				datatable_visible_column_arr.push('show_all');
+				ticket_datatable_obj.columns().every(function(index) {
+
+					datatable_column_index_arr.push(index);
+					datatable_visible_column_arr.push(datatable_columns_arr[index].data);
+
+				});
+
+				ticket_datatable_obj.columns().visible(false);
+				ticket_datatable_obj.columns(datatable_column_index_arr).visible(true);
+
+				//setTimeout(function(){
+					jQuery('#toggle-columns-select').val(datatable_visible_column_arr).trigger('change');
+					jQuery('#select2-toggle-columns-select-results li').each(function(){
+						$(this).attr('aria-selected',true);
+					});
+				//},5000);
+			}
+			else {
+
+				ticket_datatable_obj.columns().every(function(index) {
+
+					if(datatable_columns_arr[index].data==cur){
+						let column = ticket_datatable_obj.column(index);
+						column.visible( ! column.visible() );
+					}
+				});
+
+				var total_options=0;
+				var selected_option=0;
+				$(e.currentTarget).find("option").each(function (i, selected) {
+					if($(this).is(':selected')){
+						selected_option++;
+					}
+					total_options++;
+				});
+
+				if(total_options==(selected_option+2)){
+
+					var va=[];
+					$(e.currentTarget).find("option:selected").each(function(i, selected){
+						va[i] = $(selected).val();
+					});
+					va.push('show_all');
+
+					$(e.target).val(va).trigger('change');
+					jQuery('#select2-toggle-columns-select-results li').eq(0).attr('aria-selected',true);
+				}
+
+			}
+
+
+			let data = cur;
+			/*let tickets_table = $('.table').DataTable();
+
+			if(data == "*") {
+				tickets_table.columns().visible(true);
+				let result = tickets_table.columns().visible().reduce((a, v, i) => v ? [...a, i] : a, [])
+				localStorage.setItem('ticket_column_visible', result)
+			} else {
+				let column = tickets_table.column(data);
+				column.visible( ! column.visible() );
+				let result = tickets_table.columns().visible().reduce((a, v, i) => v ? [...a, i] : a, [])
+				localStorage.setItem('ticket_column_visible', result)
+			}*/
+
+
+
+
+			//console.warn(old);
+			//$(e.target).val(old).trigger('change');
+			$(e.params.args.originalEvent.currentTarget).attr('aria-selected', 'true');
+			//select2-results__option--highlighted
+
+			//setTimeout(function(){
+				//console.warn('run');
+				//ticket_datatable_obj.responsive.rebuild();
+				//ticket_datatable_obj.responsive.recalc();
+				//ticket_datatable_obj.columns.adjust().responsive.recalc();
+
+				//$($.fn.dataTable.tables( true ) ).css('width', '100%');
+				//$($.fn.dataTable.tables( true ) ).DataTable().columns.adjust().draw();
+			//},3000);
+			ticket_datatable_obj.columns.adjust().draw();
+		});
+
+		jQuery('#toggle-columns-select').on('select2:unselecting', function(e) {
+
+			var cur = e.params.args.data.id;
+
+			if(cur=='show_all'){
+
+				var va = [];
+				$(e.currentTarget).find("option").each(function (i, selected) {
+					va[i] = $(selected).val();
+				});
+
+				var datatable_column_index_arr=[];
+				//datatable_visible_column_arr.push('show_all');
+				ticket_datatable_obj.columns().every(function(index) {
+
+					if(jQuery.inArray(datatable_columns_arr[index].data, va) !== -1){
+						datatable_column_index_arr.push(index);
+					}
+
+					//datatable_column_index_arr.push(index);
+					//datatable_visible_column_arr.push(datatable_columns_arr[index].data);
+
+				});
+
+				//ticket_datatable_obj.columns().visible(false);
+				ticket_datatable_obj.columns(datatable_column_index_arr).visible(false);
+
+				//setTimeout(function(){
+					jQuery('#toggle-columns-select').val([]).trigger('change');
+					jQuery('#select2-toggle-columns-select-results li').each(function(){
+						$(this).attr('aria-selected',false);
+					});
+				//},5000);
+			}
+			else {
+
+				ticket_datatable_obj.columns().every(function(index) {
+
+					if(datatable_columns_arr[index].data==cur){
+
+						let column = ticket_datatable_obj.column(index);
+						column.visible( ! column.visible() );
+					}
+				});
+
+				var va = [];
+				$(e.currentTarget).find("option:selected").each(function (i, selected) {
+					va[i] = $(selected).val();
+				});
+
+				va = jQuery.grep(va, function (value) {
+					return value != 'show_all';
+				});
+
+				$(e.target).val(va).trigger('change');
+				jQuery('#select2-toggle-columns-select-results li').eq(0).attr('aria-selected',false);
+
+
+			}
+
+
+			/*let tickets_table = $('.table').DataTable();
+
+			if(data == "*") {
+				tickets_table.columns().visible(true);
+				let result = tickets_table.columns().visible().reduce((a, v, i) => v ? [...a, i] : a, [])
+				localStorage.setItem('ticket_column_visible', result)
+			} else {
+				let column = tickets_table.column(data);
+				column.visible( ! column.visible() );
+				let result = tickets_table.columns().visible().reduce((a, v, i) => v ? [...a, i] : a, [])
+				localStorage.setItem('ticket_column_visible', result)
+			}*/
+
+
+
+
+			//$(e.target).val(old).trigger('change');
+			$(e.params.args.originalEvent.currentTarget).attr('aria-selected', 'false');
+			//select2-results__option--highlighted
+
+			//setTimeout(function(){
+				//console.warn('run');
+				//ticket_datatable_obj.responsive.rebuild();
+				//ticket_datatable_obj.responsive.recalc();
+				//ticket_datatable_obj.columns.adjust().responsive.recalc();
+
+				//$($.fn.dataTable.tables( true ) ).css('width', '100%');
+				//$($.fn.dataTable.tables( true ) ).DataTable().columns.adjust().draw();
+			//},3000);
+			ticket_datatable_obj.columns.adjust().draw();
+		});
                                                            
 		$('.ticket_dropdown_option').click(function (e) {
 			let data = $(this).attr('data-column');	

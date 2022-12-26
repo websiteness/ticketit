@@ -644,7 +644,7 @@ class TicketsService
                 \DB::raw('CONCAT(users.first_name ," ", users.last_name) as owner'),
                 'ticketit.agent_id',
                 'ticketit_categories.name AS category',
-                'tickets_developer_status.name AS dev_status',
+                'tickets_developer_status.name AS developer_status',
                 'ticketit.created_at AS created_at',
                 'ticketit.completed_at AS completed_at',
                 \DB::raw('COUNT(ticketit_comments.ticket_id) AS total_support_staff_comments')
@@ -911,7 +911,7 @@ class TicketsService
 
         });
 
-        $collection->addColumn('owner_info', function($ticket) {
+        $collection->addColumn('user', function($ticket) {
 
             $get_photo=$ticket->user->photo;
             $photo = (is_null($get_photo)) ? asset('images/profile/place-holder.png') : \Storage::disk('s3')->url($get_photo->file_name);
@@ -964,7 +964,7 @@ class TicketsService
             return false;
         });
 
-        $collection->addColumn('resolved', function ($ticket) use($complete){
+        $collection->addColumn('actions', function ($ticket) use($complete){
             if(!$complete) {
                 $route = url(TSetting::grab('main_route') . "/" . $ticket->id . '/complete');
                 return '<a class="btn btn-success btn-sm" href="' . $route . '"> Resolved </a>';
@@ -976,7 +976,7 @@ class TicketsService
         // method rawColumns was introduced in laravel-datatables 7, which is only compatible with >L5.4
         // in previous laravel-datatables versions escaping columns wasn't defaut
         if (LaravelVersion::min('5.4')) {
-            $collection->rawColumns(['subject', 'status', 'priority', 'category', 'agent', 'zone', 'tags', 'resolved', 'owner_info']);
+            $collection->rawColumns(['subject', 'status', 'priority', 'category', 'agent', 'zone', 'tags', 'actions', 'user']);
         }
 
         $table = $collection->make(true);

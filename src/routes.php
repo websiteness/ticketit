@@ -35,6 +35,7 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
     Route::post("$main_route_path/get-all-users", array('as' => "$main_route.get-all-users", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@getAllUsers'));
     Route::post("$main_route_path/get-all-ticket-priorities", array('as' => "$main_route.get-all-ticket-priorities", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@getAllTicketPriorities'));
     Route::post("$main_route_path/get-all-ticket-statuses", array('as' => "$main_route.get-all-ticket-statuses", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@getAllTicketStatuses'));
+    Route::post("$main_route_path/save-datatable-columns-visibility-setting", array('as' => "$main_route.save-datatable-columns-visibility-setting", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@saveDatatableColumnsVisibilitySetting'));
     
 
     //Ticket Comments public route
