@@ -29,7 +29,7 @@ class DashboardController extends Controller
         }
 
         // Total tickets counter per agent for google pie chart
-        $agents_share_obj = Agent::agents()->where('parent_user_id',Sentinel::getUser()->id)->with(['agentTotalTickets' => function ($query) {
+        $agents_share_obj = Agent::agents()->with(['agentTotalTickets' => function ($query) {
             $query->addSelect(['id', 'agent_id']);
         }])->get();
 
@@ -39,10 +39,10 @@ class DashboardController extends Controller
         }
 
         // Per Agent
-        $agents = Agent::where('parent_user_id',Sentinel::getUser()->id)->agents(10);
+        $agents = Agent::agents(10);
 
         // Per User
-        $users = Agent::where('parent_user_id',Sentinel::getUser()->id)->users(10);
+        $users = Agent::users(10);
 
         // Per Category performance data
         $ticketController = new TicketsController(new Ticket(), new Agent(), new User());

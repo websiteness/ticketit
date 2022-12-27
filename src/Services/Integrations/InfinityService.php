@@ -206,15 +206,7 @@ class InfinityService
                     ];
                 }     
                 
-                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_agent_id'){ 
-                    $infinity_values[$x++] = [
-                        'attribute_id' => $field['value'],
-                        'data' => [$ticket->agent->infinity_user_id],
-                    ];
-                } 
-
-                
-                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_images' && $image_url){ 
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_images' && $image_url){
                     $infinity_values[$x++] = [
                         'attribute_id' => $field['value'],
                         'data' => $image_url,
@@ -321,7 +313,6 @@ class InfinityService
     {   
         foreach($users as $key => $value) {
             $agent = Agent::find($key);
-            $agent->infinity_user_id = $value;
             $agent->save();
         }
         session()->flash('status', 'Successfully saved!');
@@ -410,14 +401,7 @@ class InfinityService
                     ];
                 }     
                 
-                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_agent_id'){ 
-                    $infinity_values[$x++] = [
-                        'attribute_id' => $field['value'],
-                        'data' => [$ticket->agent->infinity_user_id],
-                    ];
-                } 
-
-                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_images' && $image_url){ 
+                if($key_field == $field['slug'] && $field['slug'] == 'infinity_ticket_images' && $image_url){
                     $infinity_values[$x++] = [
                         'attribute_id' => $field['value'],
                         'data' => $image_url,

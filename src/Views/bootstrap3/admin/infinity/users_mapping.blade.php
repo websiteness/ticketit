@@ -37,12 +37,8 @@
                                     <option value="">Select User</option>
                                     @if ($workspace_users)
                                         @foreach ($workspace_users as $user)
-                                            @if(isset($agent->infinity_user_id))
-                                                <option value="{{ $user['id'] }}" {{ $agent->infinity_user_id == $user['id'] ? 'selected' : '' }}>{{ $user['name'] }}</option>                                
-                                            @else
-                                                <option value="{{ $user['id'] }}" >{{ $user['name'] }}</option>
-                                            @endif
-                                        @endforeach 
+                                        <option value="{{ $user['id'] }}" >{{ $user['name'] }}</option>
+                                        @endforeach
                                     @endif
                                                    
                                 </select>

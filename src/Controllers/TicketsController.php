@@ -124,9 +124,12 @@ class TicketsController extends Controller
         $ss = new \Kordy\Ticketit\Services\StatsService();
         $statuses_count = $ss->getStatusesAssoc();
         $categories_count = $ss->getCategoriesAssoc();
+        $datatable_visible_column_arr = [];
+        if(is_array(session('ticket_datatable_columns')) && count(session('ticket_datatable_columns'))) {
+            $datatable_visible_column_arr = session('ticket_datatable_columns');
+        }
 
-
-        return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories', 'statuses_count', 'categories_count'));
+        return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories', 'statuses_count', 'categories_count', 'datatable_visible_column_arr'));
     }
 
     /**
@@ -279,8 +282,6 @@ class TicketsController extends Controller
             }elseif(Sentinel::inRole('super-admin')){
                 $first_admin = Sentinel::findRoleBySlug('super-admin')->users()->first();
             }
-    
-            // $cat_agents = Models\Category::find($ticket->category_id)->agents()->where('parent_user_id',$first_admin->id)->agentsLists();
     
             $cat_agents = Agent::agentsLists();
             // dd($cat_agents);
@@ -569,7 +570,7 @@ class TicketsController extends Controller
             $first_admin = Sentinel::getUser();
         }
         // dd($first_admin);
-        $cat_agents = Models\Category::find($category_id)->agents()->where('parent_user_id',$first_admin->id)->agentsLists();
+        $cat_agents = Models\Category::find($category_id)->agents()->agentsLists();
         if (is_array($cat_agents)) {
             $agents = ['auto' => 'Auto Select'] + $cat_agents;
         } else {

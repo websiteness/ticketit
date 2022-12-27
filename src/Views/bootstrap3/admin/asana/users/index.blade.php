@@ -39,7 +39,7 @@
                                         <option value="">Select Agent</option>
                                         @if($users)
                                             @foreach($users as $user)
-                                                <option value="{{ $user['gid'] }}" @if($agent->ticketit_asana_gid == $user['gid']) selected @endif>{{ $user['name'] }}</option>
+                                                <option value="{{ $user['gid'] }}">{{ $user['name'] }}</option>
                                             @endforeach
                                         @endif
                                     </select>

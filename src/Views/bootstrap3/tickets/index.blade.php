@@ -7,6 +7,7 @@
             <div class="ticket-system__box-header">
                 <h2><span class="icon-gradient icon-ticket-1"></span> {{ trans('ticketit::lang.index-my-tickets') }}</h2>
                 <div class="ticket-system__right-actions">
+                    @if(Sentinel::getUser()->ticketit_agent || Sentinel::getUser()->ticketit_admin)
                     <div class="toggle-columns-select-wrapper">
                         <select name="" id="toggle-columns-select" class="toggle-columns" multiple>
                             <option value="show_all">Show All</option>
@@ -24,6 +25,7 @@
                             <option value="actions">Actions</option>
                         </select>
                     </div>
+                    @endif
                 <ul class="ticket-system__box-header-actions">
                     @if(Sentinel::getUser()->ticketit_agent || Sentinel::getUser()->ticketit_admin)
                         <li>

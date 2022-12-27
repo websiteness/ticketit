@@ -27,10 +27,6 @@ class AgentsController extends Controller
             $first_admin = Sentinel::getUser();
         }
 
-        /* $agents = Agent::agents()->where('parent_user_id',$first_admin->id)->with(['agentOpenTickets' => function ($query) {
-            $query->addSelect(['id', 'agent_id']);
-        }])->get(); */
-
         $users = Agent::all();
         $agents = Agent::agents()->get();
 
@@ -74,7 +70,6 @@ class AgentsController extends Controller
         $user_info->last_name = $request->get('last_name');
         $user_info->email = $request->get('email');
         $user_info->ticketit_agent = 1;
-        $user_info->parent_user_id = Sentinel::getUser()->id;
         $user_info->password = bcrypt($request->get('password'));
         $user_info->save();
 

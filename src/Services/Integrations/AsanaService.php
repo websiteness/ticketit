@@ -152,7 +152,6 @@ class AsanaService
     {
         foreach($users as $key => $user) {
             $agent = Agent::find($key);
-            $agent->ticketit_asana_gid = $user;
             $agent->save();
         }
 
@@ -248,10 +247,6 @@ class AsanaService
                 ]
             ]
         ];
-
-        if($agent->ticketit_asana_gid) {
-            $post['data']['assignee'] = $agent->ticketit_asana_gid;
-        }
 
         if($tags) {
             $post['data']['tags'] = $tags;
