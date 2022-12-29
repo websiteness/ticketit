@@ -10,7 +10,7 @@
 	<link href="//cdn.datatables.net/buttons/2.0.1/css/buttons.dataTables.min.css"> </link>
 	<!-- Daterangepicker -->
 	<link href="{{asset('libs/bootstrap-daterangepicker/daterangepicker.css')}}" rel="stylesheet">
-	<link href="{{asset('css/ticket-listing.css')}}" rel="stylesheet">
+	{!! loadCSSFile('/css/ticket-listing.css') !!}
 @stop
                               
 @section('content')
@@ -48,8 +48,8 @@
 		@endif
 
 	</script>
-	<script src="{{asset('js/ticket-listing.js')}}"></script>
-	<script src="{{asset('js/ticket-tag-create-and-select-in-datatable.js')}}"></script>
+	{!! loadJSFile('/js/ticket-listing.js') !!}
+	{!! loadJSFile('/js/ticket-tag-create-and-select-in-datatable.js') !!}
 	<script>
 
 		var DoActionAfterTimeout = (function (options){
