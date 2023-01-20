@@ -1,9 +1,9 @@
-<div id="advanced-search-filter" class="asf__modal asf__ticket">
+<div id="ticket-advanced-search-filter-container" class="asf__modal asf__ticket">
     <div class="asf__modal-inner">
         <div class="asf__modal-header">
             <h2>Advanced Search</h2>
             <span>Select the filter you want to apply on table.</span>
-            <button class="asf__modal-close"><span class="icon-close"></span></button>
+            <button id="ticket-advanced-search-filter-container-close" class="asf__modal-close"><span class="icon-close"></span></button>
         </div>
         <!-- .asf__modal-header -->
         <div class="asf__modal-body">

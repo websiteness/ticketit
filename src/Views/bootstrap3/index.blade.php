@@ -11,6 +11,7 @@
 	<!-- Daterangepicker -->
 	<link href="{{asset('libs/bootstrap-daterangepicker/daterangepicker.css')}}" rel="stylesheet">
 	{!! loadCSSFile('/css/ticket-listing.css') !!}
+	{!! loadCSSFile('/css/datatable-columns-setting.css') !!}
 @stop
                               
 @section('content')
@@ -18,6 +19,7 @@
     	@include('ticketit::shared.header')
     	@include('ticketit::tickets.index')
 		@include('ticketit::tickets.partials.advanced-search-filter.index')
+		@include('ticketit::tickets.partials.datatable-columns-setting')
 	</div>
 @stop
                                                                                     
@@ -35,6 +37,7 @@
 	<script src="{{asset('libs/bootstrap-daterangepicker/daterangepicker.js')}}"></script>
 	<!-- Select2 Multiple Checkboxes -->
 	<script src="{{asset('libs/select2-multi-checkboxes/select2.multi-checkboxes.js')}}"></script>
+	<script src="{{asset('libs/toggle-switcher/js/jquery.switcher.js')}}"></script>
 	<script>
 		let ticket_main_route = `{!! url('/').'/'.$setting->grab('main_route')!!}`;
 		let get_tags_url = `{!! route($setting->grab('main_route').'.get-all-tags') !!}`;
@@ -46,18 +49,20 @@
 		@if(is_array($datatable_visible_column_arr) && count($datatable_visible_column_arr))
 			datatable_visible_column_arr = @json($datatable_visible_column_arr,JSON_PRETTY_PRINT);
 		@endif
-
+		var ticket_agent_or_admin=0;
+		@if(Sentinel::getUser()->ticketit_agent || Sentinel::getUser()->ticketit_admin)
+			ticket_agent_or_admin=1;
+		@endif
 	</script>
 	{!! loadJSFile('/js/ticket-listing.js') !!}
 	{!! loadJSFile('/js/ticket-tag-create-and-select-in-datatable.js') !!}
+	{!! loadJSFile('/js/ticket-listing-columns-setting.js') !!}
 	<script>
 
 		var DoActionAfterTimeout = (function (options){
 			'use strict';
 
 			var _defaults = {
-				some_thing: 23,
-				other_thing: 'hello',
 				input_jquery_object:'',
 				callback:''
 			};
@@ -72,26 +77,47 @@
 			function start(val)
 			{
 				clearTimeout(_timer);
-				if(options.input_jquery_object){
-					_current_value = options.input_jquery_object.val();
+				if (options.input_jquery_object) {
 
-					if(!_current_value)
-						_current_value='';
+					_current_value = getValue();
 
-					if (_current_value.constructor === Array || _current_value.constructor === Object) {
-						_current_value=JSON.stringify(_current_value);
-					}
-
-					if (_current_value!=_old_value) {
+					if (_current_value != _old_value) {
 						_timer = setTimeout(done, _interval);
 					}
 				}
 			}
 
+			function getValue(){
+
+				if(options.input_jquery_object.length>1) {
+					_current_value = [];
+					options.input_jquery_object.each(function(){
+
+						if($(this).is(':checked')) {
+
+							_current_value.push($(this).val());
+						}
+					});
+
+				}
+				else
+					_current_value = options.input_jquery_object.val();
+
+				if(!_current_value)
+					_current_value='';
+
+				if (_current_value.constructor === Array || _current_value.constructor === Object) {
+					_current_value=JSON.stringify(_current_value);
+				}
+
+				return _current_value;
+
+			}
+
 			function done () {
 
 				if(options.input_jquery_object) {
-					_old_value = options.input_jquery_object.val();
+					_old_value =  getValue();
 				}
 
 				if(options.callback) {
@@ -110,7 +136,16 @@
 
 			var token = jQuery("meta[name='csrf-token']").attr("content");
 
-			columns =jQuery('#toggle-columns-select').val();
+			var columns;
+
+			//columns =jQuery('#toggle-columns-select').val();
+
+			columns = [];
+			jQuery('.chk_datatable_columns_setting_section_column_item').each(function(){
+				if($(this).is(':checked')) {
+					columns.push($(this).val());
+				}
+			});
 
 			if(!columns)
 				columns='';
@@ -130,11 +165,115 @@
 			},3000);
 		}
 
-		var do_action_after_timeout1 = new DoActionAfterTimeout({
-			some_thing: 17,
-			input_jquery_object:jQuery('#toggle-columns-select'),
+		var do_action_after_timeout = new DoActionAfterTimeout({
+			input_jquery_object:jQuery('.chk_datatable_columns_setting_section_column_item'),
 			callback:submitDatatableColumnsVisibilitySetting
 		});
+
+		function toggleDirectionsClasses(ele, prevX, prevY, currX, currY, first_scroll_left, first_scroll_top) {
+
+			if(first_scroll_left!=ele.scrollLeft()) {
+				if (prevX < currX) {
+					ele.addClass('scroll-draggable_move_left').removeClass('scroll-draggable_move_right');
+				} else {
+					if (prevX === currX) {
+						ele.removeClass('scroll-draggable_move_right scroll-draggable_move_left');
+					} else {
+						ele.addClass('scroll-draggable_move_right').removeClass('scroll-draggable_move_left');
+					}
+				}
+			}
+
+			if(first_scroll_top!=ele.scrollTop()) {
+				if (prevY < currY) {
+					ele.addClass('scroll-draggable_move_top').removeClass('scroll-draggable_move_bottom');
+				} else {
+					if (prevY === currY) {
+						ele.removeClass('scroll-draggable_move_bottom scroll-draggable_move_top');
+					} else {
+						ele.addClass('scroll-draggable_move_bottom').removeClass('scroll-draggable_move_top');
+					}
+				}
+			}
+
+		}
+
+		function setDragScrollOnDatatable(){
+
+			const ele = $('#ticket-system-tbl_wrapper').find('.row').eq(1);
+
+ 			//ele.css('cursor', 'grab');
+
+			let pos = { top: 0, left: 0, x: 0, y: 0 };
+
+			let old_e_clientX=0;
+			let old_e_clientY=0;
+
+			ele.on('mousedown', function(e){
+
+	  			//ele.css('cursor', 'grabbing');
+				ele.css('user-select','none');
+
+				pos = {
+					left: ele.scrollLeft(),
+					top: ele.scrollTop(),
+					// Get the current mouse position
+					x: e.clientX,
+					y: e.clientY,
+				};
+
+				old_e_clientX=e.clientX;
+				old_e_clientY=e.clientY;
+
+				jQuery(document).on('mousemove', function(e){
+
+					// How far the mouse has been moved
+					const dx = e.clientX - pos.x;
+					const dy = e.clientY - pos.y;
+
+					// Scroll the element
+					ele.scrollTop(pos.top - dy);
+					ele.scrollLeft(pos.left - dx);
+
+					toggleDirectionsClasses(ele, old_e_clientX, old_e_clientY, e.clientX, e.clientY, pos.left, pos.top);
+
+					old_e_clientX=e.clientX;
+					old_e_clientY=e.clientY;
+
+				});
+
+				jQuery(document).on('mouseup', function(e){
+
+					//ele.css('cursor', 'grab');
+					ele.css('user-select','unset');
+
+					jQuery(document).off('mousemove');
+					jQuery(document).off('mouseup');
+
+					ele.removeClass('scroll-draggable_move_left scroll-draggable_move_right scroll-draggable_move_top scroll-draggable_move_bottom');
+
+				});
+
+				/*
+				ele.on('mousewheel', function (event, delta) {
+					event.preventDefault();
+					//this.scrollLeft -= (delta * 30);
+					ele.scrollLeft(ele.scrollLeft() -(delta * 30));
+				});
+				*/
+
+				/*
+				jQuery(document).on('mouseleave', function(e){
+					elee.css('cursor', 'grab');
+				 	//elee.css('user-select','unset');
+
+				 	jQuery(document).off('mousemove');
+				 	jQuery(document).off('mouseup');
+				});
+				*/
+
+			});
+		}
 
         var ticket_tag_create_and_select_in_datatable= new TicketTagCreateAndSelectInDatatable();
 		var ticket_datatable_obj;
@@ -190,13 +329,15 @@
                 }
             }
 
-			 ticket_datatable_obj = $('.table').DataTable({
+			 ticket_datatable_obj = $('.ticket-system__tbl').DataTable({
 				 autoWidth: false,
 				processing: false,
 				serverSide: true,
-				responsive: true,
+				responsive: false,
+				//"scrollX": true,
                 destroy: true, 
-				dom: 'Blfrtip',
+				//dom: 'Blfrtip',
+				dom: "<'row'<'col-sm-5' <'column-button-container'B> l ><'col-sm-3 table-top-info'i><'col-sm-4'f>><'row'<'col-sm-12'tr>><'row'<'col-sm-5'i><'col-sm-7'p>>",
                 buttons: [
                     //'colvis',
 					//'csvHtml5',
@@ -207,7 +348,7 @@
 					url: url,
 					beforeSend: function(){
 						// Here, manually add the loading message.
-						$('.table > tbody').html(
+						$('.ticket-system__tbl > tbody').html(
                             '<tr class="odd">' +
                             '<td valign="top" colspan="15" class="dataTables_empty">Loading&hellip;</td>' +
                             '</tr>'
@@ -301,6 +442,12 @@
 				@endif	
             });
 
+			setDragScrollOnDatatable();
+
+			if(ticket_agent_or_admin) {
+				jQuery('#ticket-system-tbl_length').prepend('<button class="custom-btn columns-btn table-columns-form-popup-open"  title="Columns" href="javascript:void(0)">Columns</button>');
+			}
+
 			datatable_columns_arr = ticket_datatable_obj.settings().init().columns;
 
 			if (datatable_visible_column_arr.length) {
@@ -350,6 +497,28 @@
 					jQuery('#toggle-columns-select').val(datatable_visible_column_arr).trigger('change');
 				},5000);
 
+			}
+
+			var total_columns = 0;
+			var total_visible_columns = 0;
+			jQuery('.chk_datatable_columns_setting_section_column_item').each(function(){
+				total_columns++;
+				if(jQuery.inArray($(this).val(), datatable_visible_column_arr) !== -1){
+					total_visible_columns++;
+					$(this).prop('checked', true);
+					$(this).parent().find('.ui-switcher').attr('aria-checked',true);
+
+				}
+			});
+
+			if(total_columns==total_visible_columns) {
+				var chk_datatable_column_show_hide_all = $('.chk_datatable_column_show_hide_all');
+				if (!chk_datatable_column_show_hide_all.is(':checked')) {
+
+					chk_datatable_column_show_hide_all.prop('checked', true);
+					chk_datatable_column_show_hide_all.parent().find('.ui-switcher').attr('aria-checked', true);
+
+				}
 			}
 
 /*
