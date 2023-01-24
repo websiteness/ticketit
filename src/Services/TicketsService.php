@@ -861,19 +861,38 @@ class TicketsService
         $collection->editColumn('updated_at', '{!! \Carbon\Carbon::parse($updated_at)->format("m/d/Y")." (".\Carbon\Carbon::parse($updated_at)->diffForHumans().")" !!}');
 
         $collection->addColumn('tags', function($ticket) use($user){
+
+            $chr_search_arr = [
+                ////"&",
+                ////"<",
+                ////">",
+                //'"',
+                "'",
+                //"/"
+            ];
+
+            $chr_replace_arr = [
+                ////"&amp;",
+                ////"&lt;",
+                ////"&gt;",
+                //'&quot;',
+                '&#39;',
+                //'&#x2F;'
+            ];
+
             $list = '';
             $tickets = Ticket::where('id', $ticket->id)->first();
             $tags = $tickets->tags;
             $new_tags = [];
             $ticket_tag_name_arr = [];
             foreach($tags as $tag) {
-                array_push($ticket_tag_name_arr, $tag->name);
+                array_push($ticket_tag_name_arr, str_replace($chr_search_arr, $chr_replace_arr, $tag->name));
                 //array_push($new_tags, "<span class='label label-primary ml-3'>{$tag->name}</span>" );
                 $list .= "".
                 "<span
                     id='".$ticket->id."-".$tag->id."-tag'
                     class='label label-primary datatable-tag-label ml-3'>
-                        {$tag->name}
+                        ".htmlspecialchars($tag->name)."
                 ";
 
                 if ($user->isAgent() || $user->isAdmin()) {
@@ -885,7 +904,7 @@ class TicketsService
                             class='clickable mgl-5 tag-remove'
                             data-id='" . $ticket->id . "'
                             data-tag-id='" . $tag->id . "'
-                            data-name='" . $tag->name . "'
+                            data-name=\"" . htmlspecialchars($tag->name) . "\"
                         />
                     ";
                 }
