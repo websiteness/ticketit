@@ -53,6 +53,10 @@
 		@if(Sentinel::getUser()->ticketit_agent || Sentinel::getUser()->ticketit_admin)
 			ticket_agent_or_admin=1;
 		@endif
+		var is_completed_tickets_section=0;
+		@if($complete)
+			is_completed_tickets_section=1;
+		@endif
 	</script>
 	{!! loadJSFile('/js/ticket-listing.js') !!}
 	{!! loadJSFile('/js/ticket-tag-create-and-select-in-datatable.js') !!}
@@ -155,6 +159,7 @@
 					url: save_datatable_columns_visibility_setting_url,
 					type: 'POST',
 					data: {
+						"is_completed_tickets_section": is_completed_tickets_section,
 						"columns": columns,
 						"_token": token
 					},
@@ -202,7 +207,7 @@
 
 			const ele = $('#ticket-system-tbl_wrapper').find('.row').eq(1);
 
- 			//ele.css('cursor', 'grab');
+ 			ele.css('cursor', 'grab');
 
 			let pos = { top: 0, left: 0, x: 0, y: 0 };
 
@@ -211,7 +216,7 @@
 
 			ele.on('mousedown', function(e){
 
-	  			//ele.css('cursor', 'grabbing');
+	  			ele.css('cursor', 'grabbing');
 				ele.css('user-select','none');
 
 				pos = {
@@ -235,7 +240,7 @@
 					ele.scrollTop(pos.top - dy);
 					ele.scrollLeft(pos.left - dx);
 
-					toggleDirectionsClasses(ele, old_e_clientX, old_e_clientY, e.clientX, e.clientY, pos.left, pos.top);
+					//toggleDirectionsClasses(ele, old_e_clientX, old_e_clientY, e.clientX, e.clientY, pos.left, pos.top);
 
 					old_e_clientX=e.clientX;
 					old_e_clientY=e.clientY;
@@ -244,7 +249,7 @@
 
 				jQuery(document).on('mouseup', function(e){
 
-					//ele.css('cursor', 'grab');
+					ele.css('cursor', 'grab');
 					ele.css('user-select','unset');
 
 					jQuery(document).off('mousemove');

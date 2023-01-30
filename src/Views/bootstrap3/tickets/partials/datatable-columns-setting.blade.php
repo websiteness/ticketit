@@ -86,12 +86,14 @@
                                 <input id="chk_datatable_columns_setting_section_column_item_zone" type="checkbox" value="zone" class="datatable-column-visibility-toggle-switcher chk_datatable_columns_setting_section_column_item">
                             </div>
                         </li>
+                        @if( !$complete)
                         <li class="datatable_columns_setting_section_column_container" data-search-term="actions">
                             <label for="chk_datatable_columns_setting_section_column_item_actions">Actions</label>
                             <div class="datatable-column-visibility-toggle-switcher-wrapper">
                                 <input id="chk_datatable_columns_setting_section_column_item_actions" type="checkbox" value="actions" class="datatable-column-visibility-toggle-switcher chk_datatable_columns_setting_section_column_item">
                             </div>
                         </li>
+                        @endif
                     </ul>
                 </div>
                 <div class="datatable_columns_setting_section_no_column_found_msg">No column found.</div>

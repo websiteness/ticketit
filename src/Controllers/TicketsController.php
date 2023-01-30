@@ -101,8 +101,8 @@ class TicketsController extends Controller
         $categories_count = $ss->getCategoriesAssoc();
 
         $datatable_visible_column_arr = [];
-		if(is_array(session('ticket_datatable_columns')) && count(session('ticket_datatable_columns'))) {
-            $datatable_visible_column_arr = session('ticket_datatable_columns');
+		if(is_array(session('active_ticket_datatable_columns')) && count(session('active_ticket_datatable_columns'))) {
+            $datatable_visible_column_arr = session('active_ticket_datatable_columns');
         }
 
         return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories', 'tags', 'statuses_count', 'categories_count', 'datatable_visible_column_arr'));
@@ -125,8 +125,8 @@ class TicketsController extends Controller
         $statuses_count = $ss->getStatusesAssoc();
         $categories_count = $ss->getCategoriesAssoc();
         $datatable_visible_column_arr = [];
-        if(is_array(session('ticket_datatable_columns')) && count(session('ticket_datatable_columns'))) {
-            $datatable_visible_column_arr = session('ticket_datatable_columns');
+        if(is_array(session('completed_ticket_datatable_columns')) && count(session('completed_ticket_datatable_columns'))) {
+            $datatable_visible_column_arr = session('completed_ticket_datatable_columns');
         }
 
         return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories', 'statuses_count', 'categories_count', 'datatable_visible_column_arr'));
@@ -1031,9 +1031,15 @@ class TicketsController extends Controller
 
         $columns = array_values(array_diff($columns, ["show_all"]));
 
-        session([
-            'ticket_datatable_columns' => $columns,
-        ]);
+        if ($request->has('is_completed_tickets_section') && $request->get('is_completed_tickets_section') == 1) {
+            session([
+                'completed_ticket_datatable_columns' => $columns,
+            ]);
+        } else {
+            session([
+                'active_ticket_datatable_columns' => $columns,
+            ]);
+        }
 
         return response()->json([
             'type' =>'success'
