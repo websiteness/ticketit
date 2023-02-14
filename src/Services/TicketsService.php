@@ -983,6 +983,26 @@ class TicketsService
             return false;
         });
 
+        $collection->addColumn('no_resolution_in_seven_days', function($ticket) use($user) {
+
+            if(!( $user->isAgent() || $user->isAdmin() )){
+                return false;
+            }
+
+            if(!$ticket->completed_at){
+
+                $date = Carbon::parse($ticket->created_at);
+                $now = Carbon::now();
+                $diff = $date->diffInDays($now);
+
+                if($diff>6){
+                    return true;
+                }
+            }
+
+            return false;
+        });
+
         $collection->addColumn('actions', function ($ticket) use($complete){
             if(!$complete) {
                 $route = url(TSetting::grab('main_route') . "/" . $ticket->id . '/complete');
