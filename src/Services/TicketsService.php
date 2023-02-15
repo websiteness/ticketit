@@ -616,9 +616,9 @@ class TicketsService
 
         $tickets_query
             ->join('users', 'users.id', '=', 'ticketit.user_id')
-            ->join('ticketit_statuses', 'ticketit_statuses.id', '=', 'ticketit.status_id')
-            ->join('ticketit_priorities', 'ticketit_priorities.id', '=', 'ticketit.priority_id')
-            ->join('ticketit_categories', 'ticketit_categories.id', '=', 'ticketit.category_id')
+            ->leftjoin('ticketit_statuses', 'ticketit_statuses.id', '=', 'ticketit.status_id')
+            ->leftjoin('ticketit_priorities', 'ticketit_priorities.id', '=', 'ticketit.priority_id')
+            ->leftjoin('ticketit_categories', 'ticketit_categories.id', '=', 'ticketit.category_id')
             ->leftjoin('tickets_developer_status', 'tickets_developer_status.id', '=', 'ticketit.dev_status_id')
             ->leftjoin('ticketit_categories AS ticketit_zone', 'ticketit_zone.id', '=', 'ticketit.zone_id')
             ->leftjoin('ticketit_ticket_tags as ttt', 'ttt.ticket_id', '=', 'ticketit.id')
@@ -840,7 +840,7 @@ class TicketsService
         $collection->editColumn('agent', function ($ticket) use($tickets){
             $ticket = $tickets->find($ticket->id);
 
-            return e($ticket->agent->name);
+            return isset($ticket->agent)? e($ticket->agent->name):'';
         });
 
         $collection->editColumn('last_reply', function ($ticket) {

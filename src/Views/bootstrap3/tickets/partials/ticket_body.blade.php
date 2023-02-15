@@ -53,7 +53,7 @@
                         </td>
                         @else
                         <td width="10%"><h5 class="active-tickets__heading">Category:</h5></td>
-                        <td width="40%"><span class="active-tickets__text">{{ isset($ticket->category->parent_category->name) ? $ticket->category->parent_category->name : $ticket->category->name }}</span></td>
+                        <td width="40%"><span class="active-tickets__text">{{ isset($ticket->category) ?(isset($ticket->category->parent_category->name) ? $ticket->category->parent_category->name : $ticket->category->name):'' }}</span></td>
                         @endif
                         
                     </tr>
@@ -70,20 +70,22 @@
                                 @if($ticket->status_id == 2)
                                     Waiting on feedback from {{ $ticket->user->name }}
                                 @else
-                                    {{ $ticket->status->name }}
+                                    {{ isset($ticket->status)?$ticket->status->name:'' }}
                                 @endif
                             @endif
                         </div>
                       </td>
                       @if($u->isAgent() || $u->isAdmin())
                       <td width="10%"><h5 class="active-tickets__heading">Category:</h5></td>
-                      <td width="40%"><span class="active-tickets__text">{{ isset($ticket->category->parent_category->name) ? $ticket->category->parent_category->name : $ticket->category->name }}</span></td>
+                      <td width="40%"><span class="active-tickets__text">{{ isset($ticket->category) ?(isset($ticket->category->parent_category->name) ? $ticket->category->parent_category->name : $ticket->category->name):'' }}</span></td>
                         
                       @else
                         <td width="10%"><h5 class="active-tickets__heading">Module:</h5></td>
                         <td width="40%"><span class="active-tickets__text">
+                            @if($ticket->category)
                             @if($ticket->category->parent_category)
                                 {{ $ticket->category->name }}
+                            @endif
                             @endif
                             </span></td>
                         @endif
@@ -125,8 +127,10 @@
                       @if($u->isAgent() || $u->isAdmin())
                       <td width="10%"><h5 class="active-tickets__heading">Module:</h5></td>
                       <td width="40%"><span class="active-tickets__text">
+                        @if($ticket->category)
                         @if($ticket->category->parent_category)
                             {{ $ticket->category->name }}
+                        @endif
                         @endif
                         </span></td>
                         @else
