@@ -266,7 +266,11 @@ class TicketsController extends Controller
     {
         $ticket = $this->tickets->findOrFail($id);   
         $user = Sentinel::getUser();
- 
+
+        if(!$ticket->user){
+            return redirect()->route(TSetting::grab('main_route').'.index');
+        }
+
         if($ticket->user_id == $user->id || Sentinel::getUser()->ticketit_agent || Sentinel::getUser()->ticketit_admin){
             list($priority_lists, $category_lists, $status_lists, $subcategories) = $this->PCS();
 
@@ -291,8 +295,8 @@ class TicketsController extends Controller
                 $agent_lists = ['auto' => 'Auto Select'];
             }
     
-            $selected_category = ($ticket->category->parent_category) ? $ticket->category->parent_category->id : $ticket->category->id;
-            $selected_subcategory = ($ticket->category->parent_category) ? $ticket->category->id : null;
+            $selected_category = isset($ticket->category)?(($ticket->category->parent_category) ? $ticket->category->parent_category->id : $ticket->category->id):null;
+            $selected_subcategory = isset($ticket->category)?(($ticket->category->parent_category) ? $ticket->category->id : null):null;
     
             $comments = $ticket->comments()->paginate(TSetting::grab('paginate_items'));
             $plan_names = '';

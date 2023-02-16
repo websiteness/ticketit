@@ -214,7 +214,7 @@
                                 <tr>
                                     <th > <small>{{ substr($ticket->subject, 0, 20) }}</small></th>                                   
                                     <th class="text-center" width="15px">
-                                        <a href="/tickets/{{ $ticket->id }}" class="btn btn-sm btn-success btn-view-ticket btn-ticket-view" style="background-color: {{ $ticket->status->color }}; border-color: {{ $ticket->status->color }};"><i class="fa fa-eye"></i></a>                       
+                                        <a href="/tickets/{{ $ticket->id }}" class="btn btn-sm btn-success btn-view-ticket btn-ticket-view" style="background-color: {{ isset($ticket->status)?$ticket->status->color:'' }}; border-color: {{ isset($ticket->status)?$ticket->status->color:'' }};"><i class="fa fa-eye"></i></a>
                                     </th>
                                 </tr>
                                @endforeach
