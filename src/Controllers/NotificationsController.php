@@ -76,6 +76,12 @@ class NotificationsController extends Controller
                     
 
         $notification_owner = $ticket->user;
+
+        // don't send notif if user is deleted
+        if(!$notification_owner){
+            return;
+        }
+
         $template = 'ticketit::emails.status';
 
         $latest_comment = Comment::where('ticket_id', $ticket->id)->orderBy('id','desc')->first();

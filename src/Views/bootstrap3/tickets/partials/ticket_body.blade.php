@@ -188,8 +188,13 @@
           
                   </div>
                   @endif
+                  {!!($is_user_deleted_msg_displayable)?'<div class="clearfix"><div class="pull-right text-danger">This user has been deleted.</div></div>':''!!}
+                  @if($is_user_deleted_msg_displayable)
+                  {!! CollectiveForm::submit('Update', ['class' => 'btn btn-success ticket-update-btn', 'disabled' => 'true']) !!}
+                  @else
                   {!! CollectiveForm::submit('Update', ['class' => 'btn btn-success ticket-update-btn']) !!}
-                  {!! CollectiveForm::close() !!}     
+                  @endif
+                  {!! CollectiveForm::close() !!}
                   <input id="t-id" type="hidden" value="{{ $ticket->id }}">
                   </div><!-- x_content -->
               </div><!-- .x_panel -->
