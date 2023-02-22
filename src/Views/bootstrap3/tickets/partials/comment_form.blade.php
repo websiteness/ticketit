@@ -50,8 +50,11 @@
                                     {!! CollectiveForm::textarea('content', null, ['class' => 'form-control summernote-editor', 'rows' => "3"]) !!}
                                 </div>
                             </div>
-
+                            <div class="col-md-12 mb-5">
+                                {!!($is_user_deleted_msg_displayable)?'<div class="clearfix"><div class="pull-right text-danger">This user has been deleted.</div></div>':''!!}
+                            </div>
                             <div class="col-md-12 ticket-reply__actions">
+                                @if(!$is_user_deleted_msg_displayable)
                                 @if(!$u->isAdmin() && !$u->isAgent())
                                         <!-- {!! CollectiveForm::submit( trans('ticketit::lang.btn-submit'), ['class' => 'reply-submit custom-btn submit-btn']) !!} -->
                                         <button type="button" class="custom-btn cancel-btn pull-left" id="cancel_reply">Cancel</button>
@@ -66,6 +69,19 @@
                                         @endif
                                     <!-- </div> -->
                                 @endif
+                                @else
+                                @if(!$u->isAdmin() && !$u->isAgent())
+                                    <button type="button"  class="custom-btn cancel-btn pull-left" id="cancel_reply">Cancel</button>
+                                    <button class="reply-submit custom-btn submit-btn pull-left">Send Reply</button>
+                                @else
+                                @if($u->isAdmin())
+                                    <button type="button" disabled class="custom-btn submit-btn pull-right">Reply to user</button>
+                                @else
+                                    <button type="button" class="custom-btn cancel-btn pull-left" id="cancel_reply">Cancel</button>
+                                    <button class="custom-btn submit-btn pull-left">Send Reply</button>
+                                @endif
+                                @endif
+                                @endif
 
                                 @if($u->isAdmin())
                                 <button class="btn btn-secondary text-sm" value="@{{EMAIL}}">Email</button>
@@ -73,12 +89,21 @@
                                 <button class="btn btn-secondary text-sm" value="@{{LAST_NAME}}">Last Name</button>
                                 <button class="btn btn-secondary text-sm" value="@{{SUBJECT}}">Subject</button>
                                 <div class="ticket-info__actions pull-right">
+                                    @if(!$is_user_deleted_msg_displayable)
                                     @if(! $ticket->completed_at && $close_perm == 'yes')
                                             {!! link_to_route($setting->grab('main_route').'.complete', 'Close Ticket', $ticket->id,
                                                                 ['class' => 'custom-btn reopen-btn']) !!}
                                     @elseif($ticket->completed_at && $reopen_perm == 'yes')
                                             {!! link_to_route($setting->grab('main_route').'.reopen', trans('ticketit::lang.reopen-ticket'), $ticket->id,
                                                                 ['class' => 'custom-btn reopen-btn']) !!}
+                                    @endif
+                                    @else
+                                        @if(! $ticket->completed_at && $close_perm == 'yes')
+                                            {!! link_to_route($setting->grab('main_route').'.complete', 'Close Ticket', $ticket->id,
+                                                                ['class' => 'custom-btn reopen-btn']) !!}
+                                        @elseif($ticket->completed_at && $reopen_perm == 'yes')
+                                            <button class="custom-btn reopen-btn" disabled>{!!trans('ticketit::lang.reopen-ticket')!!}</button>
+                                        @endif
                                     @endif
                                             </div>
                                 @endif

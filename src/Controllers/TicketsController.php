@@ -267,6 +267,12 @@ class TicketsController extends Controller
         $ticket = $this->tickets->findOrFail($id);   
         $user = Sentinel::getUser();
 
+        $ticket->load(['user' => function($q) {
+            $q->withTrashed();
+        },'ticket_user' => function($q) {
+            $q->withTrashed();
+        }]);
+
         if(!$ticket->user){
             return redirect()->route(TSetting::grab('main_route').'.index');
         }
@@ -322,9 +328,16 @@ class TicketsController extends Controller
 
             $ticket_response_time_average = $ticketService->getResponseTimeAverage(['user_id'=>$ticket->user_id]);
 
+            $is_user_deleted_msg_displayable=0;
+            if($ticket->user->trashed() && (Sentinel::getUser()->ticketit_agent || Sentinel::getUser()->ticketit_admin))
+            {
+                $is_user_deleted_msg_displayable=1;
+            }
+
+            echo '</pre>';
             return view('ticketit::tickets.show', compact('ticket', 'status_lists', 'priority_lists', 'category_lists', 'subcategories', 'selected_category', 'selected_subcategory', 'agent_lists', 'comments',
                     'close_perm', 'reopen_perm', 'plan_names', 'dev_statuses', 'scripts',
-                'ticket_first_response_time_average', 'ticket_response_time_average', 'average_no_of_interactions', 'average_resolution_time', 'total_tickets'));
+                'ticket_first_response_time_average', 'ticket_response_time_average', 'average_no_of_interactions', 'average_resolution_time', 'total_tickets', 'is_user_deleted_msg_displayable'));
         } else {
             return redirect()->route(TSetting::grab('main_route').'.index');
         }

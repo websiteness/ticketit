@@ -17,11 +17,15 @@
           <span class="ticket-count">
                 <?php 
                     if ($u->isAdmin()) {
-                        echo Kordy\Ticketit\Models\Ticket::active()->has('user')->count();
+                        echo Kordy\Ticketit\Models\Ticket::active()->whereHas('user', function($q) {
+                            $q->withTrashed();
+                        })->count();
                         // echo 1;
                     } elseif ($u->isAgent()) {
                         // echo Kordy\Ticketit\Models\Ticket::active()->agentUserTickets($u->id)->count();
-                        echo Kordy\Ticketit\Models\Ticket::active()->has('user')->count();
+                        echo Kordy\Ticketit\Models\Ticket::active()->whereHas('user' , function($q) {
+                            $q->withTrashed();
+                        })->count();
                     } else {
                         echo Kordy\Ticketit\Models\Ticket::userTickets($u->id)->active()->count();
                     }
@@ -33,10 +37,14 @@
           <span class="ticket-count">
                 <?php 
                     if ($u->isAdmin()) {
-                        echo Kordy\Ticketit\Models\Ticket::complete()->has('user')->count();
+                        echo Kordy\Ticketit\Models\Ticket::complete()->whereHas('user' , function($q) {
+                            $q->withTrashed();
+                        })->count();
                     } elseif ($u->isAgent()) {
                         // echo Kordy\Ticketit\Models\Ticket::complete()->agentUserTickets($u->id)->count();
-                        echo Kordy\Ticketit\Models\Ticket::complete()->has('user')->count();
+                        echo Kordy\Ticketit\Models\Ticket::complete()->whereHas('user' , function($q) {
+                            $q->withTrashed();
+                        })->count();
                     } else {
                         echo Kordy\Ticketit\Models\Ticket::userTickets($u->id)->complete()->count();
                     }
