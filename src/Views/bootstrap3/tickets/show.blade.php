@@ -130,8 +130,25 @@
         float: left !important;
     }
 
+    .custom-btn:hover::before {
+        filter: brightness(0) invert(1);
+    }
+
+    .custom-btn:disabled {
+        pointer-events: none;
+        background-image: none;
+        color: #cccccc;
+        border: 2px solid #cccccc!important;
+    }
+
+    .custom-btn:disabled::before {
+        -webkit-filter: grayscale(1);
+        filter: grayscale(1);
+    }
  
-        
+    .mb-5{
+        margin-bottom:5px;
+    }
 </style>
 @stop
 @section('content')
@@ -194,10 +211,11 @@
                                 <span class="contact-info-span subscription-span-mg">Total Tickets: {{  $total_tickets }} </span>
                             </p>
                         </div>
+                        {!!($is_user_deleted_msg_displayable)?'<div class="clearfix"><div class="text-center text-danger">This user has been deleted.</div></div>':''!!}
                         <form action="{{ route('developer.process.login.as.user.submit')}}" method="POST">
                         {{ csrf_field() }}
                         <input type="hidden" name="user" value="{{$ticket->user->id }}">
-                        <p><button class="btn btn-success btn-block text-sm" role="button" type="submit">Login as user</button> </p>
+                        <p><button class="btn btn-success btn-block text-sm" role="button" type="submit" {{($is_user_deleted_msg_displayable)?'disabled':''}}>Login as user</button> </p>
                         </form>
                         <!-- <p><a class="btn btn-success btn-block text-sm btn-login-as-user" role="button" id="{{$ticket->user->id }}">Login as user</a> </p> -->
                     </div>
@@ -210,11 +228,11 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($ticket->ticket_user->userTotalTickets as $ticket)
+                                @foreach($ticket->ticket_user->userTotalTickets as $ticket_tmp)
                                 <tr>
-                                    <th > <small>{{ substr($ticket->subject, 0, 20) }}</small></th>                                   
+                                    <th > <small>{{ substr($ticket_tmp->subject, 0, 20) }}</small></th>
                                     <th class="text-center" width="15px">
-                                        <a href="/tickets/{{ $ticket->id }}" class="btn btn-sm btn-success btn-view-ticket btn-ticket-view" style="background-color: {{ isset($ticket->status)?$ticket->status->color:'' }}; border-color: {{ isset($ticket->status)?$ticket->status->color:'' }};"><i class="fa fa-eye"></i></a>
+                                        <a href="/tickets/{{ $ticket_tmp->id }}" class="btn btn-sm btn-success btn-view-ticket btn-ticket-view" style="background-color: {{ isset($ticket_tmp->status)?$ticket_tmp->status->color:'' }}; border-color: {{ isset($ticket_tmp->status)?$ticket_tmp->status->color:'' }};"><i class="fa fa-eye"></i></a>
                                     </th>
                                 </tr>
                                @endforeach
@@ -231,7 +249,8 @@
                           <div class="col">
                               {{ CollectiveForm::label('Note:') }}
                               {!! CollectiveForm::textarea('dev_notes', null, ['class' => 'form-control add-note', 'rows' => "3"]) !!}
-                              <button class="btn btn-success mt-5 pull-right btn-submit-note"> Submit</button>  
+                              {!!($is_user_deleted_msg_displayable)?'<div class="clearfix"><div class="pull-right text-danger">This user has been deleted.</div></div>':''!!}
+                              <button class="btn btn-success mt-5 pull-right btn-submit-note" {{($is_user_deleted_msg_displayable)?'disabled':''}}> Submit</button>
                         </div>
                         </div>
                     </div> 

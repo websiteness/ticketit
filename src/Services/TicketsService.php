@@ -649,7 +649,10 @@ class TicketsService
                 'ticketit.completed_at AS completed_at',
                 \DB::raw('COUNT(ticketit_comments.ticket_id) AS total_support_staff_comments')
             ])
-            ->groupBy('ticketit.id');
+            ->groupBy('ticketit.id')
+            ->with(['user' => function($q) {
+                $q->withTrashed();
+            }]);
 
         // check if filters are applied
         if (isset($request->custom_filters['hdn_ticket_filter_tag_ids']) && is_array($request->custom_filters['hdn_ticket_filter_tag_ids']) && $request->custom_filters['hdn_ticket_filter_tag_ids']) {
