@@ -437,11 +437,15 @@
 				createdRow: function (row, data, index) {
 
 					if(data.no_follow_up_in_one_day){
-						$(row).addClass("ticket-system__yellow");
+						$(row).addClass("ticket-system__no_follow_up_in_one_day");
 					}
 
 					if(data.no_resolution_in_three_days){
-						$(row).addClass("ticket-system__red");
+						$(row).addClass("ticket-system__no_resolution_in_three_days");
+					}
+
+					if(data.no_resolution_in_seven_days){
+						$(row).addClass("ticket-system__no_resolution_in_seven_days");
 					}
 
 				},
