@@ -15,8 +15,11 @@ class TicketsRepository {
         return Ticket::where('created_at', '<', $overdue_hours)
                     ->whereNull('completed_at')
                     ->whereDoesntHave('comments')
-                    ->has('user')
-                    ->has('category')
+                    //->has('user')
+                    //->has('category')
+                    ->whereHas('user', function($q) {
+                        $q->withTrashed();
+                    })
                     ->count();
     }
 
@@ -24,8 +27,11 @@ class TicketsRepository {
     {
         return Ticket::whereNull('completed_at')
                     ->whereDoesntHave('comments')
-                    ->has('user')
-                    ->has('category')
+                    //->has('user')
+                    //->has('category')
+                    ->whereHas('user', function($q) {
+                        $q->withTrashed();
+                    })
                     ->count();
     }
 
@@ -33,7 +39,10 @@ class TicketsRepository {
     {
         return Ticket::where('status_id', $status_id)
                     ->whereNull('completed_at')
-                    ->has('user')
+                    //->has('user')
+                    ->whereHas('user', function($q) {
+                        $q->withTrashed();
+                    })
                     ->count();
     }
 
