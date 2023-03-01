@@ -101,6 +101,8 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
 
         Route::get('tickets-dashboard', 'Kordy\Ticketit\Controllers\DashboardController@index2');
 
+        Route::post('tickets-dashboard-data', array('as' => 'tickets-dashboard-data', 'uses' => 'Kordy\Ticketit\Controllers\DashboardController@data2'));
+
         //Ticket admin index route (ex. http://url/tickets-admin/)
         Route::get("$admin_route_path/indicator/{indicator_period?}", [
                 'as'   => $admin_route.'.dashboard.indicator',
