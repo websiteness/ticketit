@@ -34,7 +34,7 @@
     <input type="hidden" id="hdn_ticket_filter_user_id" name="hdn_ticket_filter_user_id" value="{{ session('ticket_filter_user_id')? session('ticket_filter_user_id'):0 }}">
     <input type="hidden" id="hdn_ticket_filter_ticket_number" name="hdn_ticket_filter_ticket_number" value="{{ session('ticket_filter_ticket_number')? session('ticket_filter_ticket_number'):'' }}">
     <input type="hidden" id="hdn_ticket_filter_ticket_subject" name="hdn_ticket_filter_ticket_subject" value="{{ session('ticket_filter_ticket_subject')? session('ticket_filter_ticket_subject'):'' }}">
-    <input type="hidden" id="hdn_ticket_filter_ticket_status_id" name="hdn_ticket_filter_ticket_status_id" value="{{ session('ticket_filter_ticket_status_id')? session('ticket_filter_ticket_status_id'):0 }}">
+    <input type="hidden" id="hdn_ticket_filter_ticket_status_key" name="hdn_ticket_filter_ticket_status_key" value="{{ session('ticket_filter_ticket_status_key')? session('ticket_filter_ticket_status_key'):'' }}">
     <input type="hidden" id="hdn_ticket_filter_ticket_priority_id" name="hdn_ticket_filter_ticket_priority_id" value="{{ session('ticket_filter_ticket_priority_id')? session('ticket_filter_ticket_priority_id'):0 }}">
     <input type="hidden" id="hdn_ticket_filter_ticket_date_range_type" name="hdn_ticket_filter_ticket_date_range_type" value="{{ session('ticket_filter_ticket_date_range_type')? session('ticket_filter_ticket_date_range_type'):'' }}">
     <input type="hidden" id="hdn_ticket_filter_ticket_date_range_start" name="hdn_ticket_filter_ticket_date_range_start" value="{{ session('ticket_filter_ticket_date_range_start')? session('ticket_filter_ticket_date_range_start'):'' }}">

@@ -520,7 +520,7 @@ class TicketsService
             'ticket_filter_user_id' => '',
             'ticket_filter_ticket_number' => '',
             'ticket_filter_ticket_subject' => '',
-            'ticket_filter_ticket_status_id' => '',
+            'ticket_filter_ticket_status_key' => '',
             'ticket_filter_ticket_priority_id' => '',
             'ticket_filter_ticket_date_range_type' => '',
             'ticket_filter_ticket_date_range_start' => '',
@@ -556,10 +556,10 @@ class TicketsService
 
         }
 
-        if (isset($request->custom_filters['hdn_ticket_filter_ticket_status_id']) && $request->custom_filters['hdn_ticket_filter_ticket_status_id']) {
+        if (isset($request->custom_filters['hdn_ticket_filter_ticket_status_key']) && $request->custom_filters['hdn_ticket_filter_ticket_status_key']) {
 
-            $ticket_status_id = $request->custom_filters['hdn_ticket_filter_ticket_status_id'];
-            session(['ticket_filter_ticket_status_id' => $ticket_status_id]);
+            $ticket_status_id = $request->custom_filters['hdn_ticket_filter_ticket_status_key'];
+            session(['ticket_filter_ticket_status_key' => $ticket_status_id]);
 
         }
 
@@ -672,19 +672,19 @@ class TicketsService
             $tickets_query->where('ticketit.subject', 'like', '%' . $request->custom_filters['hdn_ticket_filter_ticket_subject'] . '%');
         }
 
-        if (isset($request->custom_filters['hdn_ticket_filter_ticket_status_id']) && $request->custom_filters['hdn_ticket_filter_ticket_status_id']) {
-            if ($request->custom_filters['hdn_ticket_filter_ticket_status_id'] == 'no_response') {
+        if (isset($request->custom_filters['hdn_ticket_filter_ticket_status_key']) && $request->custom_filters['hdn_ticket_filter_ticket_status_key']) {
+            if ($request->custom_filters['hdn_ticket_filter_ticket_status_key'] == 'no_response') {
                 $tickets_query->whereDoesntHave('comments', function ($query) {
                     $query->where('ticketit_comments.user_id', '!=', 'ticketit.user_id');
                 });
-            } elseif ($request->custom_filters['hdn_ticket_filter_ticket_status_id'] == 'overdue') {
+            } elseif ($request->custom_filters['hdn_ticket_filter_ticket_status_key'] == 'overdue') {
                 $settings_repository = new SettingsRepository;
                 $overdue_hours = $settings_repository->getOverdueHours();
                 $datetime_now = \Carbon\Carbon::now()->subHours($overdue_hours);
 
                 $tickets_query->where('ticketit.created_at', '<', $datetime_now)->whereDoesntHave('comments');
             } else {
-                $tickets_query->where('ticketit.status_id', $request->custom_filters['hdn_ticket_filter_ticket_status_id']);
+                $tickets_query->where('ticketit.status_id', $request->custom_filters['hdn_ticket_filter_ticket_status_key']);
             }
         }
 

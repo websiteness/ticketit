@@ -4,7 +4,7 @@
 <div class="row">
     <div class="col-md-12 col-sm-12 col-xs-12">
         <div class="counter">
-            <div class="counter__box">
+            <div class="counter__box statuses_count_box overdue_status_count_box" data-status-key="overdue">
                 <div class="counter__top">
                     <h3 class="counter__value">{{$statuses_count['Overdue']}}</h3>
                     <div class="counter__icon">
@@ -15,7 +15,7 @@
                     <h4 class="counter__title">Overdue</h4>
                 </div><!-- .counter__bottom -->
             </div><!-- .counter__box -->
-            <div class="counter__box">
+            <div class="counter__box statuses_count_box no_response_status_count_box" data-status-key="no_response">
                 <div class="counter__top">
                     <h3 class="counter__value">{{$statuses_count['No Response']}}</h3>
                     <div class="counter__icon">
@@ -26,7 +26,7 @@
                     <h4 class="counter__title">No Response</h4>
                 </div><!-- .counter__bottom -->
             </div><!-- .counter__box -->
-            <div class="counter__box">
+            <div class="counter__box statuses_count_box 1_status_count_box" data-status-key="1">
                 <div class="counter__top">
                     <h3 class="counter__value">{{$statuses_count['Waiting on Support']}}</h3>
                     <div class="counter__icon">
@@ -37,7 +37,7 @@
                     <h4 class="counter__title">Waiting On Support</h4>
                 </div><!-- .counter__bottom -->
             </div><!-- .counter__box -->
-            <div class="counter__box">
+            <div class="counter__box statuses_count_box 2_status_count_box" data-status-key="2">
                 <div class="counter__top">
                     <h3 class="counter__value">{{$statuses_count['Need Feedback']}}</h3>
                     <div class="counter__icon">
@@ -48,7 +48,7 @@
                     <h4 class="counter__title">Need Feedback</h4>
                 </div><!-- .counter__bottom -->
             </div><!-- .counter__box -->
-            <div class="counter__box">
+            <div class="counter__box statuses_count_box 3_status_count_box" data-status-key="3">
                 <div class="counter__top">
                     <h3 class="counter__value">{{$statuses_count['In Progress']}}</h3>
                     <div class="counter__icon">

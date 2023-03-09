@@ -4,7 +4,7 @@
 
         <div class="asf__select-wrapper">
             <select id="ticket_filter_ticket_status_id" name="ticket_filter_ticket_status_id" class="asf__select">
-                <option value="0">Select Status</option>
+                <option value="">Select Status</option>
             </select>
         </div>
         <!-- .asf__select-wrapper -->
