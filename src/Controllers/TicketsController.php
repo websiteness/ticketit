@@ -984,9 +984,9 @@ class TicketsController extends Controller
         if(count($users)>0){
             foreach ($users as $user) {
                 if ($user->activations_count > 0) {
-                    $data[$i]['text'] = $user->full_name . ' - ' . $user->email . ($user->roles()->first() ? ' - ' . $user->roles()->first()->name : ' - No role associated ');
+                    $data[$i]['text'] = $user->full_name . ' - ' . $user->email . ($user->roles->first() ? ' - ' . $user->roles->first()->name : ' - No role associated ');
                 } else {
-                    $data[$i]['text'] = $user->full_name . ' - ' . $user->email . ($user->roles()->first() ? ' - ' . $user->roles()->first()->name : ' - No role associated ') . ' (Not Activated)';
+                    $data[$i]['text'] = $user->full_name . ' - ' . $user->email . ($user->roles->first() ? ' - ' . $user->roles->first()->name : ' - No role associated ') . ' (Not Activated)';
                 }
 
                 $data[$i]['id'] = $user->id;
