@@ -38,11 +38,8 @@
                             @if($user->ticketit_admin || $user->ticketit_agent)
                             <div class="new-ticket__form-group">
                                 <label><img src="{{asset('images/ticket-system/ticket-description.png')}}" alt="" /> User:</label>
-                                <select class="form-control select2" name="user_id" required>
+                                <select class="form-control user_select2" name="user_id" required>
                                     <option value="">Select Owner</option>
-                                    @foreach($users as $user)
-                                    <option value="{{ $user->id }}">{{ $user->first_name . ' ' . $user->last_name . ' - ' . $user->email . ' (' . ($user->roles->first() ? $user->roles->first()->name : ' No role associated ') . ')' }}</option>
-                                    @endforeach
                                 </select>
                             </div><!-- .new-ticket__form-group -->
                             @endif
@@ -116,6 +113,29 @@
     @include('ticketit::tickets.partials.summernote')
 
     <script>
+        let search_users_url = `{!! route($setting->grab('main_route').'.search-users') !!}`;
+        var token = jQuery("meta[name='csrf-token']").attr("content");
+
+        $(document).ready(function(){
+            $('.user_select2').select2({
+                placeholder:'Select Users',
+                minimumInputLength: 3,
+                ajax: {
+                    url: search_users_url,
+                    method:'POST',
+                    dataType: 'json',
+                    data: function (params) {
+                        var query = {
+                            search: params.term,
+                            _token: token,
+                        };
+                        return query;
+                    }
+                    // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
+                }
+            });
+        });
+
         $(function () {
             $('[data-toggle="popover"]').popover({
                 html: true
@@ -129,7 +149,7 @@
 
         $('document').ready(function(){
             
-			$('.select2').select2();
+			//$('.select2').select2();
 
             var subcategories = {!! json_encode($subcategories) !!};
             let val = $('.cat option:selected').val();
