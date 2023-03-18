@@ -41,7 +41,8 @@
 	<script>
 		let ticket_main_route = `{!! url('/').'/'.$setting->grab('main_route')!!}`;
 		let get_tags_url = `{!! route($setting->grab('main_route').'.get-all-tags') !!}`;
-		let get_users_url = `{!! route($setting->grab('main_route').'.get-all-users') !!}`;
+		let search_users_url = `{!! route($setting->grab('main_route').'.search-users') !!}`;
+		let get_selected_user_detail_url = `{!! route($setting->grab('main_route').'.get-selected-user-detail') !!}`;
 		let get_all_ticket_priorities_url = `{!! route($setting->grab('main_route').'.get-all-ticket-priorities') !!}`;
 		let get_all_ticket_statuses_url = `{!! route($setting->grab('main_route').'.get-all-ticket-statuses') !!}`;
 		let save_datatable_columns_visibility_setting_url = `{!! route($setting->grab('main_route').'.save-datatable-columns-visibility-setting') !!}`;

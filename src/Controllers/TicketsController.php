@@ -91,10 +91,10 @@ class TicketsController extends Controller
     {
 
   
-        $users = Agent::all();
-        $statuses = Status::all();
-        $sub_categories = $cr->getSubCategories();
-        $tags = Tags::all();
+        //$users = Agent::all();
+        //$statuses = Status::all();
+        //$sub_categories = $cr->getSubCategories();
+        //$tags = Tags::all();
         $complete = false;
         $ss = new \Kordy\Ticketit\Services\StatsService();
         $statuses_count = $ss->getStatusesAssoc();
@@ -105,7 +105,8 @@ class TicketsController extends Controller
             $datatable_visible_column_arr = session('active_ticket_datatable_columns');
         }
 
-        return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories', 'tags', 'statuses_count', 'categories_count', 'datatable_visible_column_arr'));
+        //return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories', 'tags', 'statuses_count', 'categories_count', 'datatable_visible_column_arr'));
+        return view('ticketit::index', compact('complete', 'statuses_count', 'categories_count', 'datatable_visible_column_arr'));
     }
 
     /**
@@ -115,9 +116,9 @@ class TicketsController extends Controller
      */
     public function indexComplete(CategoriesRepository $cr)
     {
-        $users = Agent::all();
-        $statuses = Status::all();
-        $sub_categories = $cr->getSubCategories();
+        //$users = Agent::all();
+        //$statuses = Status::all();
+        //$sub_categories = $cr->getSubCategories();
 
         $complete = true;
 
@@ -129,7 +130,8 @@ class TicketsController extends Controller
             $datatable_visible_column_arr = session('completed_ticket_datatable_columns');
         }
 
-        return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories', 'statuses_count', 'categories_count', 'datatable_visible_column_arr'));
+        //return view('ticketit::index', compact('complete', 'users', 'statuses', 'sub_categories', 'statuses_count', 'categories_count', 'datatable_visible_column_arr'));
+        return view('ticketit::index', compact('complete', 'statuses_count', 'categories_count', 'datatable_visible_column_arr'));
     }
 
     /**
@@ -175,11 +177,13 @@ class TicketsController extends Controller
      */
     public function create()
     {
-        $users = Agent::all();
+        //$users = Agent::all();
         $user = Sentinel::getUser();
 
         list($priorities, $categories, $statuses, $subcategories) = $this->PCS();
-        return view('ticketit::tickets.create', compact('priorities', 'categories', 'subcategories', 'users', 'user'));
+
+        //return view('ticketit::tickets.create', compact('priorities', 'categories', 'subcategories', 'users', 'user'));
+        return view('ticketit::tickets.create', compact('priorities', 'categories', 'subcategories', 'user'));
     }
 
     /**
@@ -958,10 +962,10 @@ class TicketsController extends Controller
 
     }
 
-    public function getAllUsers(Request $request)
+    public function searchUsers(Request $request)
     {
         $data = array();
-
+        if($request->input('search') && strlen($request->input('search')) > 2 ) {
         $users_query = Sentinel::getUserRepository()
             ->with('roles')
             ->withCount(array('activations' => function($query){
@@ -984,14 +988,92 @@ class TicketsController extends Controller
         if(count($users)>0){
             foreach ($users as $user) {
                 if ($user->activations_count > 0) {
-                    $data[$i]['text'] = $user->full_name . ' - ' . $user->email . ($user->roles()->first() ? ' - ' . $user->roles()->first()->name : ' - No role associated ');
+                    $data[$i]['text'] = $user->full_name . ' - ' . $user->email . ($user->roles->first() ? ' - ' . $user->roles->first()->name : ' - No role associated ');
                 } else {
-                    $data[$i]['text'] = $user->full_name . ' - ' . $user->email . ($user->roles()->first() ? ' - ' . $user->roles()->first()->name : ' - No role associated ') . ' (Not Activated)';
+                    $data[$i]['text'] = $user->full_name . ' - ' . $user->email . ($user->roles->first() ? ' - ' . $user->roles->first()->name : ' - No role associated ') . ' (Not Activated)';
                 }
 
                 $data[$i]['id'] = $user->id;
 
                 $i++;
+            }
+        }
+        }
+
+        return response()->json(array('results' => $data));
+        /*return response()->json([
+            'type' =>'success',
+            'data' => $data
+        ]);*/
+    }
+
+    public function getSelectedUserDetail(Request $request) {
+
+        $data = array();
+
+        if($request->has('user_id') && $request->get('user_id')){
+
+            $user_query = Sentinel::getUserRepository()
+                ->with('roles')
+                ->withCount(array('activations' => function($query){
+                    $query->where('completed', 1);
+                }));
+
+            $user_query->where(function ($query) use ($request) {
+                $query->where('id',  $request->get('user_id'));
+            });
+
+            $user = $user_query->first();
+
+            if($user){
+                if ($user->activations_count > 0) {
+                    $data['text'] = $user->full_name . ' - ' . $user->email . ($user->roles->first() ? ' - ' . $user->roles->first()->name : ' - No role associated ');
+                } else {
+                    $data['text'] = $user->full_name . ' - ' . $user->email . ($user->roles->first() ? ' - ' . $user->roles->first()->name : ' - No role associated ') . ' (Not Activated)';
+                }
+
+                $data['id'] = $user->id;
+            }
+        }
+
+        return response()->json([
+            'type' =>'success',
+            'data' => $data
+        ]);
+
+    }
+
+    public function getSelectedUsersDetail(Request $request) {
+
+        $data = array();
+
+        if($request->has('user_id_arr') && is_array($request->get('user_id_arr')) && count($request->get('user_id_arr'))>0){
+
+            $users_query = Sentinel::getUserRepository()
+                ->with('roles')
+                ->withCount(array('activations' => function($query){
+                    $query->where('completed', 1);
+                }));
+
+            $users_query->where(function ($query) use ($request) {
+                $query->whereIn('id',  $request->get('user_id_arr'));
+            });
+
+            $users = $users_query->get();
+
+            $i = 0;
+            if(count($users)>0){
+                foreach ($users as $user) {
+                    if ($user->activations_count > 0) {
+                        $data[$i]['text'] = $user->full_name . ' - ' . $user->email . ($user->roles->first() ? ' - ' . $user->roles->first()->name : ' - No role associated ');
+                    } else {
+                        $data[$i]['text'] = $user->full_name . ' - ' . $user->email . ($user->roles->first() ? ' - ' . $user->roles->first()->name : ' - No role associated ') . ' (Not Activated)';
+                    }
+
+                    $data[$i]['id'] = $user->id;
+
+                    $i++;
+                }
             }
         }
 

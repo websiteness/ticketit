@@ -32,7 +32,9 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
     Route::post("$main_route_path/{id}/add-tag", array('as' => "$main_route.add-tag", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@addTag'));
     Route::post("$main_route_path/{id}/remove-tag", array('as' => "$main_route.remove-tag", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@removeTag'));
     Route::post("$main_route_path/get-all-tags", array('as' => "$main_route.get-all-tags", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@getAllTags'));
-    Route::post("$main_route_path/get-all-users", array('as' => "$main_route.get-all-users", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@getAllUsers'));
+    Route::post("$main_route_path/search-users", array('as' => "$main_route.search-users", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@searchUsers'));
+    Route::post("$main_route_path/get-selected-user-detail", array('as' => "$main_route.get-selected-user-detail", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@getSelectedUserDetail'));
+    Route::post("$main_route_path/get-selected-users-detail", array('as' => "$main_route.get-selected-users-detail", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@getSelectedUsersDetail'));
     Route::post("$main_route_path/get-all-ticket-priorities", array('as' => "$main_route.get-all-ticket-priorities", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@getAllTicketPriorities'));
     Route::post("$main_route_path/get-all-ticket-statuses", array('as' => "$main_route.get-all-ticket-statuses", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@getAllTicketStatuses'));
     Route::post("$main_route_path/save-datatable-columns-visibility-setting", array('as' => "$main_route.save-datatable-columns-visibility-setting", 'uses' => 'Kordy\Ticketit\Controllers\TicketsController@saveDatatableColumnsVisibilitySetting'));
@@ -100,6 +102,8 @@ Route::group(['middleware' => \Kordy\Ticketit\Helpers\LaravelVersion::authMiddle
     Route::group(['middleware' => 'Kordy\Ticketit\Middleware\IsAdminMiddleware'], function () use ($admin_route, $admin_route_path) {
 
         Route::get('tickets-dashboard', 'Kordy\Ticketit\Controllers\DashboardController@index2');
+
+        Route::post('tickets-dashboard-data', array('as' => 'tickets-dashboard-data', 'uses' => 'Kordy\Ticketit\Controllers\DashboardController@data2'));
 
         //Ticket admin index route (ex. http://url/tickets-admin/)
         Route::get("$admin_route_path/indicator/{indicator_period?}", [
