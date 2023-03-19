@@ -28,77 +28,87 @@
         </div>
         <div class="x_content">
             <div class="row">
-                <div class="row mt-response-time">
-                    <div class="col-lg-6 col-md-6 ">
-                        <div class="panel panel-info">
-                            <div class="panel-heading">
-                                <div class="row">
-                                    <div class="col-xs-9">
-                                        <h1 class="ticket_first_response_time_average">{{$ticket_first_response_time_average}}</h1>
-                                        <span>Average First Response Time</span>
-                                    </div>
-                                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                    <div class="counter__box">
+                        <div class="counter__top">
+                            <h3 class="counter__value ticket_first_response_time_average">{{$ticket_first_response_time_average}}</h3>
+
+                            <div class="counter__icon">
+                                <img src="{{asset('images/ticket-system/new/overdue.png')}}" alt="">
                             </div>
                         </div>
-                    </div>
-                    <div class="col-lg-6 col-md-6 ">
-                        <div class="panel panel-info">
-                            <div class="panel-heading">
-                                <div class="row">
-                                    <div class="col-xs-9">
-                                        <h1 class="ticket_response_time_average">{{$ticket_response_time_average}}</h1>
-                                        <span>Average Response Time</span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="counter__bottom">
+                            <h4 class="counter__title">Average First Response Time</h4>
                         </div>
                     </div>
-                    <div class="col-lg-6 col-md-6 ">
-                        <div class="panel panel-info">
-                            <div class="panel-heading">
-                                <div class="row">
-                                    <div class="col-xs-9">
-                                        <h1 class="average_tickets_per_day">{{$average_tickets_per_day}}</h1>
-                                        <span> Average Tickets Per Day</span>
-                                    </div>
-                                </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                    <div class="counter__box">
+                        <div class="counter__top">
+                            <h3 class="counter__value ticket_response_time_average">{{$ticket_response_time_average}}</h3>
+
+                            <div class="counter__icon">
+                                <img src="{{asset('images/ticket-system/new/overdue.png')}}" alt="">
                             </div>
                         </div>
-                    </div>
-                    <div class="col-lg-6 col-md-6 ">
-                        <div class="panel panel-info">
-                            <div class="panel-heading">
-                                <div class="row">
-                                    <div class="col-xs-9">
-                                        <h1 class="average_tickets_per_week">{{$average_tickets_per_week}}</h1>
-                                        <span> Average Tickets Per Week</span>
-                                    </div>
-                                </div>
-                            </div>
+                        
+                        <div class="counter__bottom">
+                            <h4 class="counter__title">Average Response Time</h4>
                         </div>
                     </div>
-                    <div class="col-lg-6 col-md-6 ">
-                        <div class="panel panel-info">
-                            <div class="panel-heading">
-                                <div class="row">
-                                    <div class="col-xs-9">
-                                        <h1 class="average_no_of_interactions">{{$average_no_of_interactions}}</h1>
-                                        <span>Average Number of Interactions</span>
-                                    </div>
-                                </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                    <div class="counter__box">
+                        <div class="counter__top counter__top2">
+                            <h3 class="counter__value average_tickets_per_day">{{$average_tickets_per_day}}</h3>
+
+                            <div class="counter__icon">
+                                <span class="icon-gradient icon-ticket-1"></span>
                             </div>
                         </div>
+                        <div class="counter__bottom">
+                            <h4 class="counter__title">Average Tickets Per Day</h4>
+                        </div>
                     </div>
-                    <div class="col-lg-6 col-md-6 ">
-                        <div class="panel panel-info">
-                            <div class="panel-heading">
-                                <div class="row">
-                                    <div class="col-xs-9">
-                                        <h1 class="average_resolution_time">{{$average_resolution_time}}</h1>
-                                        <span>Average Resolution Time</span>
-                                    </div>
-                                </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                    <div class="counter__box">
+                        <div class="counter__top counter__top2">
+                            <h3 class="counter__value average_tickets_per_week">{{$average_tickets_per_week}}</h3>
+                            <div class="counter__icon">
+                                <span class="icon-gradient icon-ticket-1"></span>
                             </div>
+                        </div>
+                        <div class="counter__bottom">
+                            <h4 class="counter__title">Average Tickets Per Week</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                    <div class="counter__box">
+                        <div class="counter__top">
+                            <h3 class="counter__value average_no_of_interactions">{{$average_no_of_interactions}}</h3>
+
+                            <div class="counter__icon">
+                                <img src="{{asset('images/ticket-system/new/waiting-on-support.png')}}" alt="">
+                            </div>
+                        </div>
+                        <div class="counter__bottom">
+                            <h4 class="counter__title">Average Number of Interactions</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                    <div class="counter__box">
+                        <div class="counter__top">
+                            <h3 class="counter__value average_resolution_time">{{$average_resolution_time}}</h3>
+
+                            <div class="counter__icon">
+                                <img src="{{asset('images/ticket-system/new/overdue.png')}}" alt="">
+                            </div>
+                        </div>
+                        <div class="counter__bottom">
+                            <h4 class="counter__title">Average Resolution Time</h4>
                         </div>
                     </div>
                 </div>

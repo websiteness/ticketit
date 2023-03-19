@@ -175,12 +175,12 @@ class TicketsService
             $total .= $arr['minutes'] . ' minute ';
         }
 
-        if(isset($arr['seconds']) && $arr['seconds']>1){
+        /*if(isset($arr['seconds']) && $arr['seconds']>1){
             $total .= $arr['seconds'] . ' seconds ';
         }
         else if(isset($arr['seconds']) && $arr['seconds']>0){
             $total .= $arr['seconds'] . ' second ';
-        }
+        }*/
 
         return $total ? $total : '';
     }

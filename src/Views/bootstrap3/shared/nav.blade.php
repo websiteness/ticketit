@@ -14,7 +14,7 @@
         </li>
         <li role="presentation" @if(Route::currentRouteName() == 'tickets.index') class="active" @endif>
           <a href="{{ action('\Kordy\Ticketit\Controllers\TicketsController@index') }}">Active Tickets</a>
-          <span class="ticket-count">
+          <span class="ticket-count active-ticket-count">
                 <?php 
                     if ($u->isAdmin()) {
                         echo Kordy\Ticketit\Models\Ticket::active()->whereHas('user', function($q) {
@@ -34,7 +34,7 @@
         </li>
         <li role="presentation" @if(Route::currentRouteName() == 'tickets-complete') class="active" @endif>
           <a href="{{ action('\Kordy\Ticketit\Controllers\TicketsController@indexComplete') }}">Completed Tickets</a>
-          <span class="ticket-count">
+          <span class="ticket-count  completed-ticket-count">
                 <?php 
                     if ($u->isAdmin()) {
                         echo Kordy\Ticketit\Models\Ticket::complete()->whereHas('user' , function($q) {
