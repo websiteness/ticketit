@@ -3,9 +3,11 @@
 namespace Kordy\Ticketit\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Kordy\Ticketit\Models\Agent;
 use Kordy\Ticketit\Models\Category;
 use Kordy\Ticketit\Models\Ticket;
+use Kordy\Ticketit\Services\DashboardService;
 use Sentinel;
 use App\User;
 use Kordy\Ticketit\Services\TicketsService;
@@ -97,14 +99,27 @@ class DashboardController extends Controller
     {
         $tickets_count = Ticket::count();
 
+        $dashboard_service = new DashboardService();
+
+        $filter_arr = [
+            /*'user_id'=>0,
+            'ignore_user_id_arr' => [],
+            'date_range'=>[
+                'start_date'=>'2022-09-28 00:00:00',
+                'end_date'=>'2022-09-28 23:59:59',
+            ]*/
+        ];
+
+        $filter_arr = $dashboard_service->getFiltersFromSession();
+
         $ticketService = new TicketsService();
 
-        $ticket_first_response_time_average = $ticketService->getFirstResponseTimeAverage();
-        $ticket_response_time_average = $ticketService->getResponseTimeAverage();
-        $average_tickets_per_day = $ticketService->getAverageTicketsPerDay();
-        $average_tickets_per_week = $ticketService->getAverageTicketsPerWeek();
-        $average_no_of_interactions = $ticketService->getAverageNoOfInteractions();
-        $average_resolution_time = $ticketService->getAverageResolutionTime();
+        $ticket_first_response_time_average = $ticketService->getFirstResponseTimeAverage($filter_arr);
+        $ticket_response_time_average = $ticketService->getResponseTimeAverage($filter_arr);
+        $average_tickets_per_day = $ticketService->getAverageTicketsPerDay($filter_arr);
+        $average_tickets_per_week = $ticketService->getAverageTicketsPerWeek($filter_arr);
+        $average_no_of_interactions = $ticketService->getAverageNoOfInteractions($filter_arr);
+        $average_resolution_time = $ticketService->getAverageResolutionTime($filter_arr);
 
         return view(
             'ticketit::admin.index2',
@@ -117,6 +132,35 @@ class DashboardController extends Controller
                 'average_no_of_interactions',
                 'average_resolution_time'
             ));
+    }
+
+    public function data2(Request $request)
+    {
+        $dashboard_service = new DashboardService();
+        $dashboard_service->saveFiltersInSession($request);
+        $filter_arr = $dashboard_service->getFiltersFromSession();
+
+        $ticketService = new TicketsService();
+
+        $ticket_first_response_time_average = $ticketService->getFirstResponseTimeAverage($filter_arr);
+        $ticket_response_time_average = $ticketService->getResponseTimeAverage($filter_arr);
+        $average_tickets_per_day = $ticketService->getAverageTicketsPerDay($filter_arr);
+        $average_tickets_per_week = $ticketService->getAverageTicketsPerWeek($filter_arr);
+        $average_no_of_interactions = $ticketService->getAverageNoOfInteractions($filter_arr);
+        $average_resolution_time = $ticketService->getAverageResolutionTime($filter_arr);
+
+        return response()->json([
+            'type' =>'success',
+            'data' => compact(
+                'ticket_first_response_time_average',
+                'ticket_response_time_average',
+                'average_tickets_per_day',
+                'average_tickets_per_week',
+                'average_no_of_interactions',
+                'average_resolution_time'
+            )
+        ]);
+
     }
 }
                           

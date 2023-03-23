@@ -123,12 +123,95 @@ class TicketsService
         }
     }
 
+    public function covertSecondsToDaysHoursMinutesSecondsArray($time_in_seconds){
+
+        //$value = (3600*24)+3725;
+        $value = $time_in_seconds;
+
+        $dt = \Carbon\Carbon::now();
+        $days = $dt->diffInDays($dt->copy()->addSeconds($value));
+        $hours = $dt->diffInHours($dt->copy()->addSeconds($value)->subDays($days));
+        $minutes = $dt->diffInMinutes($dt->copy()->addSeconds($value)->subDays($days)->subHours($hours));
+        $seconds = $dt->diffInSeconds($dt->copy()->addSeconds($value)->subDays($days)->subHours($hours)->subMinutes($minutes));
+
+
+        /*
+        echo "\n".'value = '.$value."\n";
+        echo "\n".'days = '.$days."\n";
+        echo "\n".'hours = '.$hours."\n";
+        echo "\n".'minutes = '.$minutes."\n";
+        echo "\n".'seconds = '.$seconds."\n";
+        echo "\n===";
+        echo \Carbon\CarbonInterval::days($days)->hours($hours)->minutes($minutes)->forHumans();
+        echo "==\n";
+        */
+
+        return ['days'=>$days, 'hours'=>$hours, 'minutes'=>$minutes, 'seconds'=>$seconds];
+    }
+
+    public function covertSecondsToDaysHoursMinutesSecondsString($time_in_seconds){
+
+        $arr = $this->covertSecondsToDaysHoursMinutesSecondsArray($time_in_seconds);
+
+        $total = '';
+        if(isset($arr['days']) && $arr['days']>1){
+            $total .= $arr['days'] . ' days ';
+        }
+        else if(isset($arr['days']) && $arr['days']>0){
+            $total .= $arr['days'] . ' day ';
+        }
+
+        if(isset($arr['hours']) && $arr['hours']>1){
+            $total .= $arr['hours'] . ' hours ';
+        }
+        else if(isset($arr['hours']) && $arr['hours']>0){
+            $total .= $arr['hours'] . ' hour ';
+        }
+
+        if(isset($arr['minutes']) && $arr['minutes']>1){
+            $total .= $arr['minutes'] . ' minutes ';
+        }
+        else if(isset($arr['minutes']) && $arr['minutes']>0){
+            $total .= $arr['minutes'] . ' minute ';
+        }
+
+        if(isset($arr['seconds']) && $arr['seconds']>1){
+            $total .= $arr['seconds'] . ' seconds ';
+        }
+        else if(isset($arr['seconds']) && $arr['seconds']>0){
+            $total .= $arr['seconds'] . ' second ';
+        }
+
+        return $total ? $total : '';
+    }
+
     public function getFirstResponseTimeAverage($filter_arr = array())
     {
         $query = Ticket::with('comments')->whereHas('comments');
 
         if(isset($filter_arr['user_id']) && intval($filter_arr['user_id'])>0){
             $query->where('user_id',intval($filter_arr['user_id']));
+        }
+
+        if(isset($filter_arr['ignore_user_id_arr']) && is_array($filter_arr['ignore_user_id_arr']) && count($filter_arr['ignore_user_id_arr'])>0){
+            $query->whereNotIn('user_id',$filter_arr['ignore_user_id_arr']);
+        }
+
+        if(isset($filter_arr['date_range']['start_date']) && $filter_arr['date_range']['start_date']) {
+            $query->where('created_at', '>=', $filter_arr['date_range']['start_date']);
+        }
+
+        if(isset($filter_arr['date_range']['end_date']) && $filter_arr['date_range']['end_date']) {
+            $query->where('created_at', '<=', $filter_arr['date_range']['end_date']);
+        }
+
+        if(isset($filter_arr['ignore_test_accounts']) && $filter_arr['ignore_test_accounts']) {
+            $query->whereHas('user', function ($query) use($filter_arr){
+                $query->withTrashed();
+                $query->whereHas('account', function ($query) use($filter_arr){
+                    $query->where('is_test_account', '=', 0);
+                });
+            });
         }
 
         $data = $query->get();
@@ -143,7 +226,8 @@ class TicketsService
 
             foreach($ticket->comments as $comment){
                 if($need_response==1 && $comment->user_id!=$ticket->user_id){
-                    $interval =  $ticket_date->diffInMinutes($comment->created_at);
+                    //$interval =  $ticket_date->diffInMinutes($comment->created_at);
+                    $interval =  $ticket_date->diffInSeconds($comment->created_at);
                     $need_response=0;
                     $total_minutes += $interval;
                     $total_response++;
@@ -177,6 +261,8 @@ class TicketsService
                 $total .= ($average_total % 60) . ' minute ';
             }
 
+            $total = $this->covertSecondsToDaysHoursMinutesSecondsString($average_total);
+
             return $total ? $total : 'N/A';
 
         } else {
@@ -192,6 +278,27 @@ class TicketsService
             $query->where('user_id',intval($filter_arr['user_id']));
         }
 
+        if(isset($filter_arr['ignore_user_id_arr']) && is_array($filter_arr['ignore_user_id_arr']) && count($filter_arr['ignore_user_id_arr'])>0){
+            $query->whereNotIn('user_id',$filter_arr['ignore_user_id_arr']);
+        }
+
+        if(isset($filter_arr['date_range']['start_date']) && $filter_arr['date_range']['start_date']) {
+            $query->where('created_at', '>=', $filter_arr['date_range']['start_date']);
+        }
+
+        if(isset($filter_arr['date_range']['end_date']) && $filter_arr['date_range']['end_date']) {
+            $query->where('created_at', '<=', $filter_arr['date_range']['end_date']);
+        }
+
+        if(isset($filter_arr['ignore_test_accounts']) && $filter_arr['ignore_test_accounts']) {
+            $query->whereHas('user', function ($query) use($filter_arr){
+                $query->withTrashed();
+                $query->whereHas('account', function ($query) use($filter_arr){
+                    $query->where('is_test_account', '=', 0);
+                });
+            });
+        }
+
         $data = $query->get();
 
         $total_minutes = 0;
@@ -205,7 +312,8 @@ class TicketsService
 
             foreach($ticket->comments as $comment){
                 if($need_response==1 && $comment->user_id!=$ticket->user_id){
-                    $interval =  $ticket_date->diffInMinutes($comment->created_at);
+                    //$interval =  $ticket_date->diffInMinutes($comment->created_at);
+                    $interval =  $ticket_date->diffInSeconds($comment->created_at);
                     $need_response=0;
                     $total_minutes += $interval;
                     $total_response++;
@@ -240,6 +348,8 @@ class TicketsService
                 $total .= ($average_total % 60) . ' minute ';
             }
 
+            $total = $this->covertSecondsToDaysHoursMinutesSecondsString($average_total);
+
             return $total ? $total : 'N/A';
 
         } else {
@@ -247,12 +357,39 @@ class TicketsService
         }
     }
 
-    public function getAverageTicketsPerDay()
+    public function getAverageTicketsPerDay($filter_arr = array())
     {
-        $tickets = Ticket::select('created_at', \DB::raw('count(id) AS total_record'))
-            //->groupBy('created_at')
-            ->groupByRaw('DATE(created_at)')
-            ->get();
+        $query = Ticket::select('created_at', \DB::raw('count(id) AS total_record'));
+
+        if(isset($filter_arr['user_id']) && intval($filter_arr['user_id'])>0){
+            $query->where('user_id',intval($filter_arr['user_id']));
+        }
+
+        if(isset($filter_arr['ignore_user_id_arr']) && is_array($filter_arr['ignore_user_id_arr']) && count($filter_arr['ignore_user_id_arr'])>0){
+            $query->whereNotIn('user_id',$filter_arr['ignore_user_id_arr']);
+        }
+
+        if(isset($filter_arr['date_range']['start_date']) && $filter_arr['date_range']['start_date']) {
+            $query->where('created_at', '>=', $filter_arr['date_range']['start_date']);
+        }
+
+        if(isset($filter_arr['date_range']['end_date']) && $filter_arr['date_range']['end_date']) {
+            $query->where('created_at', '<=', $filter_arr['date_range']['end_date']);
+        }
+
+        if(isset($filter_arr['ignore_test_accounts']) && $filter_arr['ignore_test_accounts']) {
+            $query->whereHas('user', function ($query) use($filter_arr){
+                $query->withTrashed();
+                $query->whereHas('account', function ($query) use($filter_arr){
+                    $query->where('is_test_account', '=', 0);
+                });
+            });
+        }
+
+        //$query->groupBy('created_at');
+        $query->groupByRaw('DATE(created_at)');
+
+        $tickets =$query->get();
 
         $average_tickets_per_day = $tickets->avg('total_record') ?? '0.00';
 
@@ -260,12 +397,39 @@ class TicketsService
 
     }
 
-    public function getAverageTicketsPerWeek(){
+    public function getAverageTicketsPerWeek($filter_arr = array()){
 
-        $tickets = Ticket::select( \DB::raw(' week(created_at)'), \DB::raw('count(id) AS total_record'))
-            //->groupBy('created_at')
-            ->groupByRaw('week(created_at)')
-            ->get();
+        $query = Ticket::select( \DB::raw(' week(created_at)'), \DB::raw('count(id) AS total_record'));
+
+        if(isset($filter_arr['user_id']) && intval($filter_arr['user_id'])>0){
+            $query->where('user_id',intval($filter_arr['user_id']));
+        }
+
+        if(isset($filter_arr['ignore_user_id_arr']) && is_array($filter_arr['ignore_user_id_arr']) && count($filter_arr['ignore_user_id_arr'])>0){
+            $query->whereNotIn('user_id',$filter_arr['ignore_user_id_arr']);
+        }
+
+        if(isset($filter_arr['date_range']['start_date']) && $filter_arr['date_range']['start_date']) {
+            $query->where('created_at', '>=', $filter_arr['date_range']['start_date']);
+        }
+
+        if(isset($filter_arr['date_range']['end_date']) && $filter_arr['date_range']['end_date']) {
+            $query->where('created_at', '<=', $filter_arr['date_range']['end_date']);
+        }
+
+        if(isset($filter_arr['ignore_test_accounts']) && $filter_arr['ignore_test_accounts']) {
+            $query->whereHas('user', function ($query) use($filter_arr){
+                $query->withTrashed();
+                $query->whereHas('account', function ($query) use($filter_arr){
+                    $query->where('is_test_account', '=', 0);
+                });
+            });
+        }
+
+        //$query->groupBy('created_at');
+        $query->groupByRaw('week(created_at)');
+
+        $tickets =$query->get();
 
         $average_tickets_per_week = $tickets->avg('total_record') ?? '0.00';
 
@@ -281,6 +445,27 @@ class TicketsService
 
         if(isset($filter_arr['user_id']) && intval($filter_arr['user_id'])>0){
             $query->where('user_id',intval($filter_arr['user_id']));
+        }
+
+        if(isset($filter_arr['ignore_user_id_arr']) && is_array($filter_arr['ignore_user_id_arr']) && count($filter_arr['ignore_user_id_arr'])>0){
+            $query->whereNotIn('user_id',$filter_arr['ignore_user_id_arr']);
+        }
+
+        if(isset($filter_arr['date_range']['start_date']) && $filter_arr['date_range']['start_date']) {
+            $query->where('created_at', '>=', $filter_arr['date_range']['start_date']);
+        }
+
+        if(isset($filter_arr['date_range']['end_date']) && $filter_arr['date_range']['end_date']) {
+            $query->where('created_at', '<=', $filter_arr['date_range']['end_date']);
+        }
+
+        if(isset($filter_arr['ignore_test_accounts']) && $filter_arr['ignore_test_accounts']) {
+            $query->whereHas('user', function ($query) use($filter_arr){
+                $query->withTrashed();
+                $query->whereHas('account', function ($query) use($filter_arr){
+                    $query->where('is_test_account', '=', 0);
+                });
+            });
         }
 
         //$query->where('status_id', '=', $closed_ticket_status->id)->whereNotNull('completed_at');
@@ -323,7 +508,29 @@ class TicketsService
             $query->where('user_id',intval($filter_arr['user_id']));
         }
 
-        $query->where('status_id', '=', $closed_ticket_status->id)->whereNotNull('completed_at');
+        if(isset($filter_arr['ignore_user_id_arr']) && is_array($filter_arr['ignore_user_id_arr']) && count($filter_arr['ignore_user_id_arr'])>0){
+            $query->whereNotIn('user_id',$filter_arr['ignore_user_id_arr']);
+        }
+
+        if(isset($filter_arr['date_range']['start_date']) && $filter_arr['date_range']['start_date']) {
+            $query->where('created_at', '>=', $filter_arr['date_range']['start_date']);
+        }
+
+        if(isset($filter_arr['date_range']['end_date']) && $filter_arr['date_range']['end_date']) {
+            $query->where('created_at', '<=', $filter_arr['date_range']['end_date']);
+        }
+
+        if(isset($filter_arr['ignore_test_accounts']) && $filter_arr['ignore_test_accounts']) {
+            $query->whereHas('user', function ($query) use($filter_arr){
+                $query->withTrashed();
+                $query->whereHas('account', function ($query) use($filter_arr){
+                    $query->where('is_test_account', '=', 0);
+                });
+            });
+        }
+
+        //$query->where('status_id', '=', $closed_ticket_status->id)->whereNotNull('completed_at');
+        $query->whereNotNull('completed_at');
 
         $data = $query->get();
 
@@ -331,7 +538,8 @@ class TicketsService
 
         foreach ($data as $ticket) {
             $ticket_date = Carbon::parse($ticket->created_at);
-            $interval =  $ticket_date->diffInMinutes($ticket->completed_at);
+            //$interval =  $ticket_date->diffInMinutes($ticket->completed_at);
+            $interval =  $ticket_date->diffInSeconds($ticket->completed_at);
             $total_minutes += $interval;
         }
 
@@ -360,6 +568,8 @@ class TicketsService
                 $total .= ($average_total % 60) . ' minute ';
             }
 
+            $total = $this->covertSecondsToDaysHoursMinutesSecondsString($average_total);
+
             return $total ? $total : 'N/A';
 
         } else {
@@ -374,6 +584,18 @@ class TicketsService
 
         if(isset($filter_arr['user_id']) && intval($filter_arr['user_id'])>0){
             $query->where('user_id',intval($filter_arr['user_id']));
+        }
+
+        if(isset($filter_arr['ignore_user_id_arr']) && is_array($filter_arr['ignore_user_id_arr']) && count($filter_arr['ignore_user_id_arr'])>0){
+            $query->whereNotIn('user_id',$filter_arr['ignore_user_id_arr']);
+        }
+
+        if(isset($filter_arr['date_range']['start_date']) && $filter_arr['date_range']['start_date']) {
+            $query->where('created_at', '>=', $filter_arr['date_range']['start_date']);
+        }
+
+        if(isset($filter_arr['date_range']['end_date']) && $filter_arr['date_range']['end_date']) {
+            $query->where('created_at', '<=', $filter_arr['date_range']['end_date']);
         }
 
         $data = $query->get();
@@ -577,11 +799,11 @@ class TicketsService
 
             if($ticket_date_range_type=='Custom'){
                 if (
-                    isset($request->custom_filters['ticket_filter_ticket_date_range_start']) && $request->custom_filters['ticket_filter_ticket_date_range_start'] &&
-                    isset($request->custom_filters['ticket_filter_ticket_date_range_end']) && $request->custom_filters['ticket_filter_ticket_date_range_end']
+                    isset($request->custom_filters['hdn_ticket_filter_ticket_date_range_start']) && $request->custom_filters['hdn_ticket_filter_ticket_date_range_start'] &&
+                    isset($request->custom_filters['hdn_ticket_filter_ticket_date_range_end']) && $request->custom_filters['hdn_ticket_filter_ticket_date_range_end']
                 ) {
-                    session(['ticket_filter_ticket_date_range_start' => $request->custom_filters['ticket_filter_ticket_date_range_start']]);
-                    session(['ticket_filter_ticket_date_range_end' => $request->custom_filters['ticket_filter_ticket_date_range_end']]);
+                    session(['ticket_filter_ticket_date_range_start' => $request->custom_filters['hdn_ticket_filter_ticket_date_range_start']]);
+                    session(['ticket_filter_ticket_date_range_end' => $request->custom_filters['hdn_ticket_filter_ticket_date_range_end']]);
                 }
             }
 
