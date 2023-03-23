@@ -119,7 +119,9 @@
     <script src="{{asset('libs/bootstrap-daterangepicker/moment.min.js')}}"></script>
     <script src="{{asset('libs/bootstrap-daterangepicker/daterangepicker.js')}}"></script>
     <script>
-        let get_users_url = `{!! route($setting->grab('main_route').'.get-all-users') !!}`;
+        let search_users_url = `{!! route($setting->grab('main_route').'.search-users') !!}`;
+        let get_selected_user_detail_url = `{!! route($setting->grab('main_route').'.get-selected-user-detail') !!}`;
+        let get_selected_users_detail_url = `{!! route($setting->grab('main_route').'.get-selected-users-detail') !!}`;
         let get_ticket_dashboard_data_url = `{!! route('tickets-dashboard-data') !!}`;
     </script>
     {!! loadJSFile('/js/ticket-dashboard.js') !!}
