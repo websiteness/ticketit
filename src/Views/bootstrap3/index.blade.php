@@ -7,7 +7,7 @@
 @section('header_styles')
 	<!--<link href="//cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />-->
 	<link href="{{asset('libs/select2/dist/css/select2.min.css')}}" rel="stylesheet">
-	<link href="//cdn.datatables.net/buttons/2.0.1/css/buttons.dataTables.min.css"> </link>
+	<link href="//cdn.datatables.net/buttons/2.0.1/css/buttons.dataTables.min.css" rel="stylesheet">
 	<!-- Daterangepicker -->
 	<link href="{{asset('libs/bootstrap-daterangepicker/daterangepicker.css')}}" rel="stylesheet">
 	{!! loadCSSFile('/css/ticket-listing.css') !!}
@@ -420,17 +420,17 @@
 					@endif
 					@if( $u->isAgent() || $u->isAdmin() )
                     { data: 'developer_status', name: 'tickets_developer_status.name', responsivePriority: 2 },
+					{ data: 'tags', name: 'tags', width:'300px' ,responsivePriority: 2, orderable:false, 'searchable': false},
 					@endif
-					{ data: 'tags', name: 'tags', width:'300px' ,responsivePriority: 2, orderable:false},
 					{ data: 'updated_at', name: 'ticketit.updated_at', responsivePriority: 2 },
 					@if( $u->isAgent() || $u->isAdmin() )
 					{ data: 'agent', name: 'users.name', responsivePriority: 2 },
 					{ data: 'category', name: 'ticketit_categories.name', responsivePriority: 2 },
 					@endif
 					@if( $u->isAgent() || $u->isAdmin() )
-					{ data: 'last_reply', name: 'ticketit.last_reply', responsivePriority: 2 },
+					{ data: 'last_reply', name: 'last_reply', responsivePriority: 2, orderable:false, 'searchable': false },
 					@endif
-                    { data: 'zone', name: 'zone', responsivePriority: 2 },
+                    { data: 'zone', name: 'ticketit_zone.name', responsivePriority: 2},
 					@if( !$complete)
                     { data: 'actions', name: 'actions' ,responsivePriority: 1, orderable:false, 'searchable': false},
 					@endif
@@ -452,14 +452,14 @@
 				},
 				@if( $u->isAgent() || $u->isAdmin() )
                 columnDefs: [
-                    {'searchable': false, 'targets': [5,10,11]}
-                ],
+					//{'searchable': false, 'targets': [6,10,11]}
+				],
 				@else
-				 columnDefs: [
-					 {'searchable': false, 'targets': [5]}
-				 ],
+                columnDefs: [
+					//{'searchable': false, 'targets': [4]}
+				],
 				@endif
-				"drawCallback": function( settings ) {
+                "drawCallback": function( settings ) {
 
 					var api = this.api();
 

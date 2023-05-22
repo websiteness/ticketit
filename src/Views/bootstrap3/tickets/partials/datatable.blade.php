@@ -12,8 +12,8 @@
         @endif
         @if( $u->isAgent() || $u->isAdmin() )
         <th>Dev Status</th>
-        @endif
         <th>Tags</th>
+        @endif
         <th>{{ trans('ticketit::lang.table-last-updated') }}</th>
         @if( $u->isAgent() || $u->isAdmin() )
         <th>{{ trans('ticketit::lang.table-agent') }}</th>
