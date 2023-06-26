@@ -48,8 +48,7 @@
                         @if($u->isAgent() || $u->isAdmin())
                         <td width="12%"><h5 class="active-tickets__heading">Created:</h5></td>
                         <td width="40%">
-                     
-                       <span class="active-tickets__text">{{ $ticket->created_at->format('m/d/Y') . ' (' . $ticket->created_at->diffForHumans() . ')' }}</span>
+                            <span class="active-tickets__text">{{ $ticket->created_at->format('m/d/Y') . ' at '.$ticket->created_at->format('g:i A') . ' (' . $ticket->created_at->diffForHumans() . ')' }}</span>
                         </td>
                         @else
                         <td width="10%"><h5 class="active-tickets__heading">Category:</h5></td>
